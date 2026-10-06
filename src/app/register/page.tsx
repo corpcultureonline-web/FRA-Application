@@ -4,31 +4,68 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
+  const [brandName, setBrandName] = useState("");
+  const [founderName, setFounderName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
-    if (!name.trim() || !email.trim() || !password) {
+    if (!brandName.trim() || !founderName.trim() || !email.trim() || !phone.trim()) {
       setError("Please fill in all fields.");
       return;
     }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setError("Please enter a valid email address.");
       return;
     }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if (!/^[\d\s()+-]{7,}$/.test(phone.trim())) {
+      setError("Please enter a valid phone number.");
       return;
     }
 
-    setSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brandName: brandName.trim(),
+          founderName: founderName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+        }),
+      });
+
+      // An error page (404/500) is HTML, not JSON, so parse defensively —
+      // otherwise the throw lands in the catch below and a routing problem is
+      // reported as "cannot reach the server".
+      let result: { error?: string } = {};
+      try {
+        result = (await response.json()) as { error?: string };
+      } catch {
+        result = {};
+      }
+
+      if (!response.ok) {
+        setError(
+          result.error ?? `Unable to submit your registration (HTTP ${response.status}).`,
+        );
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError("Unable to reach the server. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -43,36 +80,45 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
           Create an account
         </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-medium text-zinc-950 underline underline-offset-2 dark:text-zinc-50"
-          >
-            Sign in
-          </Link>
-        </p>
-
         {submitted ? (
           <p className="mt-8 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">
-            Account created successfully. You can now sign in.
+            Thanks for registering. Your franchise readiness audit can now begin.
           </p>
         ) : (
           <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
             <div className="flex flex-col gap-1.5">
               <label
-                htmlFor="name"
+                htmlFor="brandName"
                 className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
               >
-                Full name
+                Brand Name
               </label>
               <input
-                id="name"
-                name="name"
+                id="brandName"
+                name="brandName"
+                type="text"
+                autoComplete="organization"
+                value={brandName}
+                onChange={(event) => setBrandName(event.target.value)}
+                className="rounded-lg border border-black/[.08] bg-white px-3 py-2 text-sm text-black outline-none focus:border-zinc-400 dark:border-white/[.145] dark:bg-black dark:text-zinc-50 dark:focus:border-zinc-500"
+                placeholder="Acme Coffee"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="founderName"
+                className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              >
+                Founder Name
+              </label>
+              <input
+                id="founderName"
+                name="founderName"
                 type="text"
                 autoComplete="name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
+                value={founderName}
+                onChange={(event) => setFounderName(event.target.value)}
                 className="rounded-lg border border-black/[.08] bg-white px-3 py-2 text-sm text-black outline-none focus:border-zinc-400 dark:border-white/[.145] dark:bg-black dark:text-zinc-50 dark:focus:border-zinc-500"
                 placeholder="Jane Doe"
               />
@@ -99,39 +145,21 @@ export default function RegisterPage() {
 
             <div className="flex flex-col gap-1.5">
               <label
-                htmlFor="password"
+                htmlFor="phone"
                 className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
               >
-                Password
+                Phone
               </label>
               <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                id="phone"
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                inputMode="tel"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
                 className="rounded-lg border border-black/[.08] bg-white px-3 py-2 text-sm text-black outline-none focus:border-zinc-400 dark:border-white/[.145] dark:bg-black dark:text-zinc-50 dark:focus:border-zinc-500"
-                placeholder="At least 8 characters"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="confirmPassword"
-                className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-              >
-                Confirm password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                className="rounded-lg border border-black/[.08] bg-white px-3 py-2 text-sm text-black outline-none focus:border-zinc-400 dark:border-white/[.145] dark:bg-black dark:text-zinc-50 dark:focus:border-zinc-500"
-                placeholder="Re-enter your password"
+                placeholder="+1 555 123 4567"
               />
             </div>
 
@@ -141,9 +169,10 @@ export default function RegisterPage() {
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="mt-2 flex h-11 w-full items-center justify-center rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
             >
-              Create account
+              {isSubmitting ? "Submitting..." : "Create account"}
             </button>
           </form>
         )}

@@ -7,12 +7,15 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "seed:scoring": "node scripts/seed-scoring-config.mjs"
   },
   "dependencies": {
     "next": "16.3.2",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "mysql2": "^3.14.1",
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
     "typescript": "^5",
