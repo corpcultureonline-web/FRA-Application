@@ -49,10 +49,13 @@ CREATE TABLE IF NOT EXISTS audit_submissions (
   band CHAR(2) NOT NULL,
   gate ENUM('pass', 'capped', 'hard') NOT NULL,
   weakest_pillar CHAR(2) NULL,
+  -- Random token for the shareable results PDF link (/api/report/<token>.pdf).
+  report_token CHAR(32) NULL,
   -- Set when the founder taps "I'm interested" in the paid report.
   report_interest_at TIMESTAMP NULL DEFAULT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
+  UNIQUE KEY audit_submissions_report_token (report_token),
   INDEX audit_submissions_email_idx (email)
 ) ENGINE=InnoDB;
 

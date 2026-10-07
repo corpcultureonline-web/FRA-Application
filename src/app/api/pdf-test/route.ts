@@ -1,7 +1,7 @@
 import os from "node:os";
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+import type { Browser } from "puppeteer-core";
 import { NextResponse } from "next/server";
+import { launchBrowser } from "@/lib/browser";
 
 /**
  * TEMPORARY: checks whether headless Chromium can run on the host (Hostinger)
@@ -26,18 +26,10 @@ export async function GET() {
     freeMemMb: Math.round(os.freemem() / 1024 / 1024),
   };
 
-  let step = "resolve executable";
-  let browser;
+  let step = "launch browser";
+  let browser: Browser | undefined;
   try {
-    chromium.setGraphicsMode = false;
-    const executablePath = await chromium.executablePath();
-
-    step = "launch browser";
-    browser = await puppeteer.launch({
-      args: await puppeteer.defaultArgs({ args: chromium.args, headless: "shell" }),
-      executablePath,
-      headless: "shell",
-    });
+    browser = await launchBrowser();
 
     step = "render page";
     const page = await browser.newPage();
