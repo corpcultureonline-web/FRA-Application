@@ -1,7 +1,7 @@
 import os from "node:os";
 import type { Browser } from "puppeteer-core";
 import { NextResponse } from "next/server";
-import { launchBrowser } from "@/lib/browser";
+import { CHROMIUM_DIR, launchBrowser } from "@/lib/browser";
 
 /**
  * TEMPORARY: checks whether headless Chromium can run on the host (Hostinger)
@@ -23,6 +23,7 @@ export async function GET() {
     platform: process.platform,
     arch: process.arch,
     tmpdir: os.tmpdir(),
+    chromiumDir: CHROMIUM_DIR,
     freeMemMb: Math.round(os.freemem() / 1024 / 1024),
   };
 
