@@ -2,6 +2,7 @@ import { mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
+import { inspect } from "node:util";
 import type { Browser } from "puppeteer-core";
 
 /**
@@ -98,9 +99,11 @@ function unpackBundledLibs({ inflate }: Modules) {
  * Chromium build, so no system Chrome or root access is needed. Callers must
  * close the browser.
  */
-export async function launchBrowser(): Promise<Browser> {
+export async function launchBrowser(onStage?: (stage: string) => void): Promise<Browser> {
+  onStage?.("load modules");
   const modules = await loadModules();
   const { chromium, puppeteer } = modules;
+  onStage?.("unpack chromium");
   const executablePath = await unpackChromium(modules);
   const args = await puppeteer.defaultArgs({ args: chromium.args, headless: "shell" });
 
@@ -119,9 +122,13 @@ export async function launchBrowser(): Promise<Browser> {
     });
 
   try {
+    onStage?.("start chromium");
     return await launch();
   } catch (error) {
-    if (!String(error).includes("error while loading shared libraries")) throw error;
-    return launch(await unpackBundledLibs(modules));
+    if (!inspect(error).includes("error while loading shared libraries")) throw error;
+    onStage?.("unpack bundled libraries");
+    const libDir = await unpackBundledLibs(modules);
+    onStage?.("start chromium with bundled libraries");
+    return launch(libDir);
   }
 }

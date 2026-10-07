@@ -1,4 +1,7 @@
+import { readdir, stat } from "node:fs/promises";
 import os from "node:os";
+import { join } from "node:path";
+import { inspect } from "node:util";
 import type { Browser } from "puppeteer-core";
 import { NextResponse } from "next/server";
 import { CHROMIUM_DIR, launchBrowser } from "@/lib/browser";
@@ -30,7 +33,7 @@ export async function GET() {
   let step = "launch browser";
   let browser: Browser | undefined;
   try {
-    browser = await launchBrowser();
+    browser = await launchBrowser((stage) => (step = `launch browser: ${stage}`));
 
     step = "render page";
     const page = await browser.newPage();
@@ -48,10 +51,31 @@ export async function GET() {
   } catch (error) {
     console.error(`PDF test failed at "${step}"`, error);
     return NextResponse.json(
-      { ok: false, step, error: error instanceof Error ? error.message : String(error), env },
+      {
+        ok: false,
+        step,
+        error: inspect(error, { depth: 4, breakLength: Infinity }),
+        env,
+        chromiumFiles: await listChromiumDir(),
+      },
       { status: 500 },
     );
   } finally {
     await browser?.close().catch(() => {});
+  }
+}
+
+/** Name, size and permissions of each entry in the unpack folder. */
+async function listChromiumDir() {
+  try {
+    const names = await readdir(CHROMIUM_DIR);
+    return await Promise.all(
+      names.map(async (name) => {
+        const info = await stat(join(CHROMIUM_DIR, name));
+        return `${name} ${info.isDirectory() ? "dir" : `${info.size}B`} mode=${(info.mode & 0o777).toString(8)}`;
+      }),
+    );
+  } catch (error) {
+    return `unreadable: ${inspect(error)}`;
   }
 }
