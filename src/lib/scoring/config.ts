@@ -44,3 +44,22 @@ export async function getScoringConfig(): Promise<ScoringConfig> {
   cached = { config, loadedAt: Date.now() };
   return config;
 }
+
+/**
+ * A specific Tier 1 config version, active or not — used to rebuild a past
+ * submission's result exactly as it was scored.
+ */
+export async function getScoringConfigVersion(version: string): Promise<ScoringConfig> {
+  const active = await getScoringConfig().catch(() => undefined);
+  if (active?.version === version) return active;
+
+  const [rows] = await getDatabase().query<RowDataPacket[]>(
+    "SELECT config FROM fra_scoring_config WHERE tier = 1 AND version = ? LIMIT 1",
+    [version],
+  );
+  if (!rows.length) throw new Error(`Tier 1 scoring config ${version} not found.`);
+  const raw = rows[0].config;
+  const config: unknown = typeof raw === "string" ? JSON.parse(raw) : raw;
+  assertConfig(config);
+  return config;
+}

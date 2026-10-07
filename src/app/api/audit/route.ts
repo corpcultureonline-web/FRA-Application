@@ -2,6 +2,7 @@ import type { ResultSetHeader } from "mysql2";
 import { NextResponse } from "next/server";
 import { EMPTY_PROFILE, profileProblems, type Profile } from "@/lib/audit";
 import { getDatabase } from "@/lib/db";
+import { getSiteOrigin, newReportToken, reportPdfUrl } from "@/lib/report";
 import { getScoringConfig } from "@/lib/scoring/config";
 import {
   overallForStorage,
@@ -81,6 +82,7 @@ export async function POST(request: Request) {
 
   // The full result (with the overall score) stays on the server.
   const result = score(config, answers);
+  const reportToken = newReportToken();
 
   const db = await getDatabase().getConnection();
   let id: number;
@@ -89,8 +91,8 @@ export async function POST(request: Request) {
     const [inserted] = await db.execute<ResultSetHeader>(
       `INSERT INTO audit_submissions
          (brand_name, founder_name, email, category, outlets, city, scoring_version,
-          overall_score, range_low, range_high, score_band, band, gate, weakest_pillar)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          overall_score, range_low, range_high, score_band, band, gate, weakest_pillar, report_token)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         profile.brandName,
         profile.founderName,
@@ -106,6 +108,7 @@ export async function POST(request: Request) {
         result.band,
         result.gate,
         result.weakest,
+        reportToken,
       ],
     );
     id = inserted.insertId;
@@ -138,6 +141,7 @@ export async function POST(request: Request) {
 
   // Everything below leaves the server, so it is built from the public score only.
   const publicScore = toPublicScore(config, result);
+  const reportUrl = reportPdfUrl(getSiteOrigin(request), reportToken);
 
   // CRM delivery is best effort: the submission is already saved.
   if (isZohoConfigured()) {
@@ -150,6 +154,7 @@ export async function POST(request: Request) {
           scoreRange: `${publicScore.range.low} – ${publicScore.range.high}`,
           readinessLevel: publicScore.band.name,
           weakestArea: publicScore.areas.find((a) => a.code === publicScore.weakest)?.name ?? null,
+          reportUrl,
         },
       });
       console.info(
@@ -164,5 +169,5 @@ export async function POST(request: Request) {
     console.warn("Zoho CRM credentials are not configured, skipping CRM submission.");
   }
 
-  return NextResponse.json({ success: true, id, score: publicScore }, { status: 201 });
+  return NextResponse.json({ success: true, id, score: publicScore, reportUrl }, { status: 201 });
 }

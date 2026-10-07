@@ -29,6 +29,8 @@ export type FraSubmission = {
     readinessLevel: string;
     /** Display name, e.g. "Market Proof". */
     weakestArea: string | null;
+    /** Public link to the results PDF (/api/report/<token>). */
+    reportUrl?: string;
   };
 };
 
@@ -102,9 +104,19 @@ async function getAccessToken(forceRefresh = false) {
   return cachedToken.value;
 }
 
+/**
+ * API name of the URL field that holds the results PDF link, e.g. Report_URL.
+ * Unset until the field exists in the module, so record creation never fails
+ * on an unknown field.
+ */
+function getReportUrlField() {
+  return process.env.ZOHO_REPORT_URL_FIELD?.trim() || undefined;
+}
+
 /** Field api_names confirmed via GET /crm/v8/settings/fields?module=FRA_Submissions. */
 function toRecord(submission: FraSubmission) {
   const brandName = submission.brandName.trim();
+  const reportUrlField = getReportUrlField();
 
   return {
     // "FRA Submission Tier 1 Name" is the module's mandatory record-name field.
@@ -119,6 +131,9 @@ function toRecord(submission: FraSubmission) {
           Score_Range: submission.result.scoreRange,
           Readiness_Level: submission.result.readinessLevel,
           ...(submission.result.weakestArea ? { Weakest_Area: submission.result.weakestArea } : {}),
+          ...(reportUrlField && submission.result.reportUrl
+            ? { [reportUrlField]: submission.result.reportUrl }
+            : {}),
         }
       : {}),
   };

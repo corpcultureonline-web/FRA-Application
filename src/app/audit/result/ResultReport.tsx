@@ -202,7 +202,8 @@ function FullReport({
 }: {
   result: AuditResult;
   interest: InterestState;
-  onInterested: () => void;
+  /** Absent in the PDF, where there is nothing to press. */
+  onInterested?: () => void;
 }) {
   const toFix = areasToFixPhrase(result.areasToFix);
   const comparison: [string, string, string][] = [
@@ -303,7 +304,7 @@ function FullReport({
           <div className="mt-5 border-t border-black/10 pt-4">
             <p className="text-[34px] font-black text-brand">₹2,999</p>
             <p className="text-[15px] text-muted">One payment. You will receive your report within 24 hours.</p>
-            {interest === "done" ? (
+            {!onInterested ? null : interest === "done" ? (
               <p className="mt-5 rounded-md bg-[#e3f1e5] px-4 py-3 font-bold text-[#1b4d2b]" role="status">
                 ✓ You’re on the list. We’ll invite you at {result.email} as soon as the Report opens.
               </p>
@@ -386,12 +387,13 @@ function FullReport({
  */
 export function ResultReport({
   result,
-  interest,
+  interest = "idle",
   onInterested,
 }: {
   result: AuditResult;
-  interest: InterestState;
-  onInterested: () => void;
+  interest?: InterestState;
+  /** Omitted for the PDF (/audit/report/[token]): no button, no email banner. */
+  onInterested?: () => void;
 }) {
   return (
     <main className="mx-auto w-full max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-14 xl:px-0">
@@ -400,15 +402,17 @@ export function ResultReport({
         {result.brandName}
       </h1>
       <p className="mt-2 text-body lg:text-lg">{result.meta}</p>
-      <p className="mt-5 inline-flex items-start gap-2.5 rounded-md bg-[#e3f1e5] px-4 py-3 text-[15px] text-[#1b4d2b]">
-        <span aria-hidden="true" className="font-bold">
-          ✓
-        </span>
-        <span>
-          A summary of this result has been sent to{" "}
-          <strong className="[overflow-wrap:anywhere]">{result.email}</strong>.
-        </span>
-      </p>
+      {onInterested ? (
+        <p className="mt-5 inline-flex items-start gap-2.5 rounded-md bg-[#e3f1e5] px-4 py-3 text-[15px] text-[#1b4d2b]">
+          <span aria-hidden="true" className="font-bold">
+            ✓
+          </span>
+          <span>
+            A summary of this result has been sent to{" "}
+            <strong className="[overflow-wrap:anywhere]">{result.email}</strong>.
+          </span>
+        </p>
+      ) : null}
 
       <div className="mt-8 grid gap-12 lg:mt-10 lg:grid-cols-[420px_1fr] lg:gap-20">
         <aside className="lg:sticky lg:top-8 lg:self-start">
