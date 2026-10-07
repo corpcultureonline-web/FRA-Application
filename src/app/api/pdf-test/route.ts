@@ -33,7 +33,7 @@ export async function GET() {
   let step = "launch browser";
   let browser: Browser | undefined;
   try {
-    browser = await launchBrowser((stage) => (step = `launch browser: ${stage}`));
+    browser = await launchBrowser((stage) => (step = `launch browser: ${stage}`), { dumpio: true });
 
     step = "render page";
     const page = await browser.newPage();

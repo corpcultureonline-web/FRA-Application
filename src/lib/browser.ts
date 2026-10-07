@@ -98,8 +98,15 @@ function unpackBundledLibs({ inflate }: Modules) {
  * Launches headless Chromium from @sparticuz/chromium, which ships its own
  * Chromium build, so no system Chrome or root access is needed. Callers must
  * close the browser.
+ *
+ * Talks to Chromium over pipes, not a localhost WebSocket: on Hostinger the
+ * DevTools port refused connections (ECONNREFUSED). `dumpio` forwards
+ * Chromium's own stdout/stderr to the app log, for diagnosing crashes.
  */
-export async function launchBrowser(onStage?: (stage: string) => void): Promise<Browser> {
+export async function launchBrowser(
+  onStage?: (stage: string) => void,
+  { dumpio = false }: { dumpio?: boolean } = {},
+): Promise<Browser> {
   onStage?.("load modules");
   const modules = await loadModules();
   const { chromium, puppeteer } = modules;
@@ -112,6 +119,8 @@ export async function launchBrowser(onStage?: (stage: string) => void): Promise<
       args,
       executablePath,
       headless: "shell",
+      pipe: true,
+      dumpio,
       env: {
         ...process.env,
         FONTCONFIG_PATH: join(CHROMIUM_DIR, "fonts"),
