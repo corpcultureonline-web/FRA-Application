@@ -1,6 +1,6 @@
 /**
- * The seven Tier 1 test vectors (Scoring Specification §12): six real audits
- * plus the constructed boundary case. Shared by the engine and content tests.
+ * The eight Tier 1 test vectors (Scoring Specification §12): six real audits
+ * plus two constructed cases — the 60.80 boundary (7) and the gap-rank tie (8). Shared by the engine and content tests.
  */
 import seed from "../../../database/seed/tier1-scoring-config.json" with { type: "json" };
 import type { AnswerMap, ScoringConfig } from "./engine.ts";
@@ -20,6 +20,8 @@ export type Vector = {
   band: string;
   pillars: Record<string, [number, "G" | "A" | "W"]>;
   weakest: string;
+  /** Gap order, largest weighted shortfall first — asserted when given. */
+  gaps?: string[];
 };
 
 export const PASS = { G1: "Registered", G3: "No" };
@@ -176,6 +178,31 @@ export const VECTORS: Vector[] = [
     band: "Almost Ready",
     pillars: { UE: [40, "W"], OR: [60, "A"], SI: [60, "A"], FL: [60, "A"], MR: [100, "G"], BP: [60, "A"], PP: [60, "A"] },
     weakest: "UE",
+  },
+  {
+    brand: "Gap-rank tie",
+    // Constructed (spec §12, vector 8, D19): UE, OR, SI, FL and BP all cost
+    // exactly 600 on weight × (100 − score), so they rank in canonical order
+    // — BP after FL, ahead of MR. The weakest pillar (BP) is not the top gap (UE).
+    answers: {
+      ...PASS,
+      UE01: "18–24 months", // 3
+      UE02: "20–25%", // 4 → UE 70
+      OR01: "Partially", // 3
+      OR02: "Most", // 4 → OR 70
+      SI01: "Partially", // 60
+      FL01: FL[2], // 60
+      MR01: "2–3", // 60
+      BP01: "1–5", // 40
+      PP01: "Yes", // 100
+    },
+    overall: "65.20",
+    range: [57, 74],
+    scoreBand: "Almost Ready",
+    band: "Almost Ready",
+    pillars: { UE: [70, "A"], OR: [70, "A"], SI: [60, "A"], FL: [60, "A"], MR: [60, "A"], BP: [40, "W"], PP: [100, "G"] },
+    weakest: "BP",
+    gaps: ["UE", "OR", "SI", "FL", "BP", "MR", "PP"],
   },
 ];
 

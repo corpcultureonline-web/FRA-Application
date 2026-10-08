@@ -80,6 +80,18 @@ export type ScoreResult = {
 const HUNDRED = rat(100);
 const FIVE = rat(5);
 
+/**
+ * Canonical pillar order (D19, CANONICAL-VALUES §6). Ties are broken on this
+ * explicitly — never by sort stability, which would silently follow whatever
+ * order the config or a query happened to return.
+ */
+const CANONICAL_PILLARS = ["UE", "OR", "SI", "FL", "MR", "BP", "PP"];
+
+function canonicalIndex(code: string) {
+  const index = CANONICAL_PILLARS.indexOf(code);
+  return index === -1 ? CANONICAL_PILLARS.length : index;
+}
+
 function bandIndexOf(config: ScoringConfig, score: Rational) {
   const index = config.bands.findIndex((band) => cmp(score, parseDecimal(band.max)) <= 0);
   return index === -1 ? config.bands.length - 1 : index;
@@ -166,14 +178,20 @@ export function score(config: ScoringConfig, answers: AnswerMap): ScoreResult {
       ? "capped"
       : "pass";
 
-  // 5. Weakest pillar: lowest score; ties go to the higher weight (spec §9).
+  // 5. Weakest pillar: lowest score; ties go to the higher weight (spec §9, D13),
+  //    then canonical order.
   const byWeakness = [...answered].sort(
-    (a, b) => cmp(a.score, b.score) || cmp(b.weight, a.weight),
+    (a, b) =>
+      cmp(a.score, b.score) || cmp(b.weight, a.weight) || canonicalIndex(a.code) - canonicalIndex(b.code),
   );
 
-  // 6. Gap ranking: weight × (100 − score), largest first (spec §10).
+  // 6. Gap ranking: weight × (100 − score), largest first; ties in canonical
+  //    order as an explicit second key (spec §10, D19). Not the same pillar as
+  //    the weakest, often.
   const gap = (p: (typeof answered)[number]) => mul(p.weight, sub(HUNDRED, p.score));
-  const gaps = [...answered].sort((a, b) => cmp(gap(b), gap(a))).map((p) => p.code);
+  const gaps = [...answered]
+    .sort((a, b) => cmp(gap(b), gap(a)) || canonicalIndex(a.code) - canonicalIndex(b.code))
+    .map((p) => p.code);
 
   return {
     configVersion: config.version,

@@ -1,6 +1,6 @@
 /**
- * Acceptance tests: the seven test vectors in the Tier 1 Scoring Specification
- * §12 (decision D14). The engine is correct when all seven reproduce exactly.
+ * Acceptance tests: the eight test vectors in the Tier 1 Scoring Specification
+ * §12 (decision D14). The engine is correct when all eight reproduce exactly.
  *
  * Run with `npm test`.
  */
@@ -32,6 +32,7 @@ describe("Tier 1 test vectors (spec §12)", () => {
         assert.equal(pillar.status, STATUS[expectedStatus], `${pillar.code} status`);
       }
       assert.equal(result.weakest, v.weakest, "weakest pillar");
+      if (v.gaps) assert.deepEqual(result.gaps, v.gaps, "gap order");
     });
   }
 });
@@ -95,6 +96,13 @@ describe("rules", () => {
     // UE 20×30=600 · MR 12×80=960 · BP 10×60=600 · SI 15×40=600 · FL 15×40=600 · OR 20×10=200 · PP 0
     assert.equal(result.gaps[0], "MR");
     assert.equal(result.gaps.at(-1), "PP");
+  });
+
+  it("breaks gap ties on canonical order, not on the config's order (vector 8, D19)", () => {
+    const tie = VECTORS.find((v) => v.brand === "Gap-rank tie")!;
+    const reversed = { ...config, pillars: [...config.pillars].reverse() };
+    assert.deepEqual(score(reversed, tie.answers).gaps, tie.gaps);
+    assert.equal(score(reversed, tie.answers).weakest, "BP");
   });
 
   it("rejects an answer that is not an option", () => {
