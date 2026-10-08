@@ -1,32 +1,31 @@
-import { ALL_QUESTIONS, type Answers, type Profile } from "./audit";
-import { GATE_REASONS, LEGAL, PILLAR_SUBTITLES, TOLD, VERDICTS } from "./content";
-import type { NoteKind, ReportContent } from "./content/select";
-import type { AreaStatus } from "./scoring/engine";
-import type { PublicScore } from "./scoring/public";
+import type { Answers, Profile } from "./audit.ts";
+import { buildFacts } from "./content/facts.ts";
+import { selectContent, type ContentPiece, type NoteKind, type ReportContent, type SlotValues } from "./content/select.ts";
+import { score, type AnswerMap, type AreaStatus, type ScoringConfig } from "./scoring/engine.ts";
+import { toPublicScore, type PublicScore } from "./scoring/public.ts";
 
 export type { NoteKind };
 
 /**
  * Everything the result page and the PDF show — one shape for both, so they
- * can never drift. Public values only: no overall or pillar scores.
- * Text fields may use **bold** markup, rendered as <strong>.
+ * can never drift. Public values only: no overall or pillar scores, no weights.
+ * Every sentence comes from the Content Library (`content_piece`); text fields
+ * may use **bold** markup, rendered as <strong>.
  */
 export type ReportData = {
   token: string;
   brandName: string;
   meta: string;
   range: PublicScore["range"];
-  /** Level badge — bands spanned by the range, highest first. */
-  levels: string[];
-  gateReason: string | null;
-  verdict: string;
-  toldUs: string[];
+  /** Level badge — the outer bands the range touches, highest first (spec §5). */
+  badge: string;
   areas: { code: string; name: string; question: string; status: AreaStatus | null }[];
-  legal: { kind: NoteKind; text: string }[];
   content: ReportContent;
   /** All five bands, highest first, with the brand's own marked. */
   ladder: { code: string; name: string; body: string; yours: boolean }[];
   interested: boolean;
+  /** Whether a mobile number was left on the interest confirmation (never the number). */
+  phoneGiven: boolean;
 };
 
 /** Saved in the browser after a successful submit; /audit/result reads it. */
@@ -44,69 +43,87 @@ export type SavedSubmission = {
 
 export const RESULT_STORAGE_KEY = "fra-audit-result";
 
-/** "12–18 months" → "12 to 18 months"; "Less than 10%" → "less than 10%". */
-function phrase(answer: string) {
-  const text = answer.replace(/\s*–\s*/g, " to ");
-  return /^(Less|More) than/.test(text) ? text[0].toLowerCase() + text.slice(1) : text;
-}
-
-function enquiries(answer: string) {
-  if (answer === "0") return "**Nobody** asked you about a franchise last year";
-  const count = phrase(answer).replace(/^more/, "More");
-  return `**${count} people** asked you about a franchise last year`;
-}
-
-/** Plain restatement of the answers, one fixed line per option. */
-function toldUs(profile: Profile, a: Answers): string[] {
-  const lookup = <T extends Record<string, string>>(table: T, key: string) =>
-    (table as Record<string, string>)[key];
-  const authority = ALL_QUESTIONS.find((q) => q.id === "FL01")!.options.indexOf(a.FL01);
-
-  return [
-    `Each outlet earns back its cost in **${phrase(a.UE01)}**, at a margin of **${phrase(a.UE02)}**`,
-    `Your operating procedures are ${lookup(TOLD.procedures, a.OR01)}, and ${lookup(TOLD.sopShare, a.OR02)} core workflows have an SOP a new manager could follow`,
-    lookup(TOLD.partner, a.PP01),
-    lookup(TOLD.training, a.SI01),
-    TOLD.authority[Math.max(authority, 0)],
-    `You have tested your business in ${lookup(TOLD.cities, a.MR01)}${a.MR01 === "1" ? ` — ${profile.city}` : ""}`,
-    enquiries(a.BP01),
-  ].filter(Boolean);
-}
-
-/** One card for the trademark, one for disputes — gate issues first. */
-function legalCards(a: Answers): ReportData["legal"] {
-  const dispute = a.G3 === "Yes" ? LEGAL.DISPUTE : LEGAL.NO_DISPUTE;
-  const trademark =
-    a.G1 === "Registered" ? LEGAL.TM_REGISTERED : a.G1 === "Application filed" ? LEGAL.TM_FILED : LEGAL.TRADEMARK;
-  return [trademark, dispute]
-    .sort((x, y) => Number(y.kind === "watch") - Number(x.kind === "watch"))
-    .map((card) => ({ ...card }));
-}
-
+const NUMBER_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven"];
 const STATUS_ORDER: Record<AreaStatus, number> = { Good: 0, Average: 1, Weak: 2 };
 
-export function buildReportData({
+function listText(items: string[]) {
+  return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+}
+
+/**
+ * Restatement slots (Content Library §1.3): the in-sentence form of each
+ * chosen option, read from the *active* config so past reports gain improved
+ * wording while their scores still come from the version they were saved under.
+ */
+function restatements(active: ScoringConfig, answers: AnswerMap, profile: Profile): SlotValues {
+  const slots: Record<string, string | undefined> = {
+    outlets_label: active.profile?.outlets?.find((o) => o.label === profile.outlets)?.restatement,
+  };
+  for (const question of active.questions) {
+    const label = answers[question.code];
+    slots[`${question.code}_label`] = question.options.find((o) => o.label === label)?.restatement;
+  }
+  return slots as SlotValues;
+}
+
+/**
+ * Builds the result for a submission: scores the answers with the config they
+ * were saved under, selects Content Library pieces by trigger, and keeps only
+ * public values. Pure — the page, the PDF and the tests all go through here.
+ */
+export function buildReport({
   token,
   profile,
   answers,
-  score,
   submittedAt,
-  content,
+  config,
+  activeConfig,
+  pieces,
   interested,
+  phoneGiven,
+  onError,
 }: {
   token: string;
   profile: Profile;
-  answers: Answers;
-  score: PublicScore;
+  answers: AnswerMap;
   submittedAt: Date;
-  content: ReportContent;
+  /** The scoring config version the submission was scored with. */
+  config: ScoringConfig;
+  /** The active config, for display wording. */
+  activeConfig: ScoringConfig;
+  pieces: ContentPiece[];
   interested: boolean;
+  phoneGiven: boolean;
+  onError?: (msg: string) => void;
 }): ReportData {
+  const result = score(config, answers);
+  const publicScore = toPublicScore(config, result);
+  const facts = buildFacts(config, answers, profile, result);
+
+  const weak = publicScore.areas.filter((a) => a.status === "Weak").map((a) => a.name);
+  const content = selectContent(
+    pieces,
+    facts,
+    {
+      brand: profile.brandName,
+      city: profile.city,
+      low: String(publicScore.range.low),
+      high: String(publicScore.range.high),
+      band: publicScore.band.name,
+      weakest_area: publicScore.areas.find((a) => a.code === publicScore.weakest)?.name,
+      weak_count: NUMBER_WORDS[weak.length] ?? String(weak.length),
+      weak_list: listText(weak) || undefined,
+      ...restatements(activeConfig, answers, profile),
+    },
+    onError,
+  );
+
   const month = submittedAt.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
   const outlets = `${profile.outlets} outlet${profile.outlets === "1" ? "" : "s"}`;
+  const levels = publicScore.levels.map((level) => level.name);
 
   // Good → Average → Weak, as in the design; register order within a status.
-  const areas = score.areas
+  const areas = publicScore.areas
     .map((area, index) => ({ area, index }))
     .sort(
       (x, y) =>
@@ -116,30 +133,25 @@ export function buildReportData({
     .map(({ area }) => ({
       code: area.code,
       name: area.name,
-      question: PILLAR_SUBTITLES[area.code],
+      question: content.subtitles[area.code] ?? "",
       status: area.status,
     }));
-
-  const hasDispute = score.gateReasons.includes("dispute");
-  const noTrademark = score.gateReasons.includes("noTrademark");
 
   return {
     token,
     brandName: profile.brandName,
     meta: [profile.category, outlets, profile.city, month].join(" · "),
-    range: score.range,
-    levels: score.levels.map((level) => level.name),
-    gateReason: hasDispute ? GATE_REASONS.dispute : noTrademark ? GATE_REASONS.noTrademark : null,
-    verdict: VERDICTS[score.band.code],
-    toldUs: toldUs(profile, answers),
+    range: publicScore.range,
+    // Never all three: the ends define the span, the ladder shows each level.
+    badge: (levels.length > 1 ? [levels[0], levels.at(-1)!] : levels).join(" – "),
     areas,
-    legal: legalCards(answers),
     content,
-    ladder: score.ladder.map((band) => ({
+    ladder: publicScore.ladder.map((band) => ({
       ...band,
       body: content.ladder.bodies[band.code] ?? "",
-      yours: score.levels.some((level) => level.code === band.code),
+      yours: publicScore.levels.some((level) => level.code === band.code),
     })),
     interested,
+    phoneGiven,
   };
 }

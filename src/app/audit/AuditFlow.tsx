@@ -13,6 +13,7 @@ import {
   type Answers,
   type Profile,
 } from "@/lib/audit";
+import { EntityLine } from "@/components/EntityLine";
 import { RESULT_STORAGE_KEY, type SavedSubmission } from "@/lib/result";
 import type { PublicScore } from "@/lib/scoring/public";
 import { useIsBrowser } from "@/lib/useIsBrowser";
@@ -326,6 +327,7 @@ function AuditSteps() {
               className="w-[260px]"
             />
           </div>
+          <EntityLine className="mt-12 pb-28 lg:pb-0" />
         </main>
 
         {/* Mobile actions */}

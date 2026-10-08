@@ -9,9 +9,9 @@
  * makes every condition on it false — including `!=` — so a skipped question
  * can never satisfy a trigger by accident.
  *
- * Equality compares as text, so `outlets == '1'` and `UE01 == 5` both work.
- * `>=` / `<=` need a number on both sides and are false otherwise — the outlet
- * band ("2–5") is text and is never compared as a number.
+ * Equality compares as text, so `outlets_band == 'ONE'` and `UE01 == 5` both
+ * work. `>=` / `<=` need a number on both sides and are false otherwise — the
+ * outlet band is text and is never compared as a number.
  */
 
 export type FactValue = number | string | null;
@@ -23,7 +23,7 @@ export const TRIGGER_FIELDS = [
   // Gates, by option label.
   "G1", "G3",
   // Profile.
-  "outlets", "category", "city", "year_opened",
+  "outlets_band", "category", "city",
   // Computed.
   "band", "low", "high", "UE", "OR", "SI", "FL", "MR", "BP", "PP",
   "weakest_pillar", "weak_count", "band_count",

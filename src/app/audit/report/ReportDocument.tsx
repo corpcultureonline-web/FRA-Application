@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import founderPhoto from "@/assets/ronak-patel.jpg";
 import { Logo } from "@/components/Logo";
 import { Rich } from "@/components/Rich";
-import { CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY } from "@/lib/company";
+import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY } from "@/lib/company";
 import type { NoteKind, ReportData } from "@/lib/result";
 import { GetReportButton } from "./GetReportButton";
 
@@ -48,9 +48,11 @@ export function ReportDocument({
 
       <ScoreCard report={report} />
 
-      <Section title="What You Told Us">
-        <Bullets items={report.toldUs} />
-      </Section>
+      {content.toldUs.length ? (
+        <Section title="What You Told Us">
+          <Bullets items={content.toldUs} />
+        </Section>
+      ) : null}
 
       {content.noticed.length ? (
         <Section title="What We Noticed">
@@ -62,9 +64,11 @@ export function ReportDocument({
         <AreaTable report={report} />
       </Section>
 
-      <Section title="Legal Check">
-        <Notes notes={report.legal} />
-      </Section>
+      {content.legal.length ? (
+        <Section title="Legal Check">
+          <Notes notes={content.legal} />
+        </Section>
+      ) : null}
 
       {content.importantPoints.length ? (
         <Section title="Important Points to Note">
@@ -125,6 +129,8 @@ export function ReportDocument({
       <p className="mt-8 border-t border-black/10 pt-4 text-[12px] leading-relaxed text-muted">
         This result is based on the answers you provided. It is a decision-support tool, not a guarantee of
         franchise success. Corporate Culture · corpculture.co · {CONTACT_EMAIL} · {WHATSAPP_DISPLAY}
+        <br />
+        {BRAND_ENTITY_LINE}
       </p>
     </main>
   );
@@ -160,20 +166,21 @@ function ScoreCard({ report }: { report: ReportData }) {
         <p className={`${caps} pt-1.5 font-medium text-muted`}>Your score</p>
         <div className="text-right">
           <p className="inline-block bg-brand px-3 py-1.5 text-[12px] font-bold tracking-[0.12em] text-white uppercase">
-            {report.levels.join(" – ")}
+            {report.badge}
           </p>
-          {report.gateReason ? (
-            <p className="mt-2 text-[13px] font-semibold text-brand-deep">{report.gateReason}</p>
+          {report.content.gateReason ? (
+            <p className="mt-2 max-w-[320px] text-[13px] text-brand-deep">
+              <Rich text={report.content.gateReason} strongClass="text-brand-deep" />
+            </p>
           ) : null}
         </div>
       </div>
       <p className="mt-3 text-[56px] leading-none font-black tracking-tight sm:text-[64px]">
         {report.range.low} – {report.range.high}
       </p>
-      <p className="mt-4 leading-relaxed text-body">
-        This is a range, not one number. Eleven questions can tell us roughly where you stand, but not exactly.{" "}
-        {report.verdict}
-      </p>
+      {report.content.scoreNote.length ? (
+        <p className="mt-4 leading-relaxed text-body">{report.content.scoreNote.join(" ")}</p>
+      ) : null}
     </div>
   );
 }
@@ -362,7 +369,12 @@ function Upgrade({
           Get my full report
         </a>
       ) : (
-        <GetReportButton token={report.token} interested={report.interested} className={buttonClass} />
+        <GetReportButton
+          token={report.token}
+          interested={report.interested}
+          phoneGiven={report.phoneGiven}
+          className={buttonClass}
+        />
       )}
 
       <p className="mt-4 text-[15px] leading-relaxed text-muted">

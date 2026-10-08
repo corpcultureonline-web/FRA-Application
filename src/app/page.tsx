@@ -5,7 +5,7 @@ import { HeroIllustration, ReportThumbnail } from "./_landing/Illustrations";
 import founderPhoto from "@/assets/ronak-patel.jpg";
 import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
-import { CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/company";
+import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/company";
 
 const START_AUDIT_HREF = "/audit";
 // Drop the PDF into public/ under this name.
@@ -369,12 +369,49 @@ export default function Home() {
               They are used to produce your result and nothing else. They are never shared with
               any brand, investor or third party without your permission.
             </FaqItem>
+            {/* Prices live only in "What does it cost?" (Content Library §19). */}
             <FaqItem question="What happens after the free audit?">
-              The free audit stands on its own — you get your result whether or not you go
-              further. If you want your exact score and a written diagnosis of all 7 areas, the
-              Franchise Readiness Report is ₹2,999. If you want a plan you can act on, the
-              Roadmap is ₹9,999 and includes a call with our team. Most people start with the
-              free audit and decide later.
+              <div className="space-y-3">
+                <p>
+                  Your Score gives you a range and shows which of the seven areas are strong and
+                  which are not. If you want the exact number, the{" "}
+                  <strong className="text-ink">Franchise Readiness Report</strong> gives you your
+                  precise score and a written diagnosis of all seven areas, with your gaps ranked by
+                  what each one costs you.
+                </p>
+                <p>
+                  The <strong className="text-ink">Franchise Readiness Roadmap</strong> goes further
+                  again — it works out what a franchise partner would actually earn from your
+                  business and how long their money takes to come back, and it includes a call with
+                  our team to talk it through.
+                </p>
+                <p>
+                  See <strong className="text-ink">“What does it cost?”</strong> below for prices.
+                </p>
+              </div>
+            </FaqItem>
+            <FaqItem question="What does it cost?">
+              <div className="space-y-3">
+                <p>
+                  The Franchise Readiness Audit is free — eleven questions, about 4 minutes, and your
+                  Franchise Readiness Score appears on screen straight away.
+                </p>
+                <p>
+                  The full <strong className="text-ink">Franchise Readiness Report</strong> is{" "}
+                  <strong className="text-ink">₹1,999 + 18% GST</strong> (₹2,359). About thirty
+                  more questions, and you receive the report within 24 hours.
+                </p>
+                <p>
+                  The <strong className="text-ink">Franchise Readiness Roadmap</strong> is{" "}
+                  <strong className="text-ink">₹5,999 + 18% GST</strong> (₹7,079). It picks up where
+                  the Report stops, works through what a franchise partner would actually earn, and
+                  includes a call with our team.
+                </p>
+                <p>
+                  Each stage is priced on its own. Nothing is credited or adjusted if you move to the
+                  next one.
+                </p>
+              </div>
             </FaqItem>
           </div>
         </section>
@@ -450,7 +487,11 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <p>© 2026 Corporate Culture. All rights reserved.</p>
+            <p>
+              © 2026 Corporate Culture. All rights reserved.
+              <br />
+              {BRAND_ENTITY_LINE}
+            </p>
           </div>
         </div>
       </footer>

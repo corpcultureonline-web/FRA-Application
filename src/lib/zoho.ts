@@ -1,3 +1,5 @@
+import type { PublicScore } from "./scoring/public.ts";
+
 const ACCOUNTS_DOMAIN_BY_API_HOST: Record<string, string> = {
   "www.zohoapis.com": "https://accounts.zoho.com",
   "www.zohoapis.eu": "https://accounts.zoho.eu",
@@ -33,6 +35,19 @@ export type FraSubmission = {
     reportUrl?: string;
   };
 };
+
+/**
+ * The Tier 1 result fields sent to Zoho — built from the public score only, so
+ * the overall score cannot reach the CRM or the follow-up email.
+ */
+export function fraResult(score: PublicScore, reportUrl?: string): NonNullable<FraSubmission["result"]> {
+  return {
+    scoreRange: `${score.range.low} – ${score.range.high}`,
+    readinessLevel: score.band.name,
+    weakestArea: score.areas.find((a) => a.code === score.weakest)?.name ?? null,
+    reportUrl,
+  };
+}
 
 type ZohoRecordResult = {
   code?: string;
@@ -114,7 +129,7 @@ function getReportUrlField() {
 }
 
 /** Field api_names confirmed via GET /crm/v8/settings/fields?module=FRA_Submissions. */
-function toRecord(submission: FraSubmission) {
+export function toRecord(submission: FraSubmission) {
   const brandName = submission.brandName.trim();
   const reportUrlField = getReportUrlField();
 
@@ -185,6 +200,62 @@ export async function createFraSubmission(submission: FraSubmission) {
   }
 
   return { duplicate: false, id: result.details?.id };
+}
+
+/**
+ * API name of the Date/Time field "Tier 2 Interest At" on FRA Submissions
+ * (Content Library §20). Unset until the field exists, so nothing is pushed —
+ * the interest is still saved in MySQL.
+ */
+export function getTier2InterestField() {
+  return process.env.ZOHO_TIER2_FIELD?.trim() || undefined;
+}
+
+/** Zoho Date/Time format, in IST: 2026-10-08T14:05:00+05:30. */
+export function zohoDateTime(date: Date) {
+  const ist = new Date(date.getTime() + 330 * 60_000);
+  return `${ist.toISOString().slice(0, 19)}+05:30`;
+}
+
+/** A Zoho CRM call with the cached token, refreshed once on a 401. */
+async function zohoFetch(path: string, init: RequestInit = {}) {
+  const send = async (token: string) =>
+    fetch(`${getRegionDomain()}/crm/v8/${path}`, {
+      ...init,
+      headers: { Authorization: `Zoho-oauthtoken ${token}`, "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+  let response = await send(await getAccessToken());
+  if (response.status === 401) response = await send(await getAccessToken(true));
+  return response;
+}
+
+/**
+ * The most recent FRA Submissions record for an email — for submissions saved
+ * before the record id was kept in MySQL. Undefined when there is none.
+ */
+export async function findFraSubmissionId(email: string) {
+  const criteria = encodeURIComponent(`(Email_ID:equals:${email.replace(/([(),\\])/g, "\\$1")})`);
+  const response = await zohoFetch(`${MODULE}/search?criteria=${criteria}&sort_by=Created_Time&sort_order=desc&per_page=1`);
+  if (response.status === 204) return undefined;
+  const payload = (await response.json().catch(() => null)) as { data?: { id?: string }[] } | null;
+  if (!response.ok) throw new Error(`Zoho ${MODULE} search failed (${response.status})`);
+  return payload?.data?.[0]?.id;
+}
+
+/** Updates fields on an FRA Submissions record and runs its workflows (the notification). */
+export async function updateFraSubmission(id: string, fields: Record<string, string>) {
+  const response = await zohoFetch(`${MODULE}/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify({ data: [fields], trigger: ["workflow"] }),
+  });
+  const payload = (await response.json().catch(() => null)) as { data?: ZohoRecordResult[] } | null;
+  const result = payload?.data?.[0];
+  if (!response.ok || result?.status !== "success") {
+    throw new Error(
+      `Zoho ${MODULE} update failed (${response.status}): ${result?.code ?? result?.message ?? "unknown error"}`,
+    );
+  }
 }
 
 /**

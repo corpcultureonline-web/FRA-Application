@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { EntityLine } from "@/components/EntityLine";
 import { useState, type FormEvent } from "react";
 
 export default function RegisterPage() {
@@ -176,6 +177,7 @@ export default function RegisterPage() {
             </button>
           </form>
         )}
+        <EntityLine className="mt-8 text-center" />
       </div>
     </div>
   );

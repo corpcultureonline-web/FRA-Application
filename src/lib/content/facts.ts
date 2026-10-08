@@ -10,11 +10,19 @@ export const BAND_KEYS: Record<string, string> = {
   B5: "READY_TO_SCALE",
 };
 
+/** The form's outlet choices, as the bands triggers compare (Content Library §1.4). */
+export const OUTLET_BANDS: Record<string, string> = {
+  "1": "ONE",
+  "2–5": "TWO_TO_FIVE",
+  "6–15": "SIX_TO_FIFTEEN",
+  "16+": "SIXTEEN_PLUS",
+};
+
 export type ProfileFacts = { outlets: string; category: string; city: string };
 
 /**
  * Everything a trigger can read (Content Library §1.2). Answers are the
- * option value (1–5), gates the option label, the outlet band stays text.
+ * option value (1–5), gates the option label, the outlet band a band key.
  * Pillar scores feed triggers only — they never reach a page or a slot.
  */
 export function buildFacts(
@@ -24,17 +32,16 @@ export function buildFacts(
   result: ScoreResult,
 ): Facts {
   const facts: Facts = {
-    outlets: profile.outlets || null,
+    outlets_band: OUTLET_BANDS[profile.outlets] ?? null,
     category: profile.category || null,
     city: profile.city || null,
-    // Not collected by the Tier 1 audit.
-    year_opened: null,
     band: BAND_KEYS[result.band] ?? null,
     low: result.range.low,
     high: result.range.high,
     weakest_pillar: result.weakest,
     weak_count: result.pillars.filter((p) => p.status === "Weak").length,
-    band_count: result.levels.length,
+    // Bands the range itself touches, before gates (§2).
+    band_count: result.rangeLevels.length,
   };
 
   for (const question of config.questions) {

@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS audit_submissions (
   brand_name VARCHAR(255) NOT NULL,
   founder_name VARCHAR(255) NOT NULL,
   email VARCHAR(320) NOT NULL,
+  -- Optional, left on the "Get my full report" confirmation.
+  phone VARCHAR(20) NULL,
   category VARCHAR(100) NOT NULL,
   outlets VARCHAR(20) NOT NULL,
   city VARCHAR(255) NOT NULL,
@@ -49,9 +51,11 @@ CREATE TABLE IF NOT EXISTS audit_submissions (
   band CHAR(2) NOT NULL,
   gate ENUM('pass', 'capped', 'hard') NOT NULL,
   weakest_pillar CHAR(2) NULL,
-  -- Random token for the shareable results PDF link (/api/report/<token>.pdf).
+  -- Random token for the result page and PDF links (/audit/report/<token>, /api/report/<token>).
   report_token CHAR(32) NULL,
-  -- Set when the founder taps "I'm interested" in the paid report.
+  -- The brand's FRA_Submissions record in Zoho CRM.
+  zoho_record_id VARCHAR(32) NULL,
+  -- Set when the founder taps "Get my full report" (Tier 2 interest).
   report_interest_at TIMESTAMP NULL DEFAULT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),

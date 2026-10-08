@@ -28,8 +28,11 @@ export type ScoringConfig = {
   questions: {
     code: string;
     pillar: string | null;
-    options: { label: string; value: number | null }[];
+    /** `restatement` is the option's in-sentence form for "What you told us" — display only. */
+    options: { label: string; value: number | null; restatement?: string }[];
   }[];
+  /** In-sentence forms of the unscored profile answers (e.g. outlets "1" → "one outlet"). */
+  profile?: { outlets?: { label: string; restatement: string }[] };
   bands: { code: string; name: string; displayName: string; max: string }[];
   status: { weakMax: string; averageMax: string };
   gates: {
@@ -64,6 +67,8 @@ export type ScoreResult = {
   band: string;
   /** Bands the displayed range spans, after gates, highest first (spec §5). */
   levels: string[];
+  /** Bands the clamped range touches before any gate — `band_count` (Content Library §2). */
+  rangeLevels: string[];
   gate: GateOutcome;
   gateReasons: ("dispute" | "noTrademark")[];
   pillars: PillarResult[];
@@ -135,10 +140,11 @@ export function score(config: ScoringConfig, answers: AnswerMap): ScoreResult {
   // 4. Bands, then gates — gates change the band only, never scores or range.
   const scoreBandIndex = bandIndexOf(config, overall);
   let bandIndex = scoreBandIndex;
-  let levelIndexes = Array.from(
+  const rangeIndexes = Array.from(
     { length: bandIndexOf(config, rat(high)) - bandIndexOf(config, rat(low)) + 1 },
     (_, i) => bandIndexOf(config, rat(low)) + i,
   );
+  let levelIndexes = [...rangeIndexes];
 
   const gateReasons: ScoreResult["gateReasons"] = [];
   const { dispute, noTrademark } = config.gates;
@@ -176,6 +182,7 @@ export function score(config: ScoringConfig, answers: AnswerMap): ScoreResult {
     scoreBand: config.bands[scoreBandIndex].code,
     band: config.bands[bandIndex].code,
     levels: levelIndexes.sort((a, b) => b - a).map((i) => config.bands[i].code),
+    rangeLevels: rangeIndexes.sort((a, b) => b - a).map((i) => config.bands[i].code),
     gate,
     gateReasons,
     pillars,

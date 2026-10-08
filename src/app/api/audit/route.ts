@@ -12,7 +12,7 @@ import {
   type ScoringConfig,
 } from "@/lib/scoring/engine";
 import { toPublicScore } from "@/lib/scoring/public";
-import { createFraSubmission, isZohoConfigured } from "@/lib/zoho";
+import { createFraSubmission, fraResult, isZohoConfigured } from "@/lib/zoho";
 
 type Body = { profile?: unknown; answers?: unknown };
 
@@ -150,18 +150,19 @@ export async function POST(request: Request) {
         brandName: profile.brandName,
         founderName: profile.founderName,
         email: profile.email,
-        result: {
-          scoreRange: `${publicScore.range.low} – ${publicScore.range.high}`,
-          readinessLevel: publicScore.band.name,
-          weakestArea: publicScore.areas.find((a) => a.code === publicScore.weakest)?.name ?? null,
-          reportUrl,
-        },
+        result: fraResult(publicScore, reportUrl),
       });
       console.info(
         duplicate
           ? `Zoho FRA submission already exists (${zohoId})`
           : `Zoho FRA submission created (${zohoId})`,
       );
+      // Kept so "Get my full report" can update this record later.
+      if (zohoId) {
+        await getDatabase()
+          .execute("UPDATE audit_submissions SET zoho_record_id = ? WHERE id = ?", [zohoId, id])
+          .catch((error) => console.error("Saving the Zoho record id failed", error));
+      }
     } catch (error) {
       console.error("Zoho FRA submission creation failed", error);
     }

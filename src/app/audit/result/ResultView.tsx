@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AuditHeader } from "@/components/AuditHeader";
+import { EntityLine } from "@/components/EntityLine";
 import { RESULT_STORAGE_KEY, type SavedSubmission } from "@/lib/result";
 import { useIsBrowser } from "@/lib/useIsBrowser";
 
@@ -54,6 +55,7 @@ function Forward() {
       >
         Start the audit <span aria-hidden="true">→</span>
       </Link>
+      <EntityLine className="mt-16" />
     </main>
   );
 }
