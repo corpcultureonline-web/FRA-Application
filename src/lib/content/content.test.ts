@@ -16,7 +16,7 @@ import { score, type AnswerMap, type ScoringConfig } from "../scoring/engine.ts"
 import { toPublicScore } from "../scoring/public.ts";
 import { toFixed } from "../scoring/rational.ts";
 import { THREE_BANDS, VECTORS } from "../scoring/test-vectors.ts";
-import { fraResult, toRecord } from "../zoho.ts";
+import { fraResult, toRecord } from "../crm/adapter.ts";
 import { OUTLET_BANDS } from "./facts.ts";
 import { fillSlots, SLOTS, type ContentPiece, type SlotValues } from "./select.ts";
 import { evaluate, parseTrigger, type Facts } from "./triggers.ts";
@@ -36,7 +36,7 @@ const pieces: ContentPiece[] = contentSeed.pieces.map((p) => ({
 
 const vector = (brand: string) => VECTORS.find((v) => v.brand === brand)!.answers;
 
-function report(answers: AnswerMap, profile: Partial<Profile> = {}) {
+function report(answers: AnswerMap, profile: Partial<Profile> = {}, library: ContentPiece[] = pieces) {
   const errors: string[] = [];
   const data = buildReport({
     token: "0".repeat(32),
@@ -53,7 +53,7 @@ function report(answers: AnswerMap, profile: Partial<Profile> = {}) {
     submittedAt: new Date("2026-10-08"),
     config,
     activeConfig: config,
-    pieces,
+    pieces: library,
     interested: false,
     phoneGiven: false,
     onError: (m) => errors.push(m),
@@ -121,12 +121,13 @@ describe("seed data", () => {
     }
   });
 
-  it("has unique ids, and A3, A4 and A5-CLEAN inactive", () => {
+  it("has unique ids, and A3, A4, A5-CLEAN and the pending CT-CLOSE inactive", () => {
     assert.equal(new Set(pieces.map((p) => p.id)).size, pieces.length);
     const inactive = pieces.filter((p) => !p.active).map((p) => p.id);
-    assert.equal(inactive.length, 13);
+    assert.equal(inactive.length, 14);
     assert.ok(inactive.includes("A5-CLEAN"));
-    assert.ok(inactive.every((id) => /^A[345]-/.test(id)));
+    assert.ok(inactive.includes("CT-CLOSE"));
+    assert.ok(inactive.every((id) => /^A[345]-/.test(id) || id === "CT-CLOSE"));
   });
 
   it("has a restatement for every scored option and every outlet band", () => {
@@ -197,6 +198,21 @@ describe("Strings (Content Library §15)", () => {
       ["Finish the training programme.", "Open or plan your second outlet."],
     );
     assert.match(content.upgrade?.body ?? "", /₹1,999 \+ 18% GST\*\* · ₹2,359 payable/);
+  });
+});
+
+describe("what this test cannot tell you (§7, §22)", () => {
+  it("states the total as more than forty, never a fixed number", () => {
+    const { content } = report(vector("Strings"));
+    assert.match(content.cannotTell!.intro!, /decided by more than forty\./);
+  });
+
+  it("shows no closing line until CT-CLOSE is activated", () => {
+    assert.equal(report(vector("Strings")).content.cannotTell!.close, null);
+    const activated = pieces.map((p) => (p.id === "CT-CLOSE" ? { ...p, active: true } : p));
+    const { content } = report(vector("Strings"), {}, activated);
+    assert.equal(content.cannotTell!.close, "These three are the reason the Report exists. It works through each of them with your own numbers.");
+    assert.equal(content.cannotTell!.items.length, 3);
   });
 });
 

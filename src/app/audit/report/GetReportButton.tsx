@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { withBasePath } from "@/lib/base-path";
 
 type State = "idle" | "saving" | "done" | { error: string };
 
 async function postInterest(body: Record<string, string>) {
-  const response = await fetch("/api/audit/interest", {
+  const response = await fetch(withBasePath("/api/audit/interest"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -25,11 +26,13 @@ export function GetReportButton({
   interested,
   phoneGiven,
   className,
+  label = "Get my full report",
 }: {
   token: string;
   interested: boolean;
   phoneGiven: boolean;
   className: string;
+  label?: ReactNode;
 }) {
   const [state, setState] = useState<State>(interested ? "done" : "idle");
 
@@ -48,7 +51,7 @@ export function GetReportButton({
   return (
     <>
       <button type="button" onClick={register} disabled={state === "saving"} className={className}>
-        {state === "saving" ? "Saving…" : "Get my full report"}
+        {state === "saving" ? "Saving…" : label}
       </button>
       {typeof state === "object" ? (
         <p className="mt-2 text-sm text-brand-deep" role="alert">

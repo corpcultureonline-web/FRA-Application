@@ -2,6 +2,7 @@ import type { ResultSetHeader } from "mysql2";
 import { NextResponse } from "next/server";
 import { EMPTY_PROFILE, profileProblems, type Profile } from "@/lib/audit";
 import { getDatabase } from "@/lib/db";
+import { reportError } from "@/lib/monitoring/report-error";
 import { getSiteOrigin, newReportToken, reportPdfUrl } from "@/lib/report";
 import { getScoringConfig } from "@/lib/scoring/config";
 import {
@@ -12,7 +13,7 @@ import {
   type ScoringConfig,
 } from "@/lib/scoring/engine";
 import { toPublicScore } from "@/lib/scoring/public";
-import { createFraSubmission, fraResult, isZohoConfigured } from "@/lib/zoho";
+import { createFraSubmission, fraResult, isZohoConfigured } from "@/lib/crm/adapter";
 
 type Body = { profile?: unknown; answers?: unknown };
 
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
   try {
     config = await getScoringConfig();
   } catch (error) {
-    console.error("Scoring config unavailable", error);
+    reportError("Scoring config unavailable", error);
     return NextResponse.json(
       { error: "Your answers could not be scored right now. Please try again later." },
       { status: 500 },
@@ -130,7 +131,7 @@ export async function POST(request: Request) {
     await db.commit();
   } catch (error) {
     await db.rollback().catch(() => {});
-    console.error("Audit submission insert failed", error);
+    reportError("Audit submission insert failed", error);
     return NextResponse.json(
       { error: "Your answers could not be saved. Please try again later." },
       { status: 500 },
@@ -161,10 +162,10 @@ export async function POST(request: Request) {
       if (zohoId) {
         await getDatabase()
           .execute("UPDATE audit_submissions SET zoho_record_id = ? WHERE id = ?", [zohoId, id])
-          .catch((error) => console.error("Saving the Zoho record id failed", error));
+          .catch((error) => reportError("Saving the Zoho record id failed", error, { submission_id: id }));
       }
     } catch (error) {
-      console.error("Zoho FRA submission creation failed", error);
+      reportError("Zoho FRA submission creation failed", error, { submission_id: id });
     }
   } else {
     console.warn("Zoho CRM credentials are not configured, skipping CRM submission.");

@@ -1,4 +1,10 @@
-import type { PublicScore } from "./scoring/public.ts";
+/**
+ * The CRM adapter — the only file that talks to Zoho (INV-7, decision T10).
+ * Everything else calls these functions, so replacing Zoho with the custom CRM
+ * is a change to this one file. adapter-boundary.test.ts fails the build if a
+ * Zoho call appears anywhere else.
+ */
+import type { PublicScore } from "../scoring/public.ts";
 
 const ACCOUNTS_DOMAIN_BY_API_HOST: Record<string, string> = {
   "www.zohoapis.com": "https://accounts.zoho.com",
@@ -255,24 +261,5 @@ export async function updateFraSubmission(id: string, fields: Record<string, str
     throw new Error(
       `Zoho ${MODULE} update failed (${response.status}): ${result?.code ?? result?.message ?? "unknown error"}`,
     );
-  }
-}
-
-/**
- * Optional secondary delivery (Zoho Flow / CRM webhook). Ignores an unset or
- * placeholder value so a half-filled .env never breaks a registration.
- */
-export function getZohoWebhookUrl() {
-  const raw = process.env.ZOHO_WEBHOOK_URL?.trim();
-  if (!raw) {
-    return undefined;
-  }
-
-  try {
-    const url = new URL(raw);
-    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : undefined;
-  } catch {
-    console.warn(`ZOHO_WEBHOOK_URL is not a valid URL, skipping webhook: ${raw}`);
-    return undefined;
   }
 }

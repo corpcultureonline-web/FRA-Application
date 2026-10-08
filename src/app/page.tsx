@@ -6,6 +6,7 @@ import founderPhoto from "@/assets/ronak-patel.jpg";
 import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/company";
+import { payableLabel, priceLabel } from "@/lib/pricing";
 
 const START_AUDIT_HREF = "/audit";
 // Drop the PDF into public/ under this name.
@@ -398,12 +399,12 @@ export default function Home() {
                 </p>
                 <p>
                   The full <strong className="text-ink">Franchise Readiness Report</strong> is{" "}
-                  <strong className="text-ink">₹1,999 + 18% GST</strong> (₹2,359). About thirty
+                  <strong className="text-ink">{priceLabel("report")}</strong> ({payableLabel("report")}). About thirty
                   more questions, and you receive the report within 24 hours.
                 </p>
                 <p>
                   The <strong className="text-ink">Franchise Readiness Roadmap</strong> is{" "}
-                  <strong className="text-ink">₹5,999 + 18% GST</strong> (₹7,079). It picks up where
+                  <strong className="text-ink">{priceLabel("roadmap")}</strong> ({payableLabel("roadmap")}). It picks up where
                   the Report stops, works through what a franchise partner would actually earn, and
                   includes a call with our team.
                 </p>

@@ -820,7 +820,15 @@
       "section": "CANNOT_TELL",
       "priority": 100,
       "trigger": "ALWAYS",
-      "body": "You answered eleven questions. Nine of them carry a score, and your full result is decided by forty. Three things these eleven cannot answer:"
+      "body": "You answered eleven questions. Nine of them carry a score, and your full result is decided by more than forty. Three things these eleven cannot answer:"
+    },
+    {
+      "id": "CT-CLOSE",
+      "section": "CANNOT_TELL",
+      "priority": 10,
+      "trigger": "ALWAYS",
+      "body": "These three are the reason the Report exists. It works through each of them with your own numbers.",
+      "active": false
     },
     {
       "id": "CT-RANGE",

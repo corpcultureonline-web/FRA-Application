@@ -1,6 +1,7 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import type { RowDataPacket } from "mysql2";
+import { withBasePath } from "@/lib/base-path";
 import { getDatabase } from "@/lib/db";
 import { getContentPieces } from "@/lib/content/store";
 import { buildReport, type ReportData } from "@/lib/result";
@@ -40,7 +41,7 @@ export function originFromHeaders(headers: Headers) {
 }
 
 export function reportPdfUrl(origin: string, token: string) {
-  return `${origin}/api/report/${token}`;
+  return `${origin}${withBasePath(`/api/report/${token}`)}`;
 }
 
 type SubmissionRow = RowDataPacket & {

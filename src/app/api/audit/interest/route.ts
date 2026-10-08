@@ -1,6 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { after, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/db";
+import { reportError } from "@/lib/monitoring/report-error";
 import { isReportToken } from "@/lib/report";
 import { pushTier2Interest, readPhone } from "@/lib/tier2-interest";
 
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
     const [rows] = await db.query<RowDataPacket[]>(`SELECT id FROM audit_submissions WHERE ${where}`, values);
     submissionId = rows[0].id as number;
   } catch (error) {
-    console.error("Report interest update failed", error);
+    reportError("Report interest update failed", error);
     return NextResponse.json(
       { error: "Could not save your interest. Please try again later." },
       { status: 500 },

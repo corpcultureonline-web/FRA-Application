@@ -12,9 +12,9 @@ const caps = "text-[11px] font-bold uppercase tracking-[0.22em]";
 const UPGRADE_ANCHOR = "full-report";
 
 /**
- * The Tier 1 result, laid out as the approved sample PDF. One component for
- * the result page and the PDF (Content Library §9.6), so they cannot drift;
- * `print` only swaps the interactive button for a link. Sections with no
+ * The Tier 1 result, laid out as the approved sample PDF. The web result page
+ * (ResultPage) has its own layout over the same ReportData, so the words cannot
+ * drift; `print` swaps the interactive button for a link. Sections with no
  * selected content are left out entirely, heading and all (§1.4).
  */
 export function ReportDocument({
@@ -88,6 +88,11 @@ export function ReportDocument({
         <Section title="What This Test Cannot Tell You">
           {content.cannotTell.intro ? <p className="mb-4 leading-relaxed text-body">{content.cannotTell.intro}</p> : null}
           <Numbered items={content.cannotTell.items} />
+          {content.cannotTell.close ? (
+            <p className="mt-4 leading-relaxed text-body">
+              <Rich text={content.cannotTell.close} />
+            </p>
+          ) : null}
         </Section>
       ) : null}
 
@@ -311,6 +316,51 @@ const buttonClass =
   "mt-4 inline-flex items-center justify-center bg-brand px-6 py-3 font-bold text-white transition-colors hover:bg-brand-deep disabled:opacity-70";
 
 /** The upgrade piece: paragraphs, "- " bullets and a "**₹…" price line. */
+export function UpgradeBody({
+  body,
+  className = "",
+  priceClass = "text-[26px] font-black text-brand",
+}: {
+  body: string;
+  className?: string;
+  priceClass?: string;
+}) {
+  const blocks = body.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+  return (
+    <div className={`space-y-3 ${className}`}>
+      {blocks.map((block) => {
+        const lines = block.split("\n");
+        if (lines.every((line) => line.startsWith("- "))) {
+          return (
+            <ul key={block} className="space-y-1.5">
+              {lines.map((line) => (
+                <li key={line} className="flex gap-2.5 leading-relaxed text-body">
+                  <span aria-hidden="true">•</span>
+                  <span>
+                    <Rich text={line.slice(2)} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        if (block.startsWith("**₹")) {
+          return (
+            <p key={block} className="pt-1 text-body">
+              <Rich text={block} strongClass={priceClass} />
+            </p>
+          );
+        }
+        return (
+          <p key={block} className="text-[15px] leading-relaxed text-muted">
+            <Rich text={block} />
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 function Upgrade({
   report,
   print,
@@ -323,42 +373,11 @@ function Upgrade({
   liveUrl: string;
 }) {
   const upgrade = report.content.upgrade!;
-  const blocks = upgrade.body.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
 
   return (
     <div className="border-2 border-ink px-6 py-6 sm:px-7">
       {upgrade.title ? <h3 className="text-xl font-bold">{upgrade.title}</h3> : null}
-      <div className="mt-2 space-y-3">
-        {blocks.map((block) => {
-          const lines = block.split("\n");
-          if (lines.every((line) => line.startsWith("- "))) {
-            return (
-              <ul key={block} className="space-y-1.5">
-                {lines.map((line) => (
-                  <li key={line} className="flex gap-2.5 leading-relaxed text-body">
-                    <span aria-hidden="true">•</span>
-                    <span>
-                      <Rich text={line.slice(2)} />
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            );
-          }
-          if (block.startsWith("**₹")) {
-            return (
-              <p key={block} className="pt-1 text-body">
-                <Rich text={block} strongClass="text-[26px] font-black text-brand" />
-              </p>
-            );
-          }
-          return (
-            <p key={block} className="text-[15px] leading-relaxed text-muted">
-              <Rich text={block} />
-            </p>
-          );
-        })}
-      </div>
+      <UpgradeBody body={upgrade.body} className="mt-2" />
 
       {tier2Url ? (
         <a href={tier2Url} className={buttonClass}>

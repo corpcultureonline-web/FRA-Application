@@ -13,6 +13,7 @@
     "seed:content": "node scripts/seed-content.mjs"
   },
   "dependencies": {
+    "@sentry/nextjs": "^11.5.0",
     "@sparticuz/chromium": "153.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

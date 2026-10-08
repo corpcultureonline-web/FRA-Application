@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import type { Browser } from "puppeteer-core";
+import { withBasePath } from "@/lib/base-path";
 import { launchBrowser } from "@/lib/browser";
+import { reportError } from "@/lib/monitoring/report-error";
 import { getSiteOrigin, reportExists } from "@/lib/report";
 
 /**
  * The results PDF, linked from the Zoho email: Chromium prints
- * /audit/report/[token]?print=1 — the same page the founder sees after the
- * audit. Generated on each request; nothing is stored.
+ * /audit/report/[token]?print=1 — the print layout of the result the founder
+ * sees after the audit. Generated on each request; nothing is stored.
  *
  * Chromium loads the page through the public site URL: on Hostinger, local
  * ports between processes were refused. REPORT_RENDER_ORIGIN overrides it.
@@ -89,7 +91,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[toke
   try {
     found = await reportExists(token);
   } catch (error) {
-    console.error("Report lookup failed", error);
+    reportError("Report lookup failed", error);
     return new NextResponse("Your report could not be loaded right now. Please try again later.", {
       status: 500,
     });
@@ -100,7 +102,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[toke
 
   const origin = process.env.REPORT_RENDER_ORIGIN?.trim().replace(/\/+$/, "") || getSiteOrigin(request);
   try {
-    const pdf = await oneAtATime(() => renderPdf(`${origin}/audit/report/${token}?print=1`));
+    const pdf = await oneAtATime(() => renderPdf(`${origin}${withBasePath(`/audit/report/${token}`)}?print=1`));
     return new NextResponse(Buffer.from(pdf), {
       headers: {
         "Content-Type": "application/pdf",
@@ -110,7 +112,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[toke
       },
     });
   } catch (error) {
-    console.error(`Report PDF failed for ${origin}/audit/report/${token.slice(0, 6)}…`, error);
+    reportError("Report PDF failed", error);
     return new NextResponse("Your report could not be generated right now. Please try again in a minute.", {
       status: 500,
     });

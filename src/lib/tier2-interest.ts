@@ -1,13 +1,14 @@
 import "server-only";
 import type { RowDataPacket } from "mysql2";
 import { getDatabase } from "@/lib/db";
+import { reportError } from "@/lib/monitoring/report-error";
 import {
   findFraSubmissionId,
   getTier2InterestField,
   isZohoConfigured,
   updateFraSubmission,
   zohoDateTime,
-} from "@/lib/zoho";
+} from "@/lib/crm/adapter";
 
 /** Optional mobile left on the "Get my full report" confirmation: 7–15 digits. */
 export function readPhone(value: unknown): string | null | "invalid" {
@@ -64,6 +65,6 @@ export async function pushTier2Interest(submissionId: number) {
     });
     console.info(`Zoho Tier 2 interest pushed (${recordId})`);
   } catch (error) {
-    console.error(`Zoho Tier 2 interest push failed for submission ${submissionId}`, error);
+    reportError("Zoho Tier 2 interest push failed", error, { submission_id: submissionId });
   }
 }

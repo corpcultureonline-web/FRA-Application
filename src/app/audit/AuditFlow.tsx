@@ -15,6 +15,7 @@ import {
 } from "@/lib/audit";
 import { EntityLine } from "@/components/EntityLine";
 import { RESULT_STORAGE_KEY, type SavedSubmission } from "@/lib/result";
+import { withBasePath } from "@/lib/base-path";
 import type { PublicScore } from "@/lib/scoring/public";
 import { useIsBrowser } from "@/lib/useIsBrowser";
 import { ProfileForm } from "./ProfileForm";
@@ -142,7 +143,7 @@ function AuditSteps() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const response = await fetch("/api/audit", {
+      const response = await fetch(withBasePath("/api/audit"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ profile: progress.profile, answers: progress.answers }),

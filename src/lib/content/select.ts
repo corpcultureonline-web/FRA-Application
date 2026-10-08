@@ -29,7 +29,8 @@ export type ReportContent = {
   importantPoints: Note[];
   legal: Note[];
   nutshell: string[];
-  cannotTell: { intro: string | null; items: Item[] } | null;
+  /** Closing line (CT-CLOSE) only once Ronak activates it — §22.4. */
+  cannotTell: { intro: string | null; items: Item[]; close: string | null } | null;
   /** Keyed by band code (B5…B1); intro and closing line around the five rows. */
   ladder: { intro: string | null; bodies: Record<string, string>; close: string | null };
   canDoNow: { lead: string | null; actions: Item[]; fallback: string | null } | null;
@@ -113,7 +114,7 @@ const item = (r: Ready): Item => ({ heading: r.heading!, body: r.body });
 /**
  * Selection rules per section (§1.5). Within a section a piece's role comes
  * from its id: SN-OPENER, PS-<pillar>, LADDER-INTRO / LADDER-<n> /
- * LADDER-CLOSE-*, CT-INTRO / CT-RANGE / CT-W-* / CT-RANK-*, CDN-FALLBACK,
+ * LADDER-CLOSE-*, CT-INTRO / CT-RANGE / CT-W-* / CT-RANK-* / CT-CLOSE, CDN-FALLBACK,
  * UPGRADE-HEADING. A section that selects nothing is null or empty, and the
  * page omits it entirely.
  */
@@ -162,7 +163,7 @@ export function selectContent(
     .filter((r): r is Ready => !!r?.heading)
     .map(item);
   const cannotTell = ctItems.length
-    ? { intro: ct.find(is("CT-INTRO"))?.body ?? null, items: ctItems }
+    ? { intro: ct.find(is("CT-INTRO"))?.body ?? null, items: ctItems, close: ct.find(is("CT-CLOSE"))?.body ?? null }
     : null;
 
   const ladderPieces = section("LADDER");
