@@ -169,5 +169,8 @@ export async function POST(request: Request) {
     console.warn("Zoho CRM credentials are not configured, skipping CRM submission.");
   }
 
-  return NextResponse.json({ success: true, id, score: publicScore, reportUrl }, { status: 201 });
+  return NextResponse.json(
+    { success: true, id, score: publicScore, reportToken, reportUrl },
+    { status: 201 },
+  );
 }

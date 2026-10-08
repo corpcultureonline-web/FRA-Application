@@ -5,8 +5,8 @@ import { getSiteOrigin, reportExists } from "@/lib/report";
 
 /**
  * The results PDF, linked from the Zoho email: Chromium prints
- * /audit/report/[token] (the result screen rebuilt from MySQL). Generated on
- * each request — nothing is stored.
+ * /audit/report/[token]?print=1 — the same page the founder sees after the
+ * audit. Generated on each request; nothing is stored.
  *
  * Chromium loads the page through the public site URL: on Hostinger, local
  * ports between processes were refused. REPORT_RENDER_ORIGIN overrides it.
@@ -20,11 +20,23 @@ function oneAtATime<T>(task: () => Promise<T>): Promise<T> {
   return run;
 }
 
-/** Keeps cards and list rows whole across page breaks. */
-const PRINT_CSS = `
-  li, tr, dl, aside, .rounded-xl, .rounded-lg { break-inside: avoid; }
-  h2 { break-after: avoid; }
-`;
+/** "Franchise Readiness Audit" and the page number, as in the approved sample. */
+const FOOTER = `
+  <div style="width: 100%; padding: 0 16mm; display: flex; justify-content: space-between;
+              font-family: Helvetica, Arial, sans-serif; font-size: 8px; color: #7a7471;">
+    <span>Franchise Readiness Audit</span>
+    <span class="pageNumber"></span>
+  </div>`;
+
+/**
+ * Print scales, preferred first. 0.85 matches the sample's type size (the
+ * page itself is sized for screens); the tighter ones apply rule R9.
+ */
+const SCALES = [0.85, 0.82, 0.78];
+
+function pageCount(pdf: Uint8Array) {
+  return (Buffer.from(pdf).toString("latin1").match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+}
 
 async function renderPdf(url: string) {
   let browser: Browser | undefined;
@@ -36,8 +48,27 @@ async function renderPdf(url: string) {
       throw new Error(`Report page answered ${response?.status() ?? "nothing"} for ${url}`);
     }
     await page.emulateMediaType("screen");
-    await page.addStyleTag({ content: PRINT_CSS });
-    return await page.pdf({ format: "A4", printBackground: true, timeout: 45_000 });
+    const print = (scale: number) =>
+      page.pdf({
+        format: "A4",
+        printBackground: true,
+        displayHeaderFooter: true,
+        headerTemplate: "<span></span>",
+        footerTemplate: FOOTER,
+        margin: { top: "14mm", bottom: "18mm", left: "16mm", right: "16mm" },
+        scale,
+        timeout: 45_000,
+      });
+
+    // R9: the offer + bio block never splits (R8), so it can leave a large gap
+    // before the last page. If a slightly tighter scale saves a page, use it.
+    const first = await print(SCALES[0]);
+    const pages = pageCount(first);
+    for (const scale of SCALES.slice(1)) {
+      const tighter = await print(scale);
+      if (pageCount(tighter) < pages) return tighter;
+    }
+    return first;
   } finally {
     await browser?.close().catch(() => {});
   }
@@ -69,7 +100,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[toke
 
   const origin = process.env.REPORT_RENDER_ORIGIN?.trim().replace(/\/+$/, "") || getSiteOrigin(request);
   try {
-    const pdf = await oneAtATime(() => renderPdf(`${origin}/audit/report/${token}`));
+    const pdf = await oneAtATime(() => renderPdf(`${origin}/audit/report/${token}?print=1`));
     return new NextResponse(Buffer.from(pdf), {
       headers: {
         "Content-Type": "application/pdf",

@@ -2,7 +2,10 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import type { RowDataPacket } from "mysql2";
 import { getDatabase } from "@/lib/db";
-import { buildResult, type AuditResult } from "@/lib/result";
+import { buildFacts } from "@/lib/content/facts";
+import { selectContent } from "@/lib/content/select";
+import { getContentPieces } from "@/lib/content/store";
+import { buildReportData, type ReportData } from "@/lib/result";
 import { getScoringConfigVersion } from "@/lib/scoring/config";
 import { score, type AnswerMap } from "@/lib/scoring/engine";
 import { toPublicScore } from "@/lib/scoring/public";
@@ -26,13 +29,17 @@ export function isReportToken(value: string) {
  * headers of the current request.
  */
 export function getSiteOrigin(request: Request) {
+  return originFromHeaders(request.headers) ?? new URL(request.url).origin;
+}
+
+/** Same as getSiteOrigin, for pages (pass `await headers()`). */
+export function originFromHeaders(headers: Headers) {
   const configured = process.env.SITE_URL?.trim().replace(/\/+$/, "");
   if (configured) return configured;
 
-  const headers = request.headers;
   const host = headers.get("x-forwarded-host") ?? headers.get("host");
   const proto = headers.get("x-forwarded-proto")?.split(",")[0].trim() ?? "https";
-  return host ? `${proto}://${host}` : new URL(request.url).origin;
+  return host ? `${proto}://${host}` : null;
 }
 
 export function reportPdfUrl(origin: string, token: string) {
@@ -40,6 +47,7 @@ export function reportPdfUrl(origin: string, token: string) {
 }
 
 type SubmissionRow = RowDataPacket & {
+  id: number;
   brand_name: string;
   founder_name: string;
   email: string;
@@ -47,21 +55,29 @@ type SubmissionRow = RowDataPacket & {
   outlets: string;
   city: string;
   scoring_version: string;
+  report_interest_at: Date | null;
   created_at: Date;
 };
 
+const NUMBER_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven"];
+
+function listText(items: string[]) {
+  return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+}
+
 /**
- * Rebuilds the result screen for a submission from MySQL: the stored answers
- * are re-scored with the config version they were scored with, then reduced
- * to the public score — so the PDF shows exactly what the founder saw, and
- * never the overall or pillar scores.
+ * Rebuilds the result for a submission from MySQL: the stored answers are
+ * re-scored with the config version they were scored with, content pieces are
+ * selected by trigger, and only public values reach the page — the same data
+ * for the result page and the PDF.
  */
-export async function loadReport(token: string): Promise<AuditResult | null> {
+export async function loadReport(token: string): Promise<ReportData | null> {
   if (!isReportToken(token)) return null;
   const db = getDatabase();
 
   const [rows] = await db.query<SubmissionRow[]>(
-    `SELECT id, brand_name, founder_name, email, category, outlets, city, scoring_version, created_at
+    `SELECT id, brand_name, founder_name, email, category, outlets, city, scoring_version,
+            report_interest_at, created_at
        FROM audit_submissions WHERE report_token = ? LIMIT 1`,
     [token],
   );
@@ -75,22 +91,45 @@ export async function loadReport(token: string): Promise<AuditResult | null> {
   const answers: AnswerMap = {};
   for (const answer of answerRows) answers[answer.question_code] = answer.answer_label;
 
-  const config = await getScoringConfigVersion(row.scoring_version);
-  const publicScore = toPublicScore(config, score(config, answers));
+  const profile = {
+    brandName: row.brand_name,
+    founderName: row.founder_name,
+    email: row.email,
+    category: row.category,
+    outlets: row.outlets,
+    city: row.city,
+  };
+  const [config, pieces] = await Promise.all([
+    getScoringConfigVersion(row.scoring_version),
+    getContentPieces(),
+  ]);
+  const result = score(config, answers);
+  const publicScore = toPublicScore(config, result);
+  const facts = buildFacts(config, answers, profile, result);
 
-  return buildResult(
-    {
-      brandName: row.brand_name,
-      founderName: row.founder_name,
-      email: row.email,
-      category: row.category,
-      outlets: row.outlets,
-      city: row.city,
-    },
-    answers as Record<string, string>,
-    publicScore,
-    new Date(row.created_at),
-  );
+  const areaName = (code: string | null) => publicScore.areas.find((a) => a.code === code)?.name;
+  const weak = publicScore.areas.filter((a) => a.status === "Weak").map((a) => a.name);
+  const content = selectContent(pieces, facts, {
+    brand: profile.brandName,
+    outlets: profile.outlets,
+    city: profile.city,
+    low: String(publicScore.range.low),
+    high: String(publicScore.range.high),
+    band: publicScore.band.name,
+    weakest_area: areaName(publicScore.weakest),
+    weak_count: NUMBER_WORDS[weak.length] ?? String(weak.length),
+    weak_list: listText(weak) || undefined,
+  });
+
+  return buildReportData({
+    token,
+    profile,
+    answers: answers as Record<string, string>,
+    score: publicScore,
+    submittedAt: new Date(row.created_at),
+    content,
+    interested: row.report_interest_at !== null,
+  });
 }
 
 /** Whether a submission exists for the token — checked before starting Chromium. */

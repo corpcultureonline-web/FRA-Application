@@ -7,14 +7,13 @@
  *   A2  Pillar subtitles .......... from the approved designs
  *   A3  Weakest-pillar lines ...... DRAFT — replace with library text
  *   A4  Verdict paragraphs ........ DRAFT — replace with library text
- *   A5  Legal check ............... DRAFT — replace with library text
+ *   A5  Legal check ............... DRAFT — wording follows the approved sample PDF
  *   TOLD  "What you told us" ...... from the approved designs, one line per option
- *   LADDER  Readiness ladder ...... from the approved designs
- *   NOW  "What you can do now" .... DRAFT (rule R6: gate items only, else fallback)
  *
- * Not in the library yet, so the result page leaves these sections out:
- * "What we noticed", "Important points to note", "In a nutshell",
- * "What this test cannot tell you".
+ * The other sections — What we noticed, Important points, In a nutshell,
+ * What this test cannot tell you, the ladder, What you can do now and the
+ * upgrade block — are rows of the `content_piece` table (Content Library
+ * v1.0), selected by trigger in src/lib/content/.
  */
 
 /** A2 — pillar subtitles. */
@@ -48,11 +47,19 @@ export const VERDICTS: Record<string, string> = {
   B5: "You are ready to scale. Your numbers, systems and support are in place; the main risk now is growing faster than your support can follow.",
 };
 
-/** A5 — legal check. DRAFT. */
+/** A5 — legal check: one card for the trademark (G1), one for disputes (G3). DRAFT. */
 export const LEGAL = {
-  CLEAN: {
+  TM_REGISTERED: {
     kind: "strength",
-    text: "**Your legal position is clean.** Your trademark is registered or filed, and there are no active disputes.",
+    text: "**Trademark registered.** Your brand name is protected — and you did this before you needed it.",
+  },
+  TM_FILED: {
+    kind: "strength",
+    text: "**Trademark application filed.** Your brand name is being protected — and you did this before you needed it.",
+  },
+  NO_DISPUTE: {
+    kind: "strength",
+    text: "**No legal disputes.** The most common blocker to franchising is not there.",
   },
   TRADEMARK: {
     kind: "watch",
@@ -68,28 +75,6 @@ export const LEGAL = {
 export const GATE_REASONS = {
   noTrademark: "Held at Early Stage until a trademark application is filed.",
   dispute: "Held at Not Yet Ready while a legal dispute is active.",
-};
-
-/** LADDER — description of each band. */
-export const LADDER: Record<string, string> = {
-  B5: "Proven numbers, documented systems and the ability to support partners. The main risk is growing faster than support can follow.",
-  B4: "Strong foundations. The questions now are model, fee, territory and partner selection — not whether to franchise.",
-  B3: "Franchisable, but with conditions to settle before partners join. Skipping them is usually paid for by the first franchise owner.",
-  B2: "A working business with real customers. What is missing is the documentation, systems or support capacity someone else would need.",
-  B1: "The business works, but it depends on the founder and is not yet written down. Franchising now would put a partner at risk.",
-};
-
-/** NOW — "What you can do now": gate items only (rule R6). DRAFT. */
-export const DO_NOW = {
-  noTrademark: {
-    title: "File a trademark application.",
-    body: "It is short and low-cost, and it lifts the hold on your level. Until it is filed, someone else could register your brand name first.",
-  },
-  dispute: {
-    title: "Resolve the active legal dispute.",
-    body: "No partner can safely invest while ownership of the brand is in question. This comes before everything else.",
-  },
-  fallback: "You are ready to move to the next stage.",
 };
 
 /** TOLD — "What you told us", one line per answered option. */

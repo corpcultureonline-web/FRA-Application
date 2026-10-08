@@ -1,43 +1,40 @@
 import { ALL_QUESTIONS, type Answers, type Profile } from "./audit";
-import {
-  DO_NOW,
-  GATE_REASONS,
-  LADDER,
-  LEGAL,
-  PILLAR_SUBTITLES,
-  TOLD,
-  VERDICTS,
-  WEAKEST_LINES,
-} from "./content";
+import { GATE_REASONS, LEGAL, PILLAR_SUBTITLES, TOLD, VERDICTS } from "./content";
+import type { NoteKind, ReportContent } from "./content/select";
 import type { AreaStatus } from "./scoring/engine";
 import type { PublicScore } from "./scoring/public";
 
-/** Text fields may use **bold** markup; the result screen renders it as <strong>. */
-export type NoteKind = "strength" | "milestone" | "watch";
+export type { NoteKind };
 
-export type AuditResult = {
+/**
+ * Everything the result page and the PDF show — one shape for both, so they
+ * can never drift. Public values only: no overall or pillar scores.
+ * Text fields may use **bold** markup, rendered as <strong>.
+ */
+export type ReportData = {
+  token: string;
   brandName: string;
   meta: string;
-  email: string;
   range: PublicScore["range"];
   /** Level badge — bands spanned by the range, highest first. */
-  levels: { code: string; name: string }[];
+  levels: string[];
   gateReason: string | null;
   verdict: string;
   toldUs: string[];
-  areas: { code: string; name: string; question: string; status: AreaStatus | null; weakest: boolean }[];
-  weakest: { name: string; line: string } | null;
+  areas: { code: string; name: string; question: string; status: AreaStatus | null }[];
   legal: { kind: NoteKind; text: string }[];
-  doNow: { actions: { title: string; body: string }[]; fallback: string | null };
-  /** Areas not rated Good — "which of your N weak areas to fix first". */
-  areasToFix: number;
+  content: ReportContent;
+  /** All five bands, highest first, with the brand's own marked. */
   ladder: { code: string; name: string; body: string; yours: boolean }[];
+  interested: boolean;
 };
 
-/** Saved in the browser after a successful submit; the result page reads it. */
+/** Saved in the browser after a successful submit; /audit/result reads it. */
 export type SavedSubmission = {
   version: 2;
   id?: number;
+  /** Opens /audit/report/<token>, the result page itself. */
+  reportToken?: string;
   profile: Profile;
   answers: Answers;
   score: PublicScore;
@@ -76,14 +73,35 @@ function toldUs(profile: Profile, a: Answers): string[] {
   ].filter(Boolean);
 }
 
+/** One card for the trademark, one for disputes — gate issues first. */
+function legalCards(a: Answers): ReportData["legal"] {
+  const dispute = a.G3 === "Yes" ? LEGAL.DISPUTE : LEGAL.NO_DISPUTE;
+  const trademark =
+    a.G1 === "Registered" ? LEGAL.TM_REGISTERED : a.G1 === "Application filed" ? LEGAL.TM_FILED : LEGAL.TRADEMARK;
+  return [trademark, dispute]
+    .sort((x, y) => Number(y.kind === "watch") - Number(x.kind === "watch"))
+    .map((card) => ({ ...card }));
+}
+
 const STATUS_ORDER: Record<AreaStatus, number> = { Good: 0, Average: 1, Weak: 2 };
 
-export function buildResult(
-  profile: Profile,
-  answers: Answers,
-  score: PublicScore,
-  submittedAt: Date,
-): AuditResult {
+export function buildReportData({
+  token,
+  profile,
+  answers,
+  score,
+  submittedAt,
+  content,
+  interested,
+}: {
+  token: string;
+  profile: Profile;
+  answers: Answers;
+  score: PublicScore;
+  submittedAt: Date;
+  content: ReportContent;
+  interested: boolean;
+}): ReportData {
   const month = submittedAt.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
   const outlets = `${profile.outlets} outlet${profile.outlets === "1" ? "" : "s"}`;
 
@@ -100,41 +118,28 @@ export function buildResult(
       name: area.name,
       question: PILLAR_SUBTITLES[area.code],
       status: area.status,
-      weakest: area.code === score.weakest,
     }));
 
-  const weakestArea = score.areas.find((a) => a.code === score.weakest);
   const hasDispute = score.gateReasons.includes("dispute");
   const noTrademark = score.gateReasons.includes("noTrademark");
 
-  const legal: AuditResult["legal"] = [];
-  if (hasDispute) legal.push({ ...LEGAL.DISPUTE });
-  if (noTrademark) legal.push({ ...LEGAL.TRADEMARK });
-  if (!legal.length) legal.push({ ...LEGAL.CLEAN });
-
-  const actions = [
-    ...(hasDispute ? [DO_NOW.dispute] : []),
-    ...(noTrademark ? [DO_NOW.noTrademark] : []),
-  ];
-
   return {
+    token,
     brandName: profile.brandName,
     meta: [profile.category, outlets, profile.city, month].join(" · "),
-    email: profile.email,
     range: score.range,
-    levels: score.levels,
+    levels: score.levels.map((level) => level.name),
     gateReason: hasDispute ? GATE_REASONS.dispute : noTrademark ? GATE_REASONS.noTrademark : null,
     verdict: VERDICTS[score.band.code],
     toldUs: toldUs(profile, answers),
     areas,
-    weakest: weakestArea ? { name: weakestArea.name, line: WEAKEST_LINES[weakestArea.code] } : null,
-    legal,
-    doNow: { actions, fallback: actions.length ? null : DO_NOW.fallback },
-    areasToFix: score.areas.filter((a) => a.status && a.status !== "Good").length,
+    legal: legalCards(answers),
+    content,
     ladder: score.ladder.map((band) => ({
       ...band,
-      body: LADDER[band.code] ?? "",
+      body: content.ladder.bodies[band.code] ?? "",
       yours: score.levels.some((level) => level.code === band.code),
     })),
+    interested,
   };
 }

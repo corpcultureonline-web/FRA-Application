@@ -150,6 +150,7 @@ function AuditSteps() {
         error?: string;
         id?: number;
         score?: PublicScore;
+        reportToken?: string;
       };
       if (!response.ok || !result.score) {
         setSubmitError(result.error ?? `Could not submit your answers (HTTP ${response.status}).`);
@@ -159,6 +160,7 @@ function AuditSteps() {
       const submission: SavedSubmission = {
         version: 2,
         id: result.id,
+        reportToken: result.reportToken,
         profile: progress.profile,
         answers: progress.answers,
         score: result.score,
@@ -168,7 +170,7 @@ function AuditSteps() {
         window.localStorage.setItem(RESULT_STORAGE_KEY, JSON.stringify(submission));
         window.localStorage.removeItem(STORAGE_KEY);
       } catch {}
-      router.push("/audit/result");
+      router.push(result.reportToken ? `/audit/report/${result.reportToken}` : "/audit/result");
     } catch {
       setSubmitError("Unable to reach the server. Please try again.");
     } finally {

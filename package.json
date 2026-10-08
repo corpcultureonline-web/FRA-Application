@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test \"src/**/*.test.ts\"",
-    "seed:scoring": "node scripts/seed-scoring-config.mjs"
+    "seed:scoring": "node scripts/seed-scoring-config.mjs",
+    "seed:content": "node scripts/seed-content.mjs"
   },
   "dependencies": {
     "@sparticuz/chromium": "153.0.0",
