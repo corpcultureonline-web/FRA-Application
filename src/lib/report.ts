@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import type { RowDataPacket } from "mysql2";
 import { withBasePath } from "@/lib/base-path";
+import { normaliseOrigin } from "@/lib/origin";
 import { getDatabase } from "@/lib/db";
 import { getContentPieces } from "@/lib/content/store";
 import { buildReport, type ReportData } from "@/lib/result";
@@ -32,7 +33,8 @@ export function getSiteOrigin(request: Request) {
 
 /** Same as getSiteOrigin, for pages (pass `await headers()`). */
 export function originFromHeaders(headers: Headers) {
-  const configured = process.env.SITE_URL?.trim().replace(/\/+$/, "");
+  // Forgives a SITE_URL typed without https:// or with a path (origin.ts).
+  const configured = normaliseOrigin(process.env.SITE_URL);
   if (configured) return configured;
 
   const host = headers.get("x-forwarded-host") ?? headers.get("host");

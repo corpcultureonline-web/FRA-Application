@@ -4,6 +4,7 @@ import { withBasePath } from "@/lib/base-path";
 import { launchBrowser } from "@/lib/browser";
 import { eventContext, logServerEvent } from "@/lib/events/server";
 import { reportError } from "@/lib/monitoring/report-error";
+import { normaliseOrigin } from "@/lib/origin";
 import { getSiteOrigin, reportExists } from "@/lib/report";
 
 /**
@@ -101,7 +102,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[toke
     return new NextResponse("This report link is not valid.", { status: 404 });
   }
 
-  const origin = process.env.REPORT_RENDER_ORIGIN?.trim().replace(/\/+$/, "") || getSiteOrigin(request);
+  const origin = normaliseOrigin(process.env.REPORT_RENDER_ORIGIN) ?? getSiteOrigin(request);
   try {
     const pdf = await oneAtATime(() => renderPdf(`${origin}${withBasePath(`/audit/report/${token}`)}?print=1`));
     // Event log §4.3. The email links here directly; a link on the result page
