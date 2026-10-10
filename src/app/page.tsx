@@ -1,16 +1,21 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { FAQ } from "./_landing/faq";
 import { FaqItem } from "./_landing/FaqItem";
+import { jsonLd, landingStructuredData } from "./_landing/structured-data";
 import { HeroIllustration, ReportThumbnail } from "./_landing/Illustrations";
 import founderPhoto from "@/assets/ronak-patel.jpg";
 import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
+import { Rich } from "@/components/Rich";
+import { withBasePath } from "@/lib/base-path";
+import { CANONICAL_URL } from "@/lib/seo";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/company";
-import { payableLabel, priceLabel } from "@/lib/pricing";
 
 const START_AUDIT_HREF = "/audit";
-// Drop the PDF into public/ under this name.
-const SAMPLE_REPORT_HREF = "/sample-report.pdf";
+// Drop the PDF into public/ under this name. A plain <a>, so the base path is added by hand.
+const SAMPLE_REPORT_HREF = withBasePath("/sample-report.pdf");
 
 const AREAS: { name: string; question: string; rating: Rating; weakest?: boolean }[] = [
   { name: "Profit & Payback", question: "Will a franchise owner make money?", rating: "Average" },
@@ -25,16 +30,6 @@ const AREAS: { name: string; question: string; rating: Rating; weakest?: boolean
   },
   { name: "Brand Pull", question: "Do people come asking for your franchise?", rating: "Weak" },
   { name: "Right Partner", question: "Do you know who should run your next outlet?", rating: "Good" },
-];
-
-const AREA_MEANINGS: [string, string][] = [
-  ["Profit & Payback", "whether a franchise owner makes money."],
-  ["Systems", "whether someone else can run it the way you do."],
-  ["Support", "whether you can help an owner after they join."],
-  ["Your Role", "whether the business runs without you."],
-  ["Market Proof", "whether it works outside your home city."],
-  ["Brand Pull", "whether people come asking for your franchise."],
-  ["Right Partner", "whether you know who should run your next outlet."],
 ];
 
 const STEPS = [
@@ -83,9 +78,16 @@ function SampleReportLink() {
   );
 }
 
+/** The one indexed page (T17): its own canonical address, so a copy on any other host never competes. */
+export const metadata: Metadata = {
+  alternates: { canonical: CANONICAL_URL },
+  robots: { index: true, follow: true },
+};
+
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col bg-white text-ink">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(landingStructuredData()) }} />
       {/* Hero */}
       <header className="bg-cream">
         <div className={`${container} pt-3 sm:pt-4`}>
@@ -341,79 +343,30 @@ export default function Home() {
             What is a Franchise Readiness Audit?
           </h2>
           <div className="mt-8 grid border-b border-black/10 md:mt-12 md:grid-cols-2 md:gap-x-20 md:border-b-0">
-            <FaqItem question="What is a Franchise Readiness Audit?" defaultOpen>
-              A structured assessment of whether a business can be franchised successfully. It
-              measures 7 areas and produces a score, along with a separate legal and trademark
-              check.
-            </FaqItem>
-            <FaqItem question="How is my score calculated?">
-              Each of the 7 areas is weighted by how much it determines franchise success.
-              Profit &amp; Payback and Systems carry the most weight, because they are what a
-              franchise owner is actually buying: a model whose numbers work, and a system they
-              can reproduce.
-            </FaqItem>
-            <FaqItem question="Why is my score a range and not one number?">
-              11 questions can place you closely, not exactly. A range is honest about that. The
-              Franchise Readiness Report asks 44 and gives you one number.
-            </FaqItem>
-            <FaqItem question="What do the 7 areas measure?">
-              <ul className="flex flex-col gap-1.5">
-                {AREA_MEANINGS.map(([name, meaning]) => (
-                  <li key={name}>
-                    <strong className="text-ink">{name}</strong> — {meaning}
-                  </li>
-                ))}
-              </ul>
-            </FaqItem>
-            <FaqItem question="How long does it take?">About 4 minutes. No signup, no cost.</FaqItem>
-            <FaqItem question="What happens to my answers?">
-              They are used to produce your result and nothing else. They are never shared with
-              any brand, investor or third party without your permission.
-            </FaqItem>
-            {/* Prices live only in "What does it cost?" (Content Library §19). */}
-            <FaqItem question="What happens after the free audit?">
-              <div className="space-y-3">
-                <p>
-                  Your Score gives you a range and shows which of the seven areas are strong and
-                  which are not. If you want the exact number, the{" "}
-                  <strong className="text-ink">Franchise Readiness Report</strong> gives you your
-                  precise score and a written diagnosis of all seven areas, with your gaps ranked by
-                  what each one costs you.
-                </p>
-                <p>
-                  The <strong className="text-ink">Franchise Readiness Roadmap</strong> goes further
-                  again — it works out what a franchise partner would actually earn from your
-                  business and how long their money takes to come back, and it includes a call with
-                  our team to talk it through.
-                </p>
-                <p>
-                  See <strong className="text-ink">“What does it cost?”</strong> below for prices.
-                </p>
-              </div>
-            </FaqItem>
-            <FaqItem question="What does it cost?">
-              <div className="space-y-3">
-                <p>
-                  The Franchise Readiness Audit is free — eleven questions, about 4 minutes, and your
-                  Franchise Readiness Score appears on screen straight away.
-                </p>
-                <p>
-                  The full <strong className="text-ink">Franchise Readiness Report</strong> is{" "}
-                  <strong className="text-ink">{priceLabel("report")}</strong> ({payableLabel("report")}). About thirty
-                  more questions, and you receive the report within 24 hours.
-                </p>
-                <p>
-                  The <strong className="text-ink">Franchise Readiness Roadmap</strong> is{" "}
-                  <strong className="text-ink">{priceLabel("roadmap")}</strong> ({payableLabel("roadmap")}). It picks up where
-                  the Report stops, works through what a franchise partner would actually earn, and
-                  includes a call with our team.
-                </p>
-                <p>
-                  Each stage is priced on its own. Nothing is credited or adjusted if you move to the
-                  next one.
-                </p>
-              </div>
-            </FaqItem>
+            {FAQ.map((faq, i) => (
+              <FaqItem key={faq.question} question={faq.question} defaultOpen={i === 0}>
+                {faq.answer.length === 1 && !faq.list ? (
+                  <Rich text={faq.answer[0]} />
+                ) : (
+                  <div className="space-y-3">
+                    {faq.answer.map((paragraph) => (
+                      <p key={paragraph}>
+                        <Rich text={paragraph} />
+                      </p>
+                    ))}
+                    {faq.list ? (
+                      <ul className="flex flex-col gap-1.5">
+                        {faq.list.map(([name, meaning]) => (
+                          <li key={name}>
+                            <strong className="text-ink">{name}</strong> — {meaning}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                )}
+              </FaqItem>
+            ))}
           </div>
         </section>
 

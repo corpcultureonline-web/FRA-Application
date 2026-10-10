@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ResultView } from "./ResultView";
 
 export const metadata: Metadata = {
-  title: "Your result · Franchise Readiness Audit",
+  title: "Your result",
   robots: { index: false },
 };
 
