@@ -4,11 +4,11 @@
  * the page renders (FAQ list, pricing.ts, company.ts), so it cannot claim
  * anything the page does not.
  *
- * Ronak's figures (deals, years, ₹ facilitated) are left out until they are
- * confirmed (Open Item O8): structured data is a public claim.
+ * Ronak's figures come from FOUNDER_STATS, as printed on the page (confirmed
+ * 10 October 2026, Open Item O8). His title stays out until O6 is settled.
  */
 import { BASE_PATH } from "../../lib/base-path.ts";
-import { CONTACT_EMAIL, WHATSAPP_DISPLAY } from "../../lib/company.ts";
+import { CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY } from "../../lib/company.ts";
 import { GST_PERCENT, TIERS } from "../../lib/pricing.ts";
 import { CANONICAL_URL, ORGANIZATION_URL, SEO_DESCRIPTION, SEO_TITLE, SITE_ORIGIN } from "../../lib/seo.ts";
 import { FAQ, faqPlainText } from "./faq.ts";
@@ -85,6 +85,9 @@ export function landingStructuredData() {
         "@type": "Person",
         name: "Ronak Patel",
         worksFor: { "@id": ORG_ID },
+        description: `Conducts the Franchise Readiness Audit. ${FOUNDER_STATS.map(
+          (stat) => `${stat.value} ${stat.label.toLowerCase()}`,
+        ).join(", ")}.`,
       },
       {
         "@type": "FAQPage",
