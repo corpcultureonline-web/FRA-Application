@@ -160,52 +160,35 @@ export function toRecord(submission: FraSubmission) {
   };
 }
 
-async function postRecord(submission: FraSubmission, accessToken: string) {
-  return fetch(`${getRegionDomain()}/crm/v8/${MODULE}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Zoho-oauthtoken ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ data: [toRecord(submission)], trigger: ["workflow"] }),
-    cache: "no-store",
-  });
-}
-
 /**
  * Creates the record in the FRA Submissions module. Throws on failure so the
- * caller decides whether a CRM outage should fail the registration.
+ * caller decides whether a CRM outage should fail the request.
  */
-export async function createFraSubmission(submission: FraSubmission) {
+export async function createFraSubmission(submission: FraSubmission, observe?: CrmObserver) {
   if (!isZohoConfigured()) {
     throw new Error("Zoho CRM credentials are not configured.");
   }
 
-  let accessToken = await getAccessToken();
-  let response = await postRecord(submission, accessToken);
-
-  if (response.status === 401) {
-    // Cached token was revoked or stale — refresh once and retry.
-    accessToken = await getAccessToken(true);
-    response = await postRecord(submission, accessToken);
-  }
-
-  const payload = (await response.json().catch(() => null)) as {
-    data?: ZohoRecordResult[];
-  } | null;
-  const result = payload?.data?.[0];
+  const call = await zohoCall("create", MODULE, observe, {
+    method: "POST",
+    body: JSON.stringify({ data: [toRecord(submission)], trigger: ["workflow"] }),
+  });
+  const result = (call.payload as { data?: ZohoRecordResult[] } | null)?.data?.[0];
+  const id = result?.details?.id ?? null;
 
   if (result?.code === "DUPLICATE_DATA") {
-    return { duplicate: true, id: result.details?.id };
+    call.report({ ok: true, zoho_record_id: id, error_code: result.code });
+    return { duplicate: true, id: id ?? undefined };
   }
 
-  if (!response.ok || result?.status !== "success") {
+  const ok = call.response.ok && result?.status === "success";
+  call.report({ ok, zoho_record_id: id, error_code: ok ? null : (result?.code ?? null) });
+  if (!ok) {
     throw new Error(
-      `Zoho ${MODULE} create failed (${response.status}): ${result?.code ?? result?.message ?? "unknown error"}`,
+      `Zoho ${MODULE} create failed (${call.response.status}): ${result?.code ?? result?.message ?? "unknown error"}`,
     );
   }
-
-  return { duplicate: false, id: result.details?.id };
+  return { duplicate: false, id: id ?? undefined };
 }
 
 /**
@@ -223,43 +206,110 @@ export function zohoDateTime(date: Date) {
   return `${ist.toISOString().slice(0, 19)}+05:30`;
 }
 
-/** A Zoho CRM call with the cached token, refreshed once on a 401. */
-async function zohoFetch(path: string, init: RequestInit = {}) {
-  const send = async (token: string) =>
-    fetch(`${getRegionDomain()}/crm/v8/${path}`, {
+/**
+ * One outbound Zoho call, as the caller logs it to event_log as `zoho_push`
+ * (Decision T13, CANONICAL-VALUES §5). No personal data — ids and codes only.
+ */
+export type CrmCall = {
+  module: string;
+  operation: "create" | "update" | "search";
+  http_status: number | null;
+  zoho_record_id: string | null;
+  ok: boolean;
+  attempt: number;
+  ms: number;
+  error_code: string | null;
+};
+
+/** Receives every attempt, failed ones and retries included. */
+export type CrmObserver = (call: CrmCall) => void;
+
+function notify(observe: CrmObserver | undefined, call: CrmCall) {
+  try {
+    observe?.(call);
+  } catch {
+    // Logging must never break the CRM call it describes.
+  }
+}
+
+/**
+ * A Zoho CRM call with the cached token, refreshed once on a 401. Reports the
+ * 401 attempt (or a failed token refresh) itself; the caller reports the final
+ * attempt through `report`, once it knows the outcome.
+ */
+async function zohoCall(
+  operation: CrmCall["operation"],
+  path: string,
+  observe: CrmObserver | undefined,
+  init: RequestInit = {},
+) {
+  const base = { module: "FRA Submissions", operation, zoho_record_id: null };
+  let attempt = 0;
+  let started = 0;
+
+  const send = async (forceRefresh: boolean) => {
+    attempt++;
+    started = Date.now();
+    let token: string;
+    try {
+      token = await getAccessToken(forceRefresh);
+    } catch (error) {
+      notify(observe, { ...base, http_status: null, ok: false, attempt, ms: Date.now() - started, error_code: "TOKEN_REFRESH_FAILED" });
+      throw error;
+    }
+    return fetch(`${getRegionDomain()}/crm/v8/${path}`, {
       ...init,
       headers: { Authorization: `Zoho-oauthtoken ${token}`, "Content-Type": "application/json" },
       cache: "no-store",
     });
-  let response = await send(await getAccessToken());
-  if (response.status === 401) response = await send(await getAccessToken(true));
-  return response;
+  };
+
+  let response = await send(false);
+  if (response.status === 401) {
+    notify(observe, { ...base, http_status: 401, ok: false, attempt, ms: Date.now() - started, error_code: "INVALID_TOKEN" });
+    response = await send(true);
+  }
+  const ms = Date.now() - started;
+  const payload: unknown = response.status === 204 ? null : await response.json().catch(() => null);
+
+  return {
+    response,
+    payload,
+    report: (outcome: Pick<CrmCall, "ok" | "zoho_record_id" | "error_code">) =>
+      notify(observe, { ...base, ...outcome, http_status: response.status, attempt, ms }),
+  };
 }
 
 /**
  * The most recent FRA Submissions record for an email — for submissions saved
  * before the record id was kept in MySQL. Undefined when there is none.
  */
-export async function findFraSubmissionId(email: string) {
+export async function findFraSubmissionId(email: string, observe?: CrmObserver) {
   const criteria = encodeURIComponent(`(Email_ID:equals:${email.replace(/([(),\\])/g, "\\$1")})`);
-  const response = await zohoFetch(`${MODULE}/search?criteria=${criteria}&sort_by=Created_Time&sort_order=desc&per_page=1`);
-  if (response.status === 204) return undefined;
-  const payload = (await response.json().catch(() => null)) as { data?: { id?: string }[] } | null;
-  if (!response.ok) throw new Error(`Zoho ${MODULE} search failed (${response.status})`);
-  return payload?.data?.[0]?.id;
+  const call = await zohoCall(
+    "search",
+    `${MODULE}/search?criteria=${criteria}&sort_by=Created_Time&sort_order=desc&per_page=1`,
+    observe,
+  );
+  const id = (call.payload as { data?: { id?: string }[] } | null)?.data?.[0]?.id ?? null;
+  const ok = call.response.ok;
+  call.report({ ok, zoho_record_id: id, error_code: null });
+  if (!ok) throw new Error(`Zoho ${MODULE} search failed (${call.response.status})`);
+  return id ?? undefined;
 }
 
 /** Updates fields on an FRA Submissions record and runs its workflows (the notification). */
-export async function updateFraSubmission(id: string, fields: Record<string, string>) {
-  const response = await zohoFetch(`${MODULE}/${encodeURIComponent(id)}`, {
+export async function updateFraSubmission(id: string, fields: Record<string, string>, observe?: CrmObserver) {
+  const call = await zohoCall("update", `${MODULE}/${encodeURIComponent(id)}`, observe, {
     method: "PUT",
     body: JSON.stringify({ data: [fields], trigger: ["workflow"] }),
   });
-  const payload = (await response.json().catch(() => null)) as { data?: ZohoRecordResult[] } | null;
-  const result = payload?.data?.[0];
-  if (!response.ok || result?.status !== "success") {
+  const result = (call.payload as { data?: ZohoRecordResult[] } | null)?.data?.[0];
+  const ok = call.response.ok && result?.status === "success";
+  call.report({ ok, zoho_record_id: id, error_code: ok ? null : (result?.code ?? null) });
+  if (!ok) {
     throw new Error(
-      `Zoho ${MODULE} update failed (${response.status}): ${result?.code ?? result?.message ?? "unknown error"}`,
+      `Zoho ${MODULE} update failed (${call.response.status}): ${result?.code ?? result?.message ?? "unknown error"}`,
     );
   }
 }

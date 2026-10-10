@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AuditHeader } from "@/components/AuditHeader";
 import {
   EMPTY_PROFILE,
@@ -16,6 +16,8 @@ import {
 import { EntityLine } from "@/components/EntityLine";
 import { RESULT_STORAGE_KEY, type SavedSubmission } from "@/lib/result";
 import { withBasePath } from "@/lib/base-path";
+import { createAuditEvents } from "@/lib/events/audit-events";
+import { flushEvents, setExitContext } from "@/lib/events/client";
 import type { PublicScore } from "@/lib/scoring/public";
 import { useIsBrowser } from "@/lib/useIsBrowser";
 import { ProfileForm } from "./ProfileForm";
@@ -91,7 +93,8 @@ export function AuditFlow() {
 
 function AuditSteps() {
   const router = useRouter();
-  const [progress, setProgress] = useState<Progress>(() => readSavedProgress() ?? INITIAL_PROGRESS);
+  const [saved] = useState(readSavedProgress);
+  const [progress, setProgress] = useState<Progress>(() => saved ?? INITIAL_PROGRESS);
   const [showErrors, setShowErrors] = useState(false);
   const [returnToReview, setReturnToReview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -105,6 +108,18 @@ function AuditSteps() {
     }
   }, [progress]);
 
+  // Event log (Event-Log-Spec §4.2). Created once per visit to the questionnaire.
+  const [events] = useState(createAuditEvents);
+  const latest = useRef(progress);
+  useEffect(() => {
+    latest.current = progress;
+  }, [progress]);
+
+  useEffect(() => {
+    events.started(Boolean(saved && Object.keys(saved.answers).length));
+    return setExitContext(() => events.exitContext(latest.current.answers, latest.current.furthest));
+  }, [events, saved]);
+
   const { step } = progress;
   const remaining = remainingIn(step, progress);
   const isReview = step === REVIEW;
@@ -113,6 +128,8 @@ function AuditSteps() {
     setShowErrors(false);
     setSubmitError(null);
     if (next === REVIEW) setReturnToReview(false);
+    events.sectionEntered();
+    void flushEvents();
     setProgress((p) => ({ ...p, step: next, furthest: Math.max(p.furthest, next) }));
     window.scrollTo({ top: 0 });
   }
@@ -136,12 +153,16 @@ function AuditSteps() {
       return;
     }
     if (!isReview) {
+      events.sectionCompleted(step + 1, step === 0 ? 0 : QUESTION_SECTIONS[step - 1].questions.length);
       goTo(returnToReview ? REVIEW : step + 1);
       return;
     }
 
     setSubmitting(true);
     setSubmitError(null);
+    events.submitted(progress.answers);
+    // Everything queued must be stored before scoring, so the backfill attaches it.
+    await flushEvents();
     try {
       const response = await fetch(withBasePath("/api/audit"), {
         method: "POST",
@@ -294,12 +315,13 @@ function AuditSteps() {
                     question={question}
                     value={progress.answers[question.id]}
                     showError={showErrors}
-                    onChange={(value) =>
+                    onChange={(value) => {
+                      events.answered(question.id, value, progress.answers[question.id], step + 1);
                       setProgress((p) => ({
                         ...p,
                         answers: { ...p.answers, [question.id]: value },
-                      }))
-                    }
+                      }));
+                    }}
                   />
                 ))}
               </div>

@@ -2,6 +2,8 @@ import type { ResultSetHeader } from "mysql2";
 import { NextResponse } from "next/server";
 import { EMPTY_PROFILE, profileProblems, type Profile } from "@/lib/audit";
 import { getDatabase } from "@/lib/db";
+import { auditScoredPayload } from "@/lib/events/payloads";
+import { backfillSubmission, eventContext, logServerEvent, writeEvents } from "@/lib/events/server";
 import { reportError } from "@/lib/monitoring/report-error";
 import { getSiteOrigin, newReportToken, reportPdfUrl } from "@/lib/report";
 import { getScoringConfig } from "@/lib/scoring/config";
@@ -84,6 +86,7 @@ export async function POST(request: Request) {
   // The full result (with the overall score) stays on the server.
   const result = score(config, answers);
   const reportToken = newReportToken();
+  const events = eventContext(request.headers);
 
   const db = await getDatabase().getConnection();
   let id: number;
@@ -128,6 +131,12 @@ export async function POST(request: Request) {
         [id, pillar.code, pillarScoreForStorage(pillar), pillar.status],
       );
     }
+    // Event log §5: attach this session's anonymous events to the brand, and
+    // record the scoring — in the same transaction, so both or neither.
+    await backfillSubmission(db, events.sessionId, id);
+    await writeEvents(db, events, [
+      { type: "audit_scored", payload: auditScoredPayload(config, result, answers), submissionId: id },
+    ]);
     await db.commit();
   } catch (error) {
     await db.rollback().catch(() => {});
@@ -147,12 +156,15 @@ export async function POST(request: Request) {
   // CRM delivery is best effort: the submission is already saved.
   if (isZohoConfigured()) {
     try {
-      const { duplicate, id: zohoId } = await createFraSubmission({
-        brandName: profile.brandName,
-        founderName: profile.founderName,
-        email: profile.email,
-        result: fraResult(publicScore, reportUrl),
-      });
+      const { duplicate, id: zohoId } = await createFraSubmission(
+        {
+          brandName: profile.brandName,
+          founderName: profile.founderName,
+          email: profile.email,
+          result: fraResult(publicScore, reportUrl),
+        },
+        (call) => void logServerEvent(events, "zoho_push", call, id),
+      );
       console.info(
         duplicate
           ? `Zoho FRA submission already exists (${zohoId})`

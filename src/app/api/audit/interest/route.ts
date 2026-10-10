@@ -1,6 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { after, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/db";
+import { eventContext } from "@/lib/events/server";
 import { reportError } from "@/lib/monitoring/report-error";
 import { isReportToken } from "@/lib/report";
 import { pushTier2Interest, readPhone } from "@/lib/tier2-interest";
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
     );
   }
 
-  after(() => pushTier2Interest(submissionId));
+  const events = eventContext(request.headers);
+  after(() => pushTier2Interest(submissionId, events));
   return NextResponse.json({ success: true });
 }

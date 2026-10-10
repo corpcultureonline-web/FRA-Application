@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import type { Browser } from "puppeteer-core";
 import { withBasePath } from "@/lib/base-path";
 import { launchBrowser } from "@/lib/browser";
+import { eventContext, logServerEvent } from "@/lib/events/server";
 import { reportError } from "@/lib/monitoring/report-error";
 import { getSiteOrigin, reportExists } from "@/lib/report";
 
@@ -103,6 +104,12 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[toke
   const origin = process.env.REPORT_RENDER_ORIGIN?.trim().replace(/\/+$/, "") || getSiteOrigin(request);
   try {
     const pdf = await oneAtATime(() => renderPdf(`${origin}${withBasePath(`/audit/report/${token}`)}?print=1`));
+    // Event log §4.3. The email links here directly; a link on the result page
+    // would add ?src=result. Email-open pixels are not used.
+    const source = new URL(request.url).searchParams.get("src") === "result" ? "result_page" : "email_link";
+    const events = eventContext(request.headers);
+    const submissionId = found.id;
+    after(() => logServerEvent(events, "pdf_downloaded", { source }, submissionId));
     return new NextResponse(Buffer.from(pdf), {
       headers: {
         "Content-Type": "application/pdf",

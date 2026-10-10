@@ -27,12 +27,15 @@ export function GetReportButton({
   phoneGiven,
   className,
   label = "Get my full report",
+  ctaPosition,
 }: {
   token: string;
   interested: boolean;
   phoneGiven: boolean;
   className: string;
   label?: ReactNode;
+  /** Event log: the click is recorded as cta_clicked from this position. */
+  ctaPosition?: string;
 }) {
   const [state, setState] = useState<State>(interested ? "done" : "idle");
 
@@ -50,7 +53,14 @@ export function GetReportButton({
 
   return (
     <>
-      <button type="button" onClick={register} disabled={state === "saving"} className={className}>
+      <button
+        type="button"
+        onClick={register}
+        disabled={state === "saving"}
+        className={className}
+        data-cta={ctaPosition ? "tier2_upgrade" : undefined}
+        data-cta-position={ctaPosition}
+      >
         {state === "saving" ? "Saving…" : label}
       </button>
       {typeof state === "object" ? (

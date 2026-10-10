@@ -9,6 +9,7 @@ import { shortPriceLabel } from "@/lib/pricing";
 import type { NoteKind, ReportData } from "@/lib/result";
 import { GetReportButton } from "./GetReportButton";
 import { UpgradeBody } from "./ReportDocument";
+import { ResultTracking } from "./ResultTracking";
 import { SentToBanner } from "./SentToBanner";
 
 const monoCaps = "font-mono text-[11px] uppercase tracking-[0.25em]";
@@ -34,6 +35,7 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
         </h1>
         <p className="mt-2 text-body lg:text-lg">{report.meta}</p>
         <SentToBanner token={report.token} />
+        <ResultTracking />
 
         <div className="mt-8 grid gap-12 lg:mt-10 lg:grid-cols-[420px_1fr] lg:gap-20">
           <aside className="lg:sticky lg:top-8 lg:self-start">
@@ -42,35 +44,35 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
 
           <div className="min-w-0">
             {content.toldUs.length ? (
-              <Section title="What you told us">
+              <Section title="What you told us" track="told_us">
                 <Bullets items={content.toldUs} />
               </Section>
             ) : null}
 
             {content.noticed.length ? (
-              <Section title="What we noticed">
+              <Section title="What we noticed" track="noticed">
                 <Numbered items={content.noticed} />
               </Section>
             ) : null}
 
-            <Section title="Your score in each area">
+            <Section title="Your score in each area" track="areas">
               <AreaTable report={report} />
             </Section>
 
             {content.legal.length ? (
-              <Section title="Legal check">
+              <Section title="Legal check" track="legal">
                 <Notes notes={content.legal} />
               </Section>
             ) : null}
 
             {content.importantPoints.length ? (
-              <Section title="Important points to note">
+              <Section title="Important points to note" track="important">
                 <Notes notes={content.importantPoints} />
               </Section>
             ) : null}
 
             {content.nutshell.length ? (
-              <Section title="In a nutshell">
+              <Section title="In a nutshell" track="nutshell">
                 <div className="rounded-xl bg-sand px-5 py-5 sm:px-7">
                   <Bullets items={content.nutshell} />
                 </div>
@@ -78,7 +80,7 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
             ) : null}
 
             {content.cannotTell ? (
-              <Section title="What this test cannot tell you">
+              <Section title="What this test cannot tell you" track="cannot_tell">
                 {content.cannotTell.intro ? (
                   <p className="mb-5 text-[17px] leading-relaxed text-body">{content.cannotTell.intro}</p>
                 ) : null}
@@ -91,12 +93,12 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
               </Section>
             ) : null}
 
-            <Section title="Where you sit on the readiness ladder">
+            <Section title="Where you sit on the readiness ladder" track="ladder">
               <Ladder report={report} />
             </Section>
 
             {content.canDoNow ? (
-              <Section title="What you can do now">
+              <Section title="What you can do now" track="can_do_now">
                 <div className="space-y-3 rounded-xl border-l-[3px] border-l-[#e0a100] bg-[#fdf3e7] px-5 py-5 text-[17px] leading-relaxed text-body sm:px-7">
                   {content.canDoNow.lead ? <p>{content.canDoNow.lead}</p> : null}
                   {content.canDoNow.actions.length ? (
@@ -133,9 +135,9 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
   );
 }
 
-function Section({ title, children, id }: { title: string; children: ReactNode; id?: string }) {
+function Section({ title, children, id, track }: { title: string; children: ReactNode; id?: string; track?: string }) {
   return (
-    <section id={id} className="mt-14 scroll-mt-8 first:mt-0">
+    <section id={id} data-track={track} className="mt-14 scroll-mt-8 first:mt-0">
       <h2 className="border-b border-black/10 pb-3 text-[26px] leading-tight font-bold lg:text-[28px]">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
@@ -156,7 +158,7 @@ function RangeBar({ range, dark = false }: { range: ReportData["range"]; dark?: 
 function ScoreCard({ report }: { report: ReportData }) {
   const { range, content } = report;
   return (
-    <div className="rounded-xl border border-black/10 bg-white p-5 sm:p-7">
+    <div data-track="score" className="rounded-xl border border-black/10 bg-white p-5 sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <p className="pt-2.5 text-[13px] font-bold tracking-[0.18em] whitespace-nowrap text-muted uppercase">
           Your score
@@ -192,6 +194,8 @@ function ScoreCard({ report }: { report: ReportData }) {
       {content.upgrade ? (
         <a
           href={`#${REPORT_ANCHOR}`}
+          data-cta="tier2_upgrade"
+          data-cta-position="score_card"
           className="mt-6 inline-block font-bold text-brand-deep underline underline-offset-4 hover:text-brand"
         >
           Get your exact score with the full report ↓
@@ -362,7 +366,7 @@ function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakC
   );
 
   return (
-    <Section title={upgrade.heading ?? "If you want to know exactly where you stand"} id={REPORT_ANCHOR}>
+    <Section title={upgrade.heading ?? "If you want to know exactly where you stand"} id={REPORT_ANCHOR} track="cta">
       <div className="rounded-xl bg-ink p-6 text-white sm:p-8">
         <p className={`${monoCaps} text-[10px] text-white/60`}>Your result today</p>
         <p className="mt-3 text-[52px] leading-none font-black text-cta sm:text-[60px]">{range}</p>
@@ -423,11 +427,12 @@ function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakC
           <UpgradeBody body={upgrade.body} className="mt-3" priceClass="text-[34px] font-black text-brand" />
 
           {tier2Url ? (
-            <a href={tier2Url} className={buttonClass}>
+            <a href={tier2Url} className={buttonClass} data-cta="tier2_upgrade" data-cta-position="result_page_bottom">
               {buttonLabel}
             </a>
           ) : (
             <GetReportButton
+              ctaPosition="result_page_bottom"
               token={report.token}
               interested={report.interested}
               phoneGiven={report.phoneGiven}

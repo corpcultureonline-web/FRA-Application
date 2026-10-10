@@ -108,12 +108,15 @@ export async function loadReport(token: string): Promise<ReportData | null> {
   });
 }
 
-/** Whether a submission exists for the token — checked before starting Chromium. */
+/**
+ * Whether a submission exists for the token — checked before starting
+ * Chromium, and for attributing result and PDF events to the submission.
+ */
 export async function reportExists(token: string) {
   if (!isReportToken(token)) return false;
   const [rows] = await getDatabase().query<RowDataPacket[]>(
-    "SELECT brand_name FROM audit_submissions WHERE report_token = ? LIMIT 1",
+    "SELECT id, brand_name FROM audit_submissions WHERE report_token = ? LIMIT 1",
     [token],
   );
-  return rows[0] ? { brandName: rows[0].brand_name as string } : false;
+  return rows[0] ? { id: rows[0].id as number, brandName: rows[0].brand_name as string } : false;
 }
