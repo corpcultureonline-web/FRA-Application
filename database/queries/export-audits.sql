@@ -62,6 +62,6 @@ FROM audit_submissions s
 LEFT JOIN audit_answers a ON a.submission_id = s.id
 -- Last two days. For everything, delete this line; for a range, use e.g.
 -- WHERE s.created_at >= '2026-10-11' AND s.created_at < '2026-10-14'
-WHERE s.created_at >= NOW() - INTERVAL 2 DAY
+WHERE s.created_at >= NOW() - INTERVAL 3 DAY
 GROUP BY s.id
 ORDER BY s.created_at DESC;
