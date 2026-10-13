@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
@@ -65,6 +65,12 @@ type Modules = Awaited<ReturnType<typeof loadModules>>;
 // Memoised so concurrent requests never unpack into the same folder at once.
 let executablePromise: Promise<string> | undefined;
 let bundledLibsPromise: Promise<string> | undefined;
+let fontsPromise: Promise<string> | undefined;
+
+/** The package's bin folder. It doesn't export the path; the server runs from the app root. */
+function binDir() {
+  return join(process.cwd(), "node_modules", "@sparticuz", "chromium", "bin");
+}
 
 function unpackChromium({ chromium }: Modules) {
   executablePromise ??= inChromiumDir(async () => {
@@ -78,15 +84,48 @@ function unpackChromium({ chromium }: Modules) {
 }
 
 /**
+ * Fonts for the PDF. The package ships Open Sans with a fonts.conf that only
+ * looks in fixed Lambda folders (/tmp/fonts, /opt/fonts …), and it unpacks
+ * them only alongside a fresh Chromium. Here Chromium lives in CHROMIUM_DIR,
+ * so those folders are never populated: PDFs printed with text only while an
+ * old copy happened to sit in /tmp/fonts, and came out blank once /tmp was
+ * cleared. So: unpack the fonts if they are missing, and write a fontconfig
+ * file that points at where they actually are. Returns its folder, for
+ * FONTCONFIG_PATH.
+ */
+function prepareFonts({ inflate }: Modules) {
+  fontsPromise ??= inChromiumDir(async () => {
+    const fontsDir = await inflate(join(binDir(), "fonts.tar.br"));
+    const configDir = join(CHROMIUM_DIR, "fontconfig");
+    await mkdir(configDir, { recursive: true });
+    await writeFile(
+      join(configDir, "fonts.conf"),
+      `<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <dir>${fontsDir}</dir>
+  <dir>/usr/share/fonts</dir>
+  <dir>/usr/local/share/fonts</dir>
+  <cachedir>${join(CHROMIUM_DIR, "fonts-cache")}</cachedir>
+</fontconfig>
+`,
+    );
+    return configDir;
+  }).catch((error) => {
+    fontsPromise = undefined;
+    throw error;
+  });
+  return fontsPromise;
+}
+
+/**
  * The package's bundled shared libraries (built for Amazon Linux 2023). Only
  * unpacked if Chromium can't find a system library, since they may clash
  * with the host's own glibc when not needed.
  */
 function unpackBundledLibs({ inflate }: Modules) {
   bundledLibsPromise ??= inChromiumDir(async () => {
-    // The package doesn't export its bin path; the server runs from the app root.
-    const binDir = join(process.cwd(), "node_modules", "@sparticuz", "chromium", "bin");
-    return join(await inflate(join(binDir, "al2023.tar.br")), "lib");
+    return join(await inflate(join(binDir(), "al2023.tar.br")), "lib");
   }).catch((error) => {
     bundledLibsPromise = undefined;
     throw error;
@@ -112,6 +151,8 @@ export async function launchBrowser(
   const { chromium, puppeteer } = modules;
   onStage?.("unpack chromium");
   const executablePath = await unpackChromium(modules);
+  onStage?.("prepare fonts");
+  const fontConfigDir = await prepareFonts(modules);
   const args = await puppeteer.defaultArgs({ args: chromium.args, headless: "shell" });
 
   const launch = (libDir?: string) =>
@@ -123,7 +164,8 @@ export async function launchBrowser(
       dumpio,
       env: {
         ...process.env,
-        FONTCONFIG_PATH: join(CHROMIUM_DIR, "fonts"),
+        FONTCONFIG_PATH: fontConfigDir,
+        FONTCONFIG_FILE: join(fontConfigDir, "fonts.conf"),
         ...(libDir && {
           LD_LIBRARY_PATH: [libDir, process.env.LD_LIBRARY_PATH].filter(Boolean).join(":"),
         }),

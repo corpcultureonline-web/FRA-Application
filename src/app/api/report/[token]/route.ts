@@ -52,6 +52,8 @@ async function renderPdf(url: string) {
       throw new Error(`Report page answered ${response?.status() ?? "nothing"} for ${url}`);
     }
     await page.emulateMediaType("screen");
+    // Never print before the fonts are in: a missing font prints as no text.
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
     const print = (scale: number) =>
       page.pdf({
         format: "A4",

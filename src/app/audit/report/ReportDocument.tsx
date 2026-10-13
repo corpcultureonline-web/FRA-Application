@@ -7,6 +7,7 @@ import { Rich } from "@/components/Rich";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY } from "@/lib/company";
 import type { NoteKind, ReportData } from "@/lib/result";
 import { GetReportButton } from "./GetReportButton";
+import { reportFont } from "./report-font";
 
 const caps = "text-[11px] font-bold uppercase tracking-[0.22em]";
 const UPGRADE_ANCHOR = "full-report";
@@ -32,9 +33,9 @@ export function ReportDocument({
 }) {
   const { content } = report;
   return (
-    // Helvetica / Arial, as in the approved sample.
+    // Helvetica / Arial, as in the approved sample; Arimo where neither is installed.
     <main
-      className={`mx-auto w-full max-w-[820px] font-[Helvetica,Arial,sans-serif] text-ink ${
+      className={`mx-auto w-full max-w-[820px] font-[Helvetica,Arial,var(--font-report),sans-serif] text-ink ${reportFont.variable} ${
         print ? "" : "px-5 pt-8 pb-16 sm:px-8 sm:pt-12"
       }`}
     >
