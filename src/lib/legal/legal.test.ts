@@ -6,11 +6,10 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
+import { LIBRARY_DIR as LIBRARY } from "../tier2/library-source.ts";
 import { parseInline, parseLegalMarkdown, type Block } from "./markdown.ts";
 
 const CONTENT = path.join(process.cwd(), "src", "content", "legal");
-/** The content library, kept outside the repo (corpculture/tier2). */
-const LIBRARY = path.join(process.cwd(), "..", "..", "tier2", "fra-tier2-content", "fra-tier2-content");
 
 const DOCUMENTS = [
   { slug: "privacy", source: "Privacy-Policy.md", stripQuote: false },
