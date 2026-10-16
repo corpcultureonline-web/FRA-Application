@@ -1,4 +1,4 @@
-<!-- Published text of Refund-Policy.md §A Version 1.4, copied verbatim (blockquote markers removed). Edit the source, then re-copy. -->
+<!-- Published text of Refund-Policy.md §A Version 1.5, copied verbatim (blockquote markers removed). Edit the source, then re-copy. -->
 ## Refund Policy
 
 **Corporate Culture** is a brand of **Blue Bird Ventures**. All payments are collected and invoiced by Blue Bird Ventures.
@@ -11,7 +11,7 @@ The **Franchise Readiness Report** (₹1,999 + 18% GST) and the **Franchise Read
 
 ### Before you submit your answers — full refund
 
-**You can cancel and get a full refund at any time before we prepare your Report**, whether you have answered none of the questions or all of them.
+**You can cancel and get a full refund at any time before you submit your answers**, whether you have answered none of the questions or all of them.
 
 Until you submit your answers, nothing has been produced and no work has begun. There is no time limit on this and no reason you need to give us. A paid order never expires, so this holds whether you come back the next day or six months later.
 

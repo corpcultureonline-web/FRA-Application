@@ -1,4 +1,4 @@
-<!-- Published text of Privacy-Policy.md Version 1.2, copied verbatim. Edit the source, then re-copy. -->
+<!-- Published text of Privacy-Policy.md Version 1.4, copied verbatim. Edit the source, then re-copy. -->
 # Privacy Policy
 
 *Last updated: **{{LEGAL_LAST_UPDATED}}***
@@ -30,7 +30,7 @@ This policy covers the Franchise Readiness Audit, Report and Roadmap at `app.cor
 
 ### What you tell us
 
-- **Your answers.** Eleven questions in the free Audit, about thirty-two more in the Report questionnaire. These describe your business — revenue, margins, outlets, staff, systems, legal position
+- **Your answers.** Eleven questions in the free Audit, about thirty more in the Report questionnaire. These describe your business — revenue, margins, outlets, staff, systems, legal position
 - **Your brand name** and the category you operate in
 - **Your email address**, which you give at the end of the free Audit
 - **Your mobile number**, which you give at checkout, used to send your Report on WhatsApp

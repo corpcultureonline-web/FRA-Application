@@ -1,4 +1,4 @@
-<!-- Published text of Terms-and-Conditions.md Version 1.2, copied verbatim. Edit the source, then re-copy. -->
+<!-- Published text of Terms-and-Conditions.md Version 1.4, copied verbatim. Edit the source, then re-copy. -->
 # Terms & Conditions
 
 *Last updated: **{{LEGAL_LAST_UPDATED}}***
@@ -22,8 +22,8 @@
 
 | | Price | What it is |
 |---|---|---|
-| **The Audit** | Free | Eleven questions. A readiness score across seven areas, on screen immediately |
-| **The Report** | ₹1,999 + 18% GST, **₹2,359** | About thirty-two further questions. A written diagnosis of all seven areas with your gaps ranked by what each costs you, reviewed by a person before you receive it |
+| **The Audit** | Free | Eleven questions. A readiness range across seven areas, on screen immediately |
+| **The Report** | ₹1,999 + 18% GST, **₹2,359** | About thirty further questions. A written diagnosis of all seven areas with your gaps ranked by what each costs you, reviewed by a person before you receive it |
 | **The Roadmap** | ₹5,999 + 18% GST, **₹7,079** | Picks up where the Report stops, including a call with us |
 
 **Each stage is priced on its own. Nothing is credited or adjusted if you move to the next one.**
@@ -119,7 +119,7 @@ Don't submit answers for a business you have no connection to, don't attempt to 
 
 **We stand behind delivering what you paid for.** If we fail to deliver your Report, or deliver it late against the promise in §3, you get your money back.
 
-**We are not liable for business decisions you take after reading it.** Franchising a business involves commercial judgement, market conditions, execution and people, none of which we control, and a readiness score is one input among many.
+**We are not liable for business decisions you take after reading it.** Franchising a business involves commercial judgement, market conditions, execution and people, none of which we control, and a readiness assessment is one input among many.
 
 **To the extent the law allows, our total liability to you for anything arising out of these terms is limited to what you have paid us** in the twelve months before the claim.
 
