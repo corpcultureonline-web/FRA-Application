@@ -27,6 +27,9 @@ export const SERVER_EVENTS = [
   "pdf_downloaded",
   "tier2_interest_recorded",
   "zoho_push",
+  // The Report's lifecycle (Event-Log-Spec v1.3 §4.3b).
+  "payment_succeeded",
+  "payment_failed",
 ] as const;
 
 export type ClientEventType = (typeof CLIENT_EVENTS)[number];

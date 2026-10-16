@@ -1,0 +1,462 @@
+/*
+ * Screen 2, checkout (handoff v2.1 boards 2-S2Checkout*). Phone first: a white
+ * page under a cream header. From 768px, a 520px card on cream.
+ */
+.page {
+  --ink: #231f20;
+  --orange: #f78f1e;
+  --red: #ef4423;
+  --red-deep: #b8360f;
+  --cream: #f5f0eb;
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--font-dm-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.page p {
+  margin: 0;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 16px;
+  background: var(--cream);
+  border-bottom: 1px solid rgba(35, 31, 32, 0.08);
+}
+
+.logo {
+  display: block;
+  width: auto;
+  height: 44px;
+}
+
+.main {
+  flex: 1;
+  padding: 20px 20px 40px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.card h1 {
+  margin: 0;
+  font-family: var(--font-lexend), var(--font-dm-sans), sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  text-wrap: balance;
+}
+
+/* The quiet failure line (T2C-FAIL): never an error page, never a code. */
+.fail {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fef1e3;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 18px;
+  background: #ffffff;
+  border: 1px solid rgba(35, 31, 32, 0.1);
+  border-radius: 10px;
+}
+
+.item {
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.priceHead {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  column-gap: 8px;
+}
+
+.amount {
+  font-family: var(--font-lexend), var(--font-dm-sans), sans-serif;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--red);
+  white-space: nowrap;
+}
+
+.gst {
+  font-family: var(--font-lexend), var(--font-dm-sans), sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.payable {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(35, 31, 32, 0.65);
+  white-space: nowrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tel {
+  display: flex;
+  align-items: stretch;
+  min-height: 52px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1.5px solid rgba(35, 31, 32, 0.45);
+  border-radius: 6px;
+}
+
+.tel:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(247, 143, 30, 0.35);
+}
+
+.telError {
+  border-color: var(--red-deep);
+}
+
+.cc {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--cream);
+  border-right: 1px solid rgba(35, 31, 32, 0.2);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.tel input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 14px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: 500 17px/1 var(--font-dm-sans), sans-serif;
+  letter-spacing: 0.5px;
+  color: var(--ink);
+}
+
+.tel input::placeholder {
+  color: rgba(35, 31, 32, 0.4);
+}
+
+.why {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(35, 31, 32, 0.72);
+}
+
+.msg,
+.consentMsg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--red-deep);
+}
+
+.consentMsg {
+  padding-left: 36px;
+}
+
+.msgIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.payGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.refund {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.refund svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.refund a,
+.consent a {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.refund a {
+  white-space: nowrap;
+}
+
+.consent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.consent label {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-height: 44px;
+  font-size: 15px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.consent input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  border: 1.5px solid rgba(35, 31, 32, 0.6);
+  border-radius: 4px;
+}
+
+.consent input:focus-visible + .box {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.boxOn {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.boxBad {
+  border: 2px solid var(--red-deep);
+}
+
+.payButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--orange);
+  color: var(--ink);
+  font: 600 14px/1.2 var(--font-dm-sans), sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.payButton:hover {
+  background: #ea8611;
+}
+
+.payButton[aria-busy="true"] {
+  cursor: progress;
+}
+
+.trust {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding-top: 20px;
+  border-top: 1px solid rgba(35, 31, 32, 0.1);
+  text-align: center;
+}
+
+.razorpay {
+  display: block;
+  width: auto;
+  height: 22px;
+}
+
+.trustLine {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+.trustLine svg {
+  display: inline-block;
+  margin-right: 7px;
+  vertical-align: -3px;
+}
+
+.trust ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trust ul img {
+  display: block;
+}
+
+.methods {
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(35, 31, 32, 0.68);
+}
+
+/* "Corporate Culture is a brand of Blue Bird Ventures" stays at every width (P9). */
+.entity {
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  color: rgba(35, 31, 32, 0.68);
+}
+
+.legal {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  justify-content: center;
+  justify-items: center;
+  column-gap: 24px;
+  margin-top: -14px;
+}
+
+.legal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 13px;
+  color: rgba(35, 31, 32, 0.68);
+  text-decoration: none;
+}
+
+.next {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--cream);
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(35, 31, 32, 0.78);
+}
+
+.next svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+@media (max-width: 359px) {
+  .main {
+    padding: 20px 16px 36px;
+  }
+}
+
+@media (min-width: 768px) {
+  .page {
+    background: var(--cream);
+  }
+
+  .top {
+    height: 96px;
+    padding: 0 clamp(20px, 8.33vw, 120px);
+    border-bottom: 0;
+  }
+
+  .logo {
+    height: 72px;
+  }
+
+  .main {
+    padding: 56px 20px 96px;
+  }
+
+  .card {
+    gap: 24px;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 40px;
+    background: #ffffff;
+    border: 1px solid rgba(35, 31, 32, 0.1);
+    border-radius: 10px;
+  }
+
+  .legal {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 4px;
+  }
+
+  .legal a + a::before {
+    content: "·";
+    margin-right: 8px;
+    color: rgba(35, 31, 32, 0.35);
+  }
+}

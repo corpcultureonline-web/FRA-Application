@@ -25,10 +25,27 @@ export const LEGAL_PAGES: { slug: LegalSlug; label: string }[] = [
   { slug: "refunds", label: "Refund Policy" },
 ];
 
+function readLegal(slug: LegalSlug) {
+  return readFileSync(path.join(process.cwd(), "src", "content", "legal", `${slug}.md`), "utf8");
+}
+
 /** src/content/legal/<slug>.md — the published text, copied verbatim from the source library. */
 export function loadLegalDocument(slug: LegalSlug): Block[] {
-  const file = path.join(process.cwd(), "src", "content", "legal", `${slug}.md`);
-  return parseLegalMarkdown(readFileSync(file, "utf8"));
+  return parseLegalMarkdown(readLegal(slug));
+}
+
+/**
+ * The version of each document now published, from the source file's version
+ * line recorded in the copy's first line. Stored with every order's consent
+ * (T75), so we can say which version a customer accepted.
+ */
+export function legalVersions(): Record<LegalSlug, string> {
+  const version = (slug: LegalSlug) => {
+    const match = /Version ([0-9.]+)/.exec(readLegal(slug).split("\n")[0]);
+    if (!match) throw new Error(`${slug}.md has no version line`);
+    return match[1];
+  };
+  return { terms: version("terms"), privacy: version("privacy"), refunds: version("refunds") };
 }
 
 export function legalTitle(slug: LegalSlug) {

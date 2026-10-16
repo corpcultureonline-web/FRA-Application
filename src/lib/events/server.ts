@@ -22,6 +22,8 @@ export type EventRow = {
   /** Epoch ms; server time when absent. */
   at?: number;
   submissionId?: number | null;
+  /** Our own order id on paid runs (Event-Log-Spec v1.3 §2, T82). */
+  orderId?: number | null;
 };
 
 function cookie(headers: Headers, name: string) {
@@ -64,14 +66,15 @@ export async function writeEvents(db: Executor, context: EventContext, rows: Eve
   const values = rows.flatMap((row) => [
     context.sessionId,
     row.submissionId ?? null,
+    row.orderId ?? null,
     row.type,
     row.payload ? JSON.stringify(row.payload) : null,
     context.internal,
     ((row.at ?? now) / 1000).toFixed(3),
   ]);
   await db.execute(
-    `INSERT INTO event_log (session_id, submission_id, event_type, payload, is_internal, created_at)
-     VALUES ${rows.map(() => "(?, ?, ?, ?, ?, FROM_UNIXTIME(?))").join(", ")}`,
+    `INSERT INTO event_log (session_id, submission_id, order_id, event_type, payload, is_internal, created_at)
+     VALUES ${rows.map(() => "(?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))").join(", ")}`,
     values,
   );
 }
@@ -90,6 +93,24 @@ export async function logServerEvent(
     await writeEvents(getDatabase(), context, [{ type, payload, submissionId }]);
   } catch (error) {
     reportError(`Event log write failed (${type})`, error, { submission_id: submissionId ?? undefined });
+  }
+}
+
+/**
+ * A server-side event on a paid run, carrying our order id in the column the
+ * run is joined on. Fire-and-forget, like logServerEvent.
+ */
+export async function logOrderEvent(
+  context: EventContext,
+  type: ServerEventType,
+  payload: Record<string, unknown>,
+  orderId: number,
+  submissionId: number | null = null,
+) {
+  try {
+    await writeEvents(getDatabase(), context, [{ type, payload, orderId, submissionId }]);
+  } catch (error) {
+    reportError(`Event log write failed (${type})`, error, { order_id: orderId });
   }
 }
 
