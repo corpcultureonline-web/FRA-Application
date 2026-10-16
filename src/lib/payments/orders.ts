@@ -142,3 +142,22 @@ export async function markFailed(razorpayOrderId: string, reason: string): Promi
   );
   return result.affectedRows ? orderId : null;
 }
+
+export type PaidRun = { orderId: number; auditId: number; auditToken: string };
+
+/**
+ * The paid order behind a personal link (/report/my/<token>), with the Audit
+ * it was bought from. Null for anything that is not a paid order's token.
+ */
+export async function paidRun(token: string): Promise<PaidRun | null> {
+  if (!isReportToken(token)) return null;
+  const [rows] = await getDatabase().query<RowDataPacket[]>(
+    `SELECT o.id, o.audit_submission_id, a.report_token
+       FROM report_orders o JOIN audit_submissions a ON a.id = o.audit_submission_id
+      WHERE o.token = ? AND o.status = 'paid' LIMIT 1`,
+    [token],
+  );
+  const row = rows[0];
+  if (!row?.report_token) return null;
+  return { orderId: row.id, auditId: row.audit_submission_id, auditToken: row.report_token };
+}

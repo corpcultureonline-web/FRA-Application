@@ -59,6 +59,18 @@ describe("Tier 2 libraries: key tables", () => {
     assert.equal(landing.get("T2L-RANGE-LABEL"), "Your free Audit range");
   });
 
+  it("takes the column headed Copy, not a Status column after it", () => {
+    const carried = keys("Content-Library-Tier2-Carried.md");
+    assert.equal(carried.get("T2W-FIX"), "Something not right? Tell us and we will correct it before Ronak reviews your Report.");
+    assert.equal(carried.get("T2W-START"), "**Start the questions**");
+  });
+
+  it("every Screen 3 key on the boards has a string", () => {
+    for (const [key, entry] of Object.entries(index.keys)) {
+      if (key.startsWith("T2W-")) assert.ok(keys(entry.library).has(key), key);
+    }
+  });
+
   it("segments split bold for link labels", () => {
     assert.deepEqual(segments("I have read the **Terms**."), [
       { text: "I have read the ", strong: false },
