@@ -17,6 +17,17 @@ const START_AUDIT_HREF = "/audit";
 // Drop the PDF into public/ under this name. A plain <a>, so the base path is added by hand.
 const SAMPLE_REPORT_HREF = withBasePath("/sample-report.pdf");
 
+/**
+ * The legal pages shared by the Audit, the Report and the Roadmap (CANONICAL-VALUES §4, T84).
+ * The Refund Policy is live at /refunds but stays out of this footer until the Report
+ * can be bought: nothing on this page sells anything yet.
+ */
+const FOOTER_LINKS = [
+  { label: "Privacy Policy", href: withBasePath("/privacy") },
+  { label: "Terms & Conditions", href: withBasePath("/terms") },
+  { label: "Contact", href: `mailto:${CONTACT_EMAIL}` },
+];
+
 const AREAS: { name: string; question: string; rating: Rating; weakest?: boolean }[] = [
   { name: "Profit & Payback", question: "Will a franchise owner make money?", rating: "Average" },
   { name: "Systems", question: "Can someone else run it like you do?", rating: "Good" },
@@ -433,9 +444,9 @@ export default function Home() {
           </div>
           <div className="mt-10 flex flex-col gap-6 border-t border-white/15 pt-8 text-sm md:flex-row md:items-center md:justify-between">
             <ul className="flex flex-wrap gap-x-6 gap-y-3">
-              {["Privacy Policy", "Terms & Conditions", "Refund Policy", "Contact"].map((label) => (
+              {FOOTER_LINKS.map(({ label, href }) => (
                 <li key={label}>
-                  <a href="#" className="hover:text-white">
+                  <a href={href} className="hover:text-white">
                     {label}
                   </a>
                 </li>
