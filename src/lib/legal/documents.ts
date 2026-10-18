@@ -25,6 +25,13 @@ export const LEGAL_PAGES: { slug: LegalSlug; label: string }[] = [
   { slug: "refunds", label: "Refund Policy" },
 ];
 
+/**
+ * The policies listed in the legal pages' footer. The Refund Policy page is
+ * live (the Terms link to it) but stays out of the footer until the Report
+ * can be bought — add "refunds" back here on launch day.
+ */
+export const FOOTER_POLICIES: LegalSlug[] = ["privacy", "terms"];
+
 /** src/content/legal/<slug>.md — the published text, copied verbatim from the source library. */
 export function loadLegalDocument(slug: LegalSlug): Block[] {
   const file = path.join(process.cwd(), "src", "content", "legal", `${slug}.md`);
