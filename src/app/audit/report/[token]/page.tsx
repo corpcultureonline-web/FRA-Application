@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAdsTag } from "@/components/GoogleAdsTag";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { notFound } from "next/navigation";
@@ -34,7 +35,12 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/a
       const submission = await reportExists(token);
       if (submission) await logResultViewed(context, submission.id);
     });
-    return <ResultPage report={report} tier2Url={tier2Url} />;
+    return (
+      <>
+        <GoogleAdsTag />
+        <ResultPage report={report} tier2Url={tier2Url} />
+      </>
+    );
   }
 
   const origin = originFromHeaders(requestHeaders) ?? "";

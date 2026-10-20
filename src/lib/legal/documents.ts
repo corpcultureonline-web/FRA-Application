@@ -10,7 +10,7 @@ import { parseLegalMarkdown, type Block } from "./markdown";
  * this is when the document last changed. Until it is set the page shows the
  * token itself, so an unset date cannot pass unnoticed.
  */
-export const LEGAL_LAST_UPDATED: string | null = "17 October 2026";
+export const LEGAL_LAST_UPDATED: string | null = "20 October 2026";
 
 export type LegalSlug = "privacy" | "terms" | "refunds";
 
