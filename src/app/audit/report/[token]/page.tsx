@@ -25,7 +25,10 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/a
   if (!report) notFound();
 
   const requestHeaders = await headers();
-  const tier2Url = process.env.TIER2_URL?.trim() || undefined;
+  // Set only where the Report is on sale: "Get my full report" then opens its
+  // landing page as this brand (?audit=), instead of registering interest.
+  const tier2Base = process.env.TIER2_URL?.trim();
+  const tier2Url = tier2Base ? `${tier2Base}${tier2Base.includes("?") ? "&" : "?"}audit=${token}` : undefined;
   if (query.print !== "1") {
     // Event log: logged after the response, never delaying the page. The print
     // view is Chromium rendering the PDF, not a founder reading, so it is skipped.
