@@ -200,6 +200,11 @@ export function getTier2InterestField() {
   return process.env.ZOHO_TIER2_FIELD?.trim() || undefined;
 }
 
+/** The Report's "Tell me about the Roadmap" Date/Time field, e.g. Tier_3_Interest_At (T127). */
+export function getTier3InterestField() {
+  return process.env.ZOHO_TIER3_FIELD?.trim() || undefined;
+}
+
 /** Zoho Date/Time format, in IST: 2026-10-08T14:05:00+05:30. */
 export function zohoDateTime(date: Date) {
   const ist = new Date(date.getTime() + 330 * 60_000);

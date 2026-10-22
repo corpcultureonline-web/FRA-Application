@@ -1,0 +1,372 @@
+{
+ "_note": "Order and structure only. 35 codes; a brand is asked 32 (one outlet) or 34 (more than one) \u2014 entries with asked_when are conditional, and PP6a and PP6b are mutually exclusive, so exactly one of them is asked (Tier2-Questionnaire-Strings.md v1.1, T128/T129). No wording: stems and options come from Tier2-Questionnaire-Strings.md, escape labels, help and input ranges from Content-Library-Tier2-Field-Help.md v1.6. No scoring maps \u2014 they never reach the front end.",
+ "sub_screens": {
+  "1": [
+   [
+    "UE7",
+    "UE8",
+    "UE9",
+    "UE12"
+   ]
+  ],
+  "2": [
+   [
+    "OR3",
+    "OR4"
+   ],
+   [
+    "OR5"
+   ],
+   [
+    "OR6"
+   ]
+  ],
+  "3": [
+   [
+    "BP2",
+    "BP3",
+    "BP4"
+   ],
+   [
+    "BP5"
+   ]
+  ],
+  "4": [
+   [
+    "MR2",
+    "MR3",
+    "MR4",
+    "MR5",
+    "MR6"
+   ]
+  ],
+  "5": [
+   [
+    "PP2",
+    "PP3",
+    "PP5",
+    "PP6b",
+    "PP6a"
+   ],
+   [
+    "PP4"
+   ]
+  ],
+  "6": [
+   [
+    "SI2",
+    "SI3",
+    "SI4",
+    "SI5",
+    "SI6"
+   ]
+  ],
+  "7": [
+   [
+    "FL5"
+   ],
+   [
+    "FL2"
+   ],
+   [
+    "FL3"
+   ],
+   [
+    "FL4"
+   ]
+  ],
+  "8": [
+   [
+    "G2",
+    "G4",
+    "G5"
+   ]
+  ]
+ },
+ "questions": [
+  {
+   "code": "UE7",
+   "section": 1,
+   "type": "num",
+   "escape": {
+    "key": "T2H-UE7-NOIDEA",
+    "see": "Field-Help \u00a72 for the label"
+   },
+   "input": {
+    "inputmode": "decimal",
+    "suffix": "%",
+    "range": "-100..100, 1dp"
+   },
+   "help_key": "T2H-UE7-HELP"
+  },
+  {
+   "code": "UE8",
+   "section": 1,
+   "type": "list",
+   "option_count": 4,
+   "help_key": "T2H-UE8-HELP"
+  },
+  {
+   "code": "UE9",
+   "section": 1,
+   "type": "tiles",
+   "option_count": 3,
+   "escape": {
+    "key": null,
+    "see": "Field-Help \u00a72 for the label"
+   },
+   "help_key": "T2H-UE9-HELP"
+  },
+  {
+   "code": "UE12",
+   "section": 1,
+   "type": "tiles",
+   "option_count": 3,
+   "help_key": "T2H-UE12-HELP"
+  },
+  {
+   "code": "OR3",
+   "section": 2,
+   "type": "tiles",
+   "option_count": 3,
+   "help_key": "T2H-OR3-HELP"
+  },
+  {
+   "code": "OR4",
+   "section": 2,
+   "type": "tiles",
+   "option_count": 3,
+   "help_key": "T2H-OR4-HELP"
+  },
+  {
+   "code": "OR5",
+   "section": 2,
+   "type": "anchored",
+   "option_count": 5
+  },
+  {
+   "code": "OR6",
+   "section": 2,
+   "type": "anchored",
+   "option_count": 5,
+   "help_key": "T2H-OR6-HELP",
+   "asked_when": "outlets_band != 'ONE'"
+  },
+  {
+   "code": "BP2",
+   "section": 3,
+   "type": "tiles",
+   "option_count": 3
+  },
+  {
+   "code": "BP3",
+   "section": 3,
+   "type": "num",
+   "escape": {
+    "key": null,
+    "see": "Field-Help \u00a72 for the label"
+   },
+   "input": {
+    "inputmode": "decimal",
+    "suffix": null,
+    "range": "1.0..5.0, 1dp"
+   },
+   "help_key": "T2H-BP3-HELP"
+  },
+  {
+   "code": "BP4",
+   "section": 3,
+   "type": "num",
+   "escape": {
+    "key": null,
+    "see": "Field-Help \u00a72 for the label"
+   },
+   "input": {
+    "inputmode": "numeric",
+    "suffix": null,
+    "range": "0.., whole"
+   },
+   "help_key": "T2H-BP4-HELP"
+  },
+  {
+   "code": "BP5",
+   "section": 3,
+   "type": "anchored",
+   "option_count": 5
+  },
+  {
+   "code": "MR2",
+   "section": 4,
+   "type": "tiles",
+   "option_count": 3,
+   "help_key": "T2H-MR2-HELP"
+  },
+  {
+   "code": "MR3",
+   "section": 4,
+   "type": "tiles",
+   "option_count": 3
+  },
+  {
+   "code": "MR4",
+   "section": 4,
+   "type": "tiles",
+   "option_count": 3
+  },
+  {
+   "code": "MR5",
+   "section": 4,
+   "type": "num",
+   "input": {
+    "inputmode": "numeric",
+    "suffix": null,
+    "range": "2.., whole",
+    "below_range": "T2V-MR5-ONE"
+   },
+   "help_key": "T2H-MR5-HELP",
+   "asked_when": "outlets_band != 'ONE'",
+   "single_outlet": "derives to 1 from the Tier 1 profile, not asked"
+  },
+  {
+   "code": "MR6",
+   "section": 4,
+   "type": "tiles",
+   "option_count": 3
+  },
+  {
+   "code": "PP2",
+   "section": 5,
+   "type": "tiles",
+   "option_count": 3
+  },
+  {
+   "code": "PP3",
+   "section": 5,
+   "type": "tiles",
+   "option_count": 3,
+   "help_key": "T2H-PP3-HELP"
+  },
+  {
+   "code": "PP4",
+   "section": 5,
+   "type": "anchored",
+   "option_count": 5
+  },
+  {
+   "code": "PP5",
+   "section": 5,
+   "type": "list",
+   "option_count": 3,
+   "help_key": "T2H-PP5-HELP"
+  },
+  {
+   "code": "PP6b",
+   "section": 5,
+   "type": "tiles",
+   "option_count": 3,
+   "asked_when": "brand has no existing franchisees"
+  },
+  {
+   "code": "PP6a",
+   "section": 5,
+   "type": "list",
+   "option_count": 3,
+   "help_key": "T2H-PP6A-HELP",
+   "asked_when": "brand has existing franchisees",
+   "replaces": "PP6b"
+  },
+  {
+   "code": "SI2",
+   "section": 6,
+   "type": "list",
+   "option_count": 5,
+   "help_key": "T2H-SI2-HELP"
+  },
+  {
+   "code": "SI3",
+   "section": 6,
+   "type": "tiles",
+   "option_count": 3
+  },
+  {
+   "code": "SI4",
+   "section": 6,
+   "type": "tiles",
+   "option_count": 3
+  },
+  {
+   "code": "SI5",
+   "section": 6,
+   "type": "tiles",
+   "option_count": 3
+  },
+  {
+   "code": "SI6",
+   "section": 6,
+   "type": "list",
+   "option_count": 5,
+   "help_key": "T2H-SI6-HELP"
+  },
+  {
+   "code": "FL5",
+   "section": 7,
+   "type": "num",
+   "input": {
+    "inputmode": "numeric",
+    "suffix": "days",
+    "range": "0..90, whole"
+   },
+   "help_key": "T2H-FL5-HELP"
+  },
+  {
+   "code": "FL2",
+   "section": 7,
+   "type": "anchored",
+   "option_count": 5
+  },
+  {
+   "code": "FL3",
+   "section": 7,
+   "type": "anchored",
+   "option_count": 5
+  },
+  {
+   "code": "FL4",
+   "section": 7,
+   "type": "anchored",
+   "option_count": 5
+  },
+  {
+   "code": "G2",
+   "section": 8,
+   "type": "tiles",
+   "option_count": 3,
+   "escape": {
+    "key": null,
+    "see": "Field-Help \u00a72 for the label"
+   }
+  },
+  {
+   "code": "G4",
+   "section": 8,
+   "type": "tiles",
+   "option_count": 2,
+   "escape": {
+    "key": null,
+    "see": "Field-Help \u00a72 for the label"
+   },
+   "help_key": "T2H-G4-HELP"
+  },
+  {
+   "code": "G5",
+   "section": 8,
+   "type": "tiles",
+   "option_count": 3,
+   "escape": {
+    "key": null,
+    "see": "Field-Help \u00a72 for the label"
+   },
+   "help_key": "T2H-G5-HELP"
+  }
+ ]
+}

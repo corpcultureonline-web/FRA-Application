@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { eventContext } from "@/lib/events/server";
+import { startRun } from "@/lib/messages/start-run";
 import { reportError } from "@/lib/monitoring/report-error";
 import { webhookSecret } from "@/lib/payments/razorpay";
 import { recordFailure, recordPayment } from "@/lib/payments/record";
@@ -41,7 +42,8 @@ export async function POST(request: Request) {
   const context = eventContext(request.headers);
   try {
     if (body.event === "payment.captured" || body.event === "order.paid") {
-      await recordPayment(context, payment.order_id, payment.id);
+      const order = await recordPayment(context, payment.order_id, payment.id);
+      if (order?.newlyPaid) after(() => startRun(order.orderId));
     } else if (body.event === "payment.failed") {
       await recordFailure(context, payment.order_id, payment.error_code ?? "failed");
     }

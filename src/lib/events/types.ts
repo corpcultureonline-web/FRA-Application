@@ -30,6 +30,22 @@ export const SERVER_EVENTS = [
   // The Report's lifecycle (Event-Log-Spec v1.3 §4.3b).
   "payment_succeeded",
   "payment_failed",
+  "questionnaire_submitted",
+  // Field Help §7 / T48: written by the server as the answer is saved, with the order.
+  "contradiction_warned",
+  "help_page_opened",
+  // The Report (§4.3b): generated at submission, then the tracked link (T77).
+  "report_generated",
+  "report_link_clicked",
+  "report_opened",
+  "report_section_read",
+  "report_pdf_downloaded",
+  "report_cta_clicked",
+  // The review panel (Admin library v1.3, Event-Log-Spec §4.3b).
+  "report_approved",
+  "report_returned",
+  "report_sent",
+  "refund_issued",
 ] as const;
 
 export type ClientEventType = (typeof CLIENT_EVENTS)[number];

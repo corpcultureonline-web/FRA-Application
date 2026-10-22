@@ -45,3 +45,34 @@ export async function createRazorpayOrder({
   }
   return body.id;
 }
+
+/**
+ * Refunds a captured payment in full (Admin library §5). Amount in paise.
+ * Returns Razorpay's refund id. The payment id is our record of what was paid;
+ * nothing typed in the panel reaches this call.
+ */
+export async function refundPayment({
+  paymentId,
+  amountPaise,
+  orderId,
+}: {
+  paymentId: string;
+  amountPaise: number;
+  orderId: number;
+}): Promise<string> {
+  const { keyId, keySecret } = razorpayKeys();
+  const response = await fetch(`${API}/payments/${encodeURIComponent(paymentId)}/refund`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ amount: amountPaise, speed: "normal", notes: { order_id: String(orderId) } }),
+    cache: "no-store",
+  });
+  const body = (await response.json().catch(() => null)) as { id?: string; error?: { description?: string } } | null;
+  if (!response.ok || !body?.id) {
+    throw new Error(`Razorpay refund failed (${response.status}): ${body?.error?.description ?? "no response body"}`);
+  }
+  return body.id;
+}

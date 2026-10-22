@@ -13,6 +13,8 @@
 const KEY_CELL = /^`(T2[A-Z]*-[A-Z0-9-]+)`$/;
 /** "Refund policy *(link)*" → "Refund policy". */
 const NOTE = /\s*\*\([^)]*\)\*\s*$/;
+/** A decision reference inside the copy, "expires in 15 minutes *(T79)*.": the library's annotation, never the founder's words. */
+const DECISION_NOTE = /\s*\*\((?:[TPDRBS]\d+|T\d+[^)]*)\)\*/g;
 /** A cell that points elsewhere ("*§3.1 above*") rather than holding copy. */
 const POINTER = /^\*§/;
 
@@ -45,7 +47,7 @@ export function parseLibraryKeys(markdown: string): Map<string, string> {
     const copyIndex = copyColumn > keyIndex ? copyColumn : cells.length - 1;
     if (keyIndex === -1 || keyIndex >= copyIndex) return;
     const key = KEY_CELL.exec(cells[keyIndex])![1];
-    const copy = (cells[copyIndex] ?? "").replace(NOTE, "");
+    const copy = (cells[copyIndex] ?? "").replace(NOTE, "").replace(DECISION_NOTE, "");
     if (!copy || POINTER.test(copy) || strings.has(key)) return;
     strings.set(key, copy);
   });

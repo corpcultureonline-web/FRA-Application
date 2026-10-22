@@ -1,0 +1,844 @@
+/*
+ * Screen 4, the questionnaire (handoff boards 4-S4*). Phone first: a cream
+ * bar, the progress block, the questions, and the actions docked to the
+ * bottom. From 768px: a 720px card on cream, actions at the end of the card.
+ */
+.page {
+  --ink: #231f20;
+  --orange: #f78f1e;
+  --red-deep: #b8360f;
+  --cream: #f5f0eb;
+  --sand: #f0e6d8;
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--font-dm-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.page p {
+  margin: 0;
+}
+
+.page button {
+  cursor: pointer;
+}
+
+.bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--cream);
+  border-bottom: 1px solid rgba(35, 31, 32, 0.08);
+}
+
+.logo {
+  display: block;
+  width: auto;
+  height: 34px;
+}
+
+/* "Saved" appears after every answer, then fades (T34). Never a modal. */
+.saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(35, 31, 32, 0.14);
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity 0.6s ease;
+}
+
+.savedHidden {
+  opacity: 0;
+}
+
+.main {
+  flex: 1;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+.prog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(35, 31, 32, 0.08);
+}
+
+.lbl {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.lbl b {
+  font-weight: 600;
+}
+
+.nm {
+  font-weight: 600;
+  color: var(--red-deep);
+}
+
+/* Eight discrete segments, never a bar that fills smoothly (Questionnaire §4). */
+.seg {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.seg i {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--sand);
+}
+
+.seg i.done {
+  background: var(--orange);
+}
+
+.seg i.cur {
+  background: rgba(247, 143, 30, 0.4);
+}
+
+.pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pips i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sand);
+}
+
+.pips i.pipOn {
+  background: var(--ink);
+}
+
+.fail {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(35, 31, 32, 0.08);
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--red-deep);
+}
+
+.fail svg {
+  flex-shrink: 0;
+}
+
+/* Room at the end so the docked actions never cover the last answer. */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 16px 170px;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--cream);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.noteLine {
+  background: #ffffff;
+  border: 1px solid rgba(35, 31, 32, 0.12);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.qrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.qt,
+.stem {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-lexend), var(--font-dm-sans), sans-serif;
+  font-weight: 600;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.qt {
+  padding-top: 2px;
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+}
+
+.stem {
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+}
+
+.qh {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px -12px -10px 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.qh span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(35, 31, 32, 0.5);
+  font: 600 13px/1 var(--font-dm-sans), sans-serif;
+  color: var(--ink);
+}
+
+.qh[aria-expanded="true"] span {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #ffffff;
+}
+
+.qhelp {
+  position: relative;
+  margin-top: -2px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--cream);
+  border: 1px solid rgba(35, 31, 32, 0.12);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.qhelp::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: 9px;
+  width: 12px;
+  height: 12px;
+  background: var(--cream);
+  border-top: 1px solid rgba(35, 31, 32, 0.12);
+  border-left: 1px solid rgba(35, 31, 32, 0.12);
+  transform: rotate(45deg);
+}
+
+.anote {
+  margin-top: -6px !important;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(35, 31, 32, 0.75);
+}
+
+.tiles {
+  display: grid;
+  gap: 8px;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 10px 8px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(35, 31, 32, 0.28);
+  background: #ffffff;
+  color: var(--ink);
+  font: 600 15px/1.25 var(--font-dm-sans), sans-serif;
+  text-align: center;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lopt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(35, 31, 32, 0.28);
+  background: #ffffff;
+  color: var(--ink);
+  font: 500 16px/1.35 var(--font-dm-sans), sans-serif;
+  text-align: left;
+}
+
+.ring,
+.escRing {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+}
+
+.ring {
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid rgba(35, 31, 32, 0.45);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card4,
+.cards > button {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 14px 44px 14px 16px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(35, 31, 32, 0.3);
+  background: #ffffff;
+  color: var(--ink);
+  font: 500 15px/1.5 var(--font-dm-sans), sans-serif;
+  text-align: left;
+}
+
+.tick {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--ink);
+}
+
+/* Selected: orange, with the dark tick (all four option kinds). */
+.tile[aria-checked="true"],
+.lopt[aria-checked="true"],
+.cards > button[aria-checked="true"] {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+
+.lopt[aria-checked="true"] .ring {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.cards > button[aria-checked="true"] .tick {
+  display: flex;
+}
+
+.numf {
+  display: flex;
+  align-items: stretch;
+  max-width: 220px;
+  min-height: 52px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1.5px solid rgba(35, 31, 32, 0.45);
+  border-radius: 6px;
+}
+
+.numf:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(247, 143, 30, 0.35);
+}
+
+.numf input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 14px;
+  border: 0;
+  outline: 0;
+  background: #ffffff;
+  font: 600 18px/1 var(--font-dm-sans), sans-serif;
+  color: var(--ink);
+}
+
+.numDim {
+  border-color: rgba(35, 31, 32, 0.2);
+}
+
+.numDim input {
+  background: #faf8f5;
+}
+
+.suf {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: var(--cream);
+  border-left: 1px solid rgba(35, 31, 32, 0.2);
+  font-size: 15px;
+  color: rgba(35, 31, 32, 0.75);
+}
+
+.pre {
+  order: -1;
+  border-right: 1px solid rgba(35, 31, 32, 0.2);
+  border-left: 0;
+}
+
+.calcLink {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: -8px 0 -6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--red-deep);
+  font: 600 15px/1.3 var(--font-dm-sans), sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.calc {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--cream);
+  border: 1px solid rgba(35, 31, 32, 0.12);
+}
+
+.calc label {
+  display: block;
+  font: 600 15px/1.35 var(--font-dm-sans), sans-serif;
+}
+
+.calc .numf {
+  max-width: none;
+  margin-top: 8px;
+}
+
+.calcNote {
+  margin-top: 3px !important;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: rgba(35, 31, 32, 0.75);
+}
+
+.calcResult {
+  padding-top: 12px;
+  border-top: 1px solid rgba(35, 31, 32, 0.12);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.esc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: -4px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(35, 31, 32, 0.8);
+  font: 500 15px/1.35 var(--font-dm-sans), sans-serif;
+  text-align: left;
+}
+
+.escRing {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid rgba(35, 31, 32, 0.4);
+}
+
+.esc[aria-checked="true"] {
+  background: var(--sand);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.esc[aria-checked="true"] .escRing {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Warns, never blocks (T55). */
+.contra {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1.5px solid var(--red-deep);
+}
+
+.contra p {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.contraHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 16px !important;
+}
+
+.alertIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.contraGo {
+  min-height: 48px;
+  border-radius: 6px;
+  border: 1px solid rgba(35, 31, 32, 0.45);
+  background: #ffffff;
+  color: var(--ink);
+  font: 600 14px/1.2 var(--font-dm-sans), sans-serif;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.hlink {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--red-deep);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.helpRow {
+  display: flex;
+}
+
+.helpBelow {
+  display: none;
+}
+
+.acts {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 16px 16px;
+  background: #ffffff;
+  border-top: 1px solid rgba(35, 31, 32, 0.12);
+}
+
+.cnt {
+  grid-column: 1 / -1;
+  font-size: 13.5px;
+  line-height: 1.35;
+  text-align: center;
+  color: rgba(35, 31, 32, 0.72);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--orange);
+  color: var(--ink);
+  font: 600 14px/1.2 var(--font-dm-sans), sans-serif;
+  letter-spacing: 1.5px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  background: #ea8611;
+}
+
+.ghost,
+.ghost:hover {
+  background: #ffffff;
+  border: 1px solid rgba(35, 31, 32, 0.45);
+  letter-spacing: 1.2px;
+}
+
+/* Next before the screen is answered: visibly unavailable, does nothing (T43). */
+.off,
+.off:hover {
+  background: var(--sand);
+  color: rgba(35, 31, 32, 0.45);
+  cursor: default !important;
+}
+
+/* From the review screen: one button, full width (T57). */
+.full {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Review ---------- */
+.review {
+  gap: 14px;
+  padding: 20px 16px 120px;
+  background: var(--cream);
+}
+
+.reviewIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reviewHead {
+  margin: 0;
+  font: 600 24px/1.2 var(--font-lexend), sans-serif;
+  letter-spacing: -0.4px;
+}
+
+.reviewSub {
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(35, 31, 32, 0.75);
+}
+
+.rvGroup {
+  padding: 4px 16px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(35, 31, 32, 0.1);
+}
+
+.rvGroup h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 0 10px;
+  border-bottom: 1px solid rgba(35, 31, 32, 0.1);
+  font: 600 17px/1.3 var(--font-lexend), sans-serif;
+}
+
+.rvN {
+  font-size: 14px;
+  color: var(--red-deep);
+}
+
+.rvRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(35, 31, 32, 0.08);
+}
+
+.rvRow:last-child {
+  border-bottom: 0;
+}
+
+.rvQ {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: rgba(35, 31, 32, 0.7);
+}
+
+.rvA {
+  grid-column: 1 / 2;
+  font-size: 15.5px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+/* Anchored answers in full, never truncated (T51). */
+.rvLong {
+  font-weight: 500;
+}
+
+.rvE {
+  grid-row: 1 / 3;
+  grid-column: 2 / 3;
+  align-self: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -10px -6px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--red-deep);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.entity {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(35, 31, 32, 0.68);
+}
+
+.review .acts {
+  grid-template-columns: 112px minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .page {
+    background: var(--cream);
+  }
+
+  .bar {
+    height: 72px;
+    padding: 0 clamp(20px, 8.33vw, 120px);
+    border-bottom: 0;
+  }
+
+  .logo {
+    height: 52px;
+  }
+
+  .main {
+    padding: 8px 20px 64px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 40px;
+    background: #ffffff;
+    border: 1px solid rgba(35, 31, 32, 0.1);
+    border-radius: 10px;
+  }
+
+  .prog {
+    padding: 0 0 18px;
+    border-bottom: 0;
+  }
+
+  .fail {
+    padding: 8px 0;
+  }
+
+  .body {
+    padding: 8px 0 8px;
+  }
+
+  .helpRow {
+    display: none;
+  }
+
+  .helpBelow {
+    display: flex;
+    width: 100%;
+    max-width: 720px;
+    margin: 18px auto 0;
+  }
+
+  .acts {
+    position: static;
+    grid-template-columns: 140px minmax(0, 1fr);
+    margin-top: 16px;
+    padding: 16px 0 0;
+    border-top: 1px solid rgba(35, 31, 32, 0.1);
+  }
+
+  .acts .btn:last-child:not(.full) {
+    justify-self: end;
+    width: 260px;
+  }
+
+  .review {
+    padding: 32px 40px;
+    background: #ffffff;
+  }
+
+  .reviewHead {
+    font-size: 32px;
+  }
+
+  .review .acts {
+    grid-template-columns: 140px minmax(0, 1fr);
+  }
+}
+
+/* Field Help §5: MR5 = 1 is a misread, not a typo, so it gets a sentence rather than a red error. */
+.belowNote {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #8a4205;
+}

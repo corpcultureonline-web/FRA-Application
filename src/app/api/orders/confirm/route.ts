@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { withBasePath } from "@/lib/base-path";
 import { eventContext } from "@/lib/events/server";
+import { startRun } from "@/lib/messages/start-run";
 import { reportError } from "@/lib/monitoring/report-error";
 import { razorpayKeys } from "@/lib/payments/razorpay";
 import { personalLinkPath, recordPayment } from "@/lib/payments/record";
@@ -32,6 +33,8 @@ export async function POST(request: Request) {
     }
     const order = await recordPayment(eventContext(request.headers), orderId, paymentId);
     if (!order) return NextResponse.json({ error: "order" }, { status: 404 });
+    // The resume link goes out once, when the payment is first recorded (T32).
+    if (order.newlyPaid) after(() => startRun(order.orderId));
     return NextResponse.json({ next: withBasePath(personalLinkPath(order.token)) });
   } catch (error) {
     reportError("Payment confirmation failed", error);

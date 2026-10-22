@@ -102,7 +102,9 @@ export async function logServerEvent(
  */
 export async function logOrderEvent(
   context: EventContext,
-  type: ServerEventType,
+  // The Report's answers are logged as they are saved, so question_answered and
+  // answer_changed come from the server on a paid run, not the tracker.
+  type: ServerEventType | "question_answered" | "answer_changed",
   payload: Record<string, unknown>,
   orderId: number,
   submissionId: number | null = null,
