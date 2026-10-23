@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Fragment, type ReactNode } from "react";
 import logo from "@/assets/logo.png";
 import { BRAND_ENTITY_LINE } from "@/lib/company";
-import { LEGAL_LAST_UPDATED, LEGAL_PAGES, loadLegalDocument, type LegalSlug } from "@/lib/legal/documents";
+import { FOOTER_POLICIES, LEGAL_LAST_UPDATED, LEGAL_PAGES, loadLegalDocument, type LegalSlug } from "@/lib/legal/documents";
 import { DATE_TOKEN, type Block, type Inline } from "@/lib/legal/markdown";
 import { withBasePath } from "@/lib/base-path";
 import styles from "./legal.module.css";
@@ -161,7 +161,7 @@ export function LegalDocument({ slug }: { slug: LegalSlug }) {
       <main className={styles.main}>{blocks.map(renderBlock)}</main>
       <footer className={styles.foot}>
         <nav aria-label="Policies">
-          {LEGAL_PAGES.map((page) => (
+          {LEGAL_PAGES.filter((page) => FOOTER_POLICIES.includes(page.slug)).map((page) => (
             <a
               key={page.slug}
               href={withBasePath(`/${page.slug}`)}

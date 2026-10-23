@@ -6,6 +6,7 @@ import { FaqItem } from "./_landing/FaqItem";
 import { jsonLd, landingStructuredData } from "./_landing/structured-data";
 import { HeroIllustration, ReportThumbnail } from "./_landing/Illustrations";
 import founderPhoto from "@/assets/ronak-patel.jpg";
+import { GoogleAdsTag } from "@/components/GoogleAdsTag";
 import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
 import { Rich } from "@/components/Rich";
@@ -16,6 +17,17 @@ import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY, WHAT
 const START_AUDIT_HREF = "/audit";
 // Drop the PDF into public/ under this name. A plain <a>, so the base path is added by hand.
 const SAMPLE_REPORT_HREF = withBasePath("/sample-report.pdf");
+
+/**
+ * The legal pages shared by the Audit, the Report and the Roadmap (CANONICAL-VALUES §4, T84).
+ * The Refund Policy is live at /refunds but stays out of this footer until the Report
+ * can be bought: nothing on this page sells anything yet.
+ */
+const FOOTER_LINKS = [
+  { label: "Privacy Policy", href: withBasePath("/privacy") },
+  { label: "Terms & Conditions", href: withBasePath("/terms") },
+  { label: "Contact", href: `mailto:${CONTACT_EMAIL}` },
+];
 
 const AREAS: { name: string; question: string; rating: Rating; weakest?: boolean }[] = [
   { name: "Profit & Payback", question: "Will a franchise owner make money?", rating: "Average" },
@@ -88,6 +100,7 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col bg-white text-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(landingStructuredData()) }} />
+      <GoogleAdsTag />
       {/* Hero */}
       <header className="bg-cream">
         <div className={`${container} pt-3 sm:pt-4`}>
@@ -433,9 +446,9 @@ export default function Home() {
           </div>
           <div className="mt-10 flex flex-col gap-6 border-t border-white/15 pt-8 text-sm md:flex-row md:items-center md:justify-between">
             <ul className="flex flex-wrap gap-x-6 gap-y-3">
-              {["Privacy Policy", "Terms & Conditions", "Refund Policy", "Contact"].map((label) => (
+              {FOOTER_LINKS.map(({ label, href }) => (
                 <li key={label}>
-                  <a href="#" className="hover:text-white">
+                  <a href={href} className="hover:text-white">
                     {label}
                   </a>
                 </li>

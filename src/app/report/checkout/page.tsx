@@ -27,7 +27,11 @@ function copy(): CheckoutCopy {
     mobileLabel: plain(t2("T2C-MOBILE-LABEL")),
     mobileWhy: plain(t2("T2C-MOBILE-WHY")),
     mobileError: plain(t2("T2C-MOBILE-ERR")),
-    refundLine: plain(t2("T2C-REFUND-LINE")),
+    // Client review, 23 Oct 2026: the library's "Full refund if you change your
+    // mind." promised more than the Refund Policy, which refunds in full only
+    // before the answers are submitted. The client's wording, until
+    // T2C-REFUND-LINE is updated in the Checkout library.
+    refundLine: "Full refund any time before you submit your answers.",
     refundLink: plain(t2("T2L-PAY-REFUND")),
     consent: segments(t2("T2C-CONSENT")).map((segment) => ({
       text: segment.text,

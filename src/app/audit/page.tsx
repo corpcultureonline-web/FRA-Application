@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAdsTag } from "@/components/GoogleAdsTag";
 import { AuditFlow } from "./AuditFlow";
 
 export const metadata: Metadata = {
@@ -8,5 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function AuditPage() {
-  return <AuditFlow />;
+  return (
+    <>
+      <GoogleAdsTag />
+      <AuditFlow />
+    </>
+  );
 }

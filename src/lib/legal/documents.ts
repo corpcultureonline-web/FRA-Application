@@ -10,7 +10,7 @@ import { parseLegalMarkdown, type Block } from "./markdown";
  * this is when the document last changed. Until it is set the page shows the
  * token itself, so an unset date cannot pass unnoticed.
  */
-export const LEGAL_LAST_UPDATED: string | null = null;
+export const LEGAL_LAST_UPDATED: string | null = "20 October 2026";
 
 export type LegalSlug = "privacy" | "terms" | "refunds";
 
@@ -24,6 +24,12 @@ export const LEGAL_PAGES: { slug: LegalSlug; label: string }[] = [
   { slug: "terms", label: "Terms & Conditions" },
   { slug: "refunds", label: "Refund Policy" },
 ];
+
+/**
+ * The policies listed in the legal pages' footer. The live Audit leaves the
+ * Refund Policy out until the Report can be bought; with the Report it is in.
+ */
+export const FOOTER_POLICIES: LegalSlug[] = ["privacy", "terms", "refunds"];
 
 function readLegal(slug: LegalSlug) {
   return readFileSync(path.join(process.cwd(), "src", "content", "legal", `${slug}.md`), "utf8");

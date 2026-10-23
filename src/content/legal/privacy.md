@@ -1,4 +1,4 @@
-<!-- Published text of Privacy-Policy.md Version 1.4, copied verbatim. Edit the source, then re-copy. -->
+<!-- Published text of Privacy-Policy.md Version 1.4, copied verbatim, except: §11's sentence "We do not use advertising cookies…" removed 20 October 2026 at Corporate Culture's direction, because the Audit pages now carry the Google Ads tag. The source file should be updated to match. -->
 # Privacy Policy
 
 *Last updated: **{{LEGAL_LAST_UPDATED}}***
@@ -160,8 +160,6 @@ Your answers are held on servers with access limited to the people in §6. Payme
 We use a session cookie to keep your place in the questionnaire, so you can close the tab and come back without losing your answers.
 
 **There is no account and no password.** You never sign in to read your Report — the private link we send you is what identifies you, which is why §10 asks you not to forward it.
-
-**We do not use advertising cookies**, and we do not let other companies track you across sites from our pages.
 
 ---
 

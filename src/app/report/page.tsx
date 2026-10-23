@@ -48,7 +48,7 @@ const PROTOTYPE = {
   rangeHigh: "Ready to scale",
   stepQuestions: "About 30 questions",
   stepSitting: "About 15 minutes",
-  stepDelivery: "Report within 24 hours",
+  stepDelivery: "Report within 24 hours on working days",
   tagline: "Franchise. Fund. Scale.",
   prevPage: "Previous page",
   nextPage: "Next page",
