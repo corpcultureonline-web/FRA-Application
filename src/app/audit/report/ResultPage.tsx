@@ -338,7 +338,7 @@ const STEPS = [
     title: "Answer about thirty more questions",
     body: "About 15 minutes. Your 11 answers carry over, so no question is asked twice.",
   },
-  { title: "Get your report within 24 hours", body: "Reviewed personally by Ronak before it reaches you." },
+  { title: "Get your report within 24 hours on working days", body: "Reviewed personally by Ronak before it reaches you." },
 ];
 
 function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakCount: number; tier2Url?: string }) {
@@ -352,7 +352,7 @@ function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakC
     ["Legal check", "Trademark and disputes", "Full legal and approvals check"],
     ["Similar brands", "—", "How you compare with brands we have worked with"],
     ["Reviewed by Ronak", "—", "Every report, personally"],
-    ["When you get it", "On screen now", "Within 24 hours"],
+    ["When you get it", "On screen now", "Within 24 hours on working days"],
   ];
   const buttonClass =
     "mt-5 flex h-14 w-full items-center justify-center gap-3 rounded-md bg-cta px-8 text-sm font-bold tracking-[0.18em] uppercase transition-colors hover:bg-cta-hover disabled:opacity-70 sm:w-auto";

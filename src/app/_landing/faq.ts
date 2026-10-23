@@ -64,7 +64,7 @@ export const FAQ: Faq[] = [
     question: "What does it cost?",
     answer: [
       "The Franchise Readiness Audit is free — eleven questions, about 4 minutes, and your Franchise Readiness Score appears on screen straight away.",
-      `The full **Franchise Readiness Report** is **${priceLabel("report")}** (${payableLabel("report")}). About thirty more questions, and you receive the report within 24 hours.`,
+      `The full **Franchise Readiness Report** is **${priceLabel("report")}** (${payableLabel("report")}). About thirty more questions, and you receive the report within 24 hours on working days.`,
       `The **Franchise Readiness Roadmap** is **${priceLabel("roadmap")}** (${payableLabel("roadmap")}). It picks up where the Report stops, works through what a franchise partner would actually earn, and includes a call with our team.`,
       "Each stage is priced on its own. Nothing is credited or adjusted if you move to the next one.",
     ],
