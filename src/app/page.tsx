@@ -11,7 +11,7 @@ import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
 import { Rich } from "@/components/Rich";
 import { withBasePath } from "@/lib/base-path";
-import { CANONICAL_URL } from "@/lib/seo";
+import { CANONICAL_URL, isNoIndex } from "@/lib/seo";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/company";
 
 const START_AUDIT_HREF = "/audit";
@@ -93,7 +93,7 @@ function SampleReportLink() {
 /** The one indexed page (T17): its own canonical address, so a copy on any other host never competes. */
 export const metadata: Metadata = {
   alternates: { canonical: CANONICAL_URL },
-  robots: { index: true, follow: true },
+  robots: isNoIndex() ? { index: false, follow: false } : { index: true, follow: true },
 };
 
 export default function Home() {

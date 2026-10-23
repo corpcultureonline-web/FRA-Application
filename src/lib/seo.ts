@@ -8,6 +8,15 @@ import { normaliseOrigin } from "./origin.ts";
 /** The live site. SITE_URL wins, so a staging build points at itself. */
 export const SITE_ORIGIN = normaliseOrigin(process.env.SITE_URL) ?? "https://app.corpculture.co";
 
+/**
+ * SITE_NOINDEX=true keeps a whole copy of the app out of search engines — set
+ * on staging only. Every page then carries noindex (meta tag and X-Robots-Tag)
+ * and robots.txt turns crawlers away. Unset, as on the live site, nothing changes.
+ */
+export function isNoIndex(env: Record<string, string | undefined> = process.env) {
+  return /^(1|true|yes)$/i.test(env.SITE_NOINDEX?.trim() ?? "");
+}
+
 /** The one address search engines should index for this page. */
 export const CANONICAL_URL = `${SITE_ORIGIN}${BASE_PATH}`;
 

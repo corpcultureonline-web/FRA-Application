@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { BASE_PATH } from "@/lib/base-path";
+import { isNoIndex } from "@/lib/seo";
 import {
   INTERNAL_COOKIE,
   INTERNAL_HEADER,
@@ -36,6 +37,9 @@ export function proxy(request: NextRequest) {
     response.cookies.set(NEW_SESSION_COOKIE, "1", options);
   }
   if (internal) response.cookies.set(INTERNAL_COOKIE, "1", options);
+  // A staging copy: every page and API response says noindex, whatever its
+  // own metadata says (seo.ts).
+  if (isNoIndex()) response.headers.set("X-Robots-Tag", "noindex, nofollow");
   return response;
 }
 
