@@ -13,12 +13,19 @@ const TIER2 = path.join(CORPCULTURE, "tier2");
 export const LIBRARY_DIR = process.env.TIER2_LIBRARY_DIR ?? path.join(TIER2, "fra-tier2-contentv.2");
 
 /**
- * 30 October: the developer package (Handoff v3.1). Its libraries are taken one
- * at a time as each item lands, so a file listed here is checked against this
- * delivery and every other file still against LIBRARY_DIR.
+ * 30 October: the developer package (Handoff v3.1), re-issued that afternoon
+ * as fra-content-new (Admin v1.4, Privacy v1.6, Tier 1 Questionnaire v1.1,
+ * Find-Result v1.1). Its libraries are taken one at a time as each item lands,
+ * so a file listed here is checked against this delivery and every other file
+ * still against LIBRARY_DIR.
  */
-export const LIBRARY_DIR_30OCT = process.env.TIER2_LIBRARY_DIR_30OCT ?? path.join(TIER2, "fra-content");
-const FROM_30OCT = new Set(["Content-Library-Group-E.md"]);
+export const LIBRARY_DIR_30OCT = process.env.TIER2_LIBRARY_DIR_30OCT ?? path.join(TIER2, "fra-content-new");
+const FROM_30OCT = new Set([
+  "Content-Library-Group-E.md",
+  "Content-Library-Tier2-Admin.md",
+  "Privacy-Policy.md",
+  "Terms-and-Conditions.md",
+]);
 
 /** The client's copy of a library file, from whichever delivery it was taken. */
 export const librarySource = (file: string) => path.join(FROM_30OCT.has(file) ? LIBRARY_DIR_30OCT : LIBRARY_DIR, file);

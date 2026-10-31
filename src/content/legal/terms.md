@@ -1,4 +1,4 @@
-<!-- Published text of Terms-and-Conditions.md Version 1.4, copied verbatim. Edit the source, then re-copy. -->
+<!-- Published text of Terms-and-Conditions.md Version 1.6, copied verbatim. Edit the source, then re-copy. -->
 # Terms & Conditions
 
 *Last updated: **{{LEGAL_LAST_UPDATED}}***
@@ -10,7 +10,7 @@
 | | |
 |---|---|
 | Entity | **Blue Bird Ventures, a partnership firm** |
-| Registered office | 3, C-3 Block, Hamsadhwani Apartment, 10th Street, Anna Nagar East, Chennai, Tamil Nadu 600102 |
+| Registered office | Shivalaya Buildings, 16, Ethiraj Salai, Egmore, Chennai, Tamil Nadu 600008 |
 | GSTIN | 33AAWFB6475E1Z5 |
 | Contact | bd@corpculture.co |
 
@@ -22,8 +22,8 @@
 
 | | Price | What it is |
 |---|---|---|
-| **The Audit** | Free | Eleven questions. A readiness range across seven areas, on screen immediately |
-| **The Report** | ₹1,999 + 18% GST, **₹2,359** | About thirty further questions. A written diagnosis of all seven areas with your gaps ranked by what each costs you, reviewed by a person before you receive it |
+| **The Audit** | Free | Eleven questions. A readiness range across seven pillars, on screen immediately |
+| **The Report** | ₹1,999 + 18% GST, **₹2,359** | About thirty further questions. A written diagnosis of all seven pillars with your gaps ranked by what each costs you, reviewed by a person before you receive it |
 | **The Roadmap** | ₹5,999 + 18% GST, **₹7,079** | Picks up where the Report stops, including a call with us |
 
 **Each stage is priced on its own. Nothing is credited or adjusted if you move to the next one.**
@@ -101,7 +101,7 @@ Set out in full in the [Refund Policy](/franchise-audit/refunds), which forms pa
 
 ## 10. What stays ours
 
-**The questions, the scoring model, the seven-area framework, the written content the Report is assembled from, and everything else on this site remain ours.** You may not copy them, resell them, or use them to build a competing assessment.
+**The questions, the scoring model, the seven-pillar framework, the written content the Report is assembled from, and everything else on this site remain ours.** You may not copy them, resell them, or use them to build a competing assessment.
 
 **This does not restrict your use of your own Report**, or of the facts about your own business inside it.
 

@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
-import { LIBRARY_DIR as LIBRARY } from "../tier2/library-source.ts";
+import { librarySource } from "../tier2/library-source.ts";
 import { parseInline, parseLegalMarkdown, type Block } from "./markdown.ts";
 
 const CONTENT = path.join(process.cwd(), "src", "content", "legal");
@@ -17,26 +17,13 @@ const DOCUMENTS = [
   { slug: "refunds", source: "Refund-Policy.md", stripQuote: true },
 ] as const;
 
-/**
- * Lines published ahead of the source library, each from a client document
- * that names it. Privacy-Policy.md v1.5 does not carry them yet.
- */
-const AHEAD_OF_SOURCE: Record<string, string[]> = {
-  // Developer-Handoff-30Oct.md v3.1 §5.3: the WhatsApp number on Audit Screen 1.
-  privacy: [
-    "- **Your email address**, which you give at the start of the free Audit",
-    "- **Your mobile number**, which you give at the start of the free Audit, used to send your result and your Report on WhatsApp and to call you about them",
-    "| Talking to you about your result | Mobile number, your answers |",
-  ],
-};
-
 const read = (file: string) => readFileSync(file, "utf8").replace(/\r\n/g, "\n");
 const parse = (slug: string) => parseLegalMarkdown(read(path.join(CONTENT, `${slug}.md`)));
 const sections = (blocks: Block[]) => blocks.filter((block) => block.t === "section");
 
 describe("legal pages: text matches the content library", () => {
   for (const doc of DOCUMENTS) {
-    const sourceFile = path.join(LIBRARY, doc.source);
+    const sourceFile = librarySource(doc.source);
     it(`${doc.slug}.md is a verbatim excerpt of ${doc.source}`, { skip: !existsSync(sourceFile) }, () => {
       const source = new Set(
         read(sourceFile)
@@ -46,8 +33,7 @@ describe("legal pages: text matches the content library", () => {
       const copied = read(path.join(CONTENT, `${doc.slug}.md`))
         .split("\n")
         .filter((line) => line.trim() !== "" && !line.startsWith("<!--"));
-      const ahead = AHEAD_OF_SOURCE[doc.slug] ?? [];
-      const missing = copied.filter((line) => !source.has(line) && !ahead.includes(line));
+      const missing = copied.filter((line) => !source.has(line));
       assert.deepEqual(missing, [], "lines not found in the source; re-copy the published text");
     });
   }

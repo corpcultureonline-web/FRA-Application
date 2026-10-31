@@ -1,6 +1,8 @@
 # Content Library — Screens 8 and 9, the review panel
 
-**Version 1.3 · 14 October 2026**
+**Version 1.4 · 30 October 2026**
+
+> **v1.4 — the panel could not see anyone who paid and stopped, and had no way to resend a link** *(the developer, 30 October · T177)*. Two new statuses, `PAID` and `ANSWERING`, with an **In progress** filter kept out of the default view and a `T2A-WAITING-ON-THEM` elapsed value that does not run the 24-hour breach clock — **that clock starts at submission, not at payment.** Plus the resend action, five strings: `Content-Library-Tier1-Find-Result.md` §2 named the panel as a resend entry point and never wrote the copy for it.
 
 > **v1.3 — five navigation and confirm strings added to §3**, found missing on the v34 build. **v1.2 — §8 adds sign-in**, which nothing had specified: the panel had a route and no way into it. **v1.1 — the reviewer can now edit the Report's text at approval**, under three conditions. That reversed v1.0 §1 and superseded T67; see T70. The edit-rate view in §4 is what makes it safe.
 
@@ -62,14 +64,28 @@ No orders module · no founder records · no audit leads · no funnel figures ·
 
 | Key | Copy |
 |---|---|
+| `T2A-ST-PAID` | **New** — Paid, not started |
+| `T2A-ST-ANSWERING` | **New** — Answering · section {n} of {total} |
 | `T2A-ST-WAITING` | Awaiting review |
 | `T2A-ST-APPROVED` | Approved and sent |
 | `T2A-ST-RETURNED` | Returned |
 | `T2A-ST-REFUNDED` | Refunded |
 
+**The first two are new on 30 October** *(the developer · T177)*. **The panel began at *submitted*, so a founder who paid and stopped partway was invisible** — the data was stored and nothing showed it. He is the most valuable person in the system to reach: he has paid and not received.
+
+**`T2A-ST-ANSWERING` carries his progress, not just the fact of it.** Someone stuck on section 2 and someone stuck on section 7 are different calls.
+
+**The elapsed column must not run the breach clock on these two rows.** `T2A-ELAPSED-WARN` and `T2A-ELAPSED-BREACH` measure the 24-hour promise, **which starts at submission, not at payment.** A partial row showing *31h — past 24* would have a reviewer chasing a breach that has not happened.
+
+| Key | Copy | When |
+|---|---|---|
+| `T2A-WAITING-ON-THEM` | **New** — With the founder · {n}h | Replaces the elapsed value on `PAID` and `ANSWERING` rows. Plain, never flagged |
+
 ### Filters
 
-One row of filters, no search box: **Awaiting review** *(default)* · **Returned** · **Approved** · **Refunded** · **All**.
+One row of filters, no search box: **Awaiting review** *(default)* · **In progress** · **Returned** · **Approved** · **Refunded** · **All**.
+
+**In progress is a separate filter and never joins the default view** *(T177)*. The queue's job is to surface what is about to breach; partials have no clock and would bury the rows that do. **Awaiting review stays the landing filter.**
 
 | Key | Copy |
 |---|---|
@@ -167,6 +183,25 @@ Shown above the Report, not buried in a panel:
 | `T2A-RETURN-SAVE` | **Return it** |
 | `T2A-REFUND` | Refund this order |
 | `T2A-REFUND-CONFIRM` | Refund ₹{amount} to {brand}. This cannot be undone from here. |
+| `T2A-RESEND` | **New** — Resend their link |
+| `T2A-RESEND-CONFIRM` | **New** — Sends {brand}'s {link_type} link to {email}. Nothing else changes. |
+| `T2A-RESEND-DONE` | **New** — Sent to {email}. |
+| `T2A-RESEND-WAIT` | **New** — Sent a few minutes ago. You can send it again shortly. |
+| `T2A-RESEND-FAIL` | **New** — That did not send. Try again, and tell the developer if it fails twice. |
+
+### Resend — the action a caller needs while the founder is still on the phone
+
+**Added 30 October** *(the developer · T177)*. `Content-Library-Tier1-Find-Result.md` §2 named this as one of three entry points and gave it no strings; **the self-service page has copy and the panel action never did.**
+
+**`{link_type}` is resolved, not chosen.** The reviewer does not pick which link to send — the system sends the furthest point the contact reached, exactly as the self-service page does, so the two routes cannot disagree. The confirmation names it so the reviewer knows what the founder will get: *result*, *questionnaire*, *status* or *Report*.
+
+**`T2A-RESEND-CONFIRM` reads the address live**, as `T2A-APPROVE-CONFIRM` does. A founder who corrected his email on Screen 5 gets it at the corrected one.
+
+**It is available on every row, at every status** — including `PAID` and `ANSWERING`, which is the whole point of making those rows visible.
+
+**It is a quiet action, never filled.** Approve stays the only primary button on the screen.
+
+**Rate-limited like the public route**, by contact, with `T2A-RESEND-WAIT` when it fires. A reviewer clicking twice because nothing visibly happened must not send twice.
 
 **`T2A-APPROVE-CONFIRM` names the destination, and reads it live.** A founder may have corrected his email on Screen 5 while the Report sat in this queue — that is what the Change link is for. The panel must show the address **as it stands at this moment**, never one cached at submission. Sending to a stale address means the founder receives nothing, which is the failure Screen 5 exists to prevent.
 

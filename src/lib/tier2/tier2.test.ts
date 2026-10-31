@@ -140,9 +140,14 @@ describe("Tier 2 libraries: the review panel and its emails", () => {
       "EMPTY", "EMPTY-SUB", "FLAG-DK", "FLAG-DK-LEAD", "FLAG-NOTASSESSED", "FLAG-CONTRA", "FLAG-MARGIN", "EDIT", "EDIT-SAVE",
       "EDIT-CANCEL", "EDITED", "EDIT-ORIG", "EDIT-REVERT", "CANCEL", "APPROVE", "APPROVE-CONFIRM", "RETURN", "RETURN-LABEL",
       "RETURN-SAVE", "REFUND", "REFUND-CONFIRM", "REFUND-DO", "RATE-HEAD", "RATE-SUB", "RATE-FLAG", "RATE-EMPTY",
+      // Admin v1.4: the partial rows and the resend action.
+      "ST-PAID", "ST-ANSWERING", "WAITING-ON-THEM", "RESEND", "RESEND-CONFIRM", "RESEND-DONE", "RESEND-WAIT", "RESEND-FAIL",
     ];
     for (const key of used) assert.ok(admin.get(`T2A-${key}`), `T2A-${key}`);
     assert.equal(admin.get("T2A-ELAPSED"), "{n}h");
+    // v1.4 marks its additions "**New** — …" in the table; the mark is the library's, never the panel's.
+    assert.equal(admin.get("T2A-ST-PAID"), "Paid, not started");
+    assert.equal(admin.get("T2A-RESEND-CONFIRM"), "Sends {brand}'s {link_type} link to {email}. Nothing else changes.");
     assert.equal(admin.get("T2A-FLAG-MARGIN"), "Company margin matches the Audit's outlet margin — the founder may not have distinguished them");
   });
 
