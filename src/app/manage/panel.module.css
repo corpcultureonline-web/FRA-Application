@@ -622,3 +622,20 @@
   align-items: center;
   text-decoration: none;
 }
+
+/* Admin v1.4: "Resend their link" opens its confirmation in the row. */
+.resend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 340px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.resendFail {
+  color: #8a1c14;
+  font-size: 13px;
+  font-weight: 600;
+}

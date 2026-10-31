@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { eventContext, type EventContext } from "@/lib/events/server";
 import { reportError } from "@/lib/monitoring/report-error";
 import { consumeLink, endSession, panelUser, requestSignIn, type PanelUser } from "@/lib/panel/auth";
-import { approve, PanelError, refund, returnReport, saveEdit } from "@/lib/panel/reviews";
+import { approve, PanelError, refund, resendLink, returnReport, saveEdit, type ResendResult } from "@/lib/panel/reviews";
 
 /**
  * The review panel's Server Actions. Each is reachable by a direct POST, so
@@ -83,4 +83,16 @@ export async function refundAction(_state: ActionState, form: FormData): Promise
   const user = await signedIn();
   const orderId = orderIdOf(form);
   return run(orderId, async () => refund(user, await staffContext(), orderId));
+}
+
+/** "Resend their link" (Admin v1.4): T2A-RESEND-DONE, -WAIT or -FAIL. A failure is reported, never hidden. */
+export async function resendAction(_state: ResendResult | null, form: FormData): Promise<ResendResult> {
+  await signedIn();
+  const orderId = orderIdOf(form);
+  try {
+    return await resendLink(orderId);
+  } catch (error) {
+    reportError("Review panel resend failed", error, { order_id: orderId });
+    return { state: "fail", email: null };
+  }
 }

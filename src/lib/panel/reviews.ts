@@ -3,6 +3,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { withBasePath } from "@/lib/base-path";
 import { getDatabase } from "@/lib/db";
 import { logOrderEvent, type EventContext } from "@/lib/events/server";
+import { admitRequest, planRecovery, type RecoveryPlan } from "@/lib/find-result/recovery";
 import { EmailUnavailable, sendEmail } from "@/lib/messages/email";
 import { refundEmail, reportReadyEmail } from "@/lib/messages/panel-email";
 import { reportError } from "@/lib/monitoring/report-error";
@@ -10,6 +11,7 @@ import { delivery } from "@/lib/payments/delivery";
 import { refundPayment } from "@/lib/payments/razorpay";
 import type { ReportDocument } from "@/lib/report/assemble";
 import type { Paragraphs } from "@/lib/report/content";
+import { questionnaireFor, unanswered, loadRunByOrder } from "@/lib/questionnaire/store";
 import { applyEdits, pieces } from "@/lib/report/pieces";
 import { SITE_ORIGIN } from "@/lib/seo";
 import type { PanelUser } from "./auth";
@@ -21,7 +23,13 @@ import type { PanelUser } from "./auth";
  */
 
 export type ReviewStatus = "waiting" | "approved" | "returned" | "refunded";
-export type Filter = ReviewStatus | "all";
+/**
+ * Admin v1.4 (T177): a founder who paid and has not submitted. Not a review
+ * status — there is nothing to review yet — so these rows sit under their own
+ * "In progress" filter and never in the default view.
+ */
+export type PartialStatus = "paid" | "answering";
+export type Filter = ReviewStatus | "inprogress" | "all";
 
 const STATUS_SQL = `CASE WHEN o.refunded_at IS NOT NULL THEN 'refunded'
   WHEN d.approved_at IS NOT NULL THEN 'approved'
@@ -33,47 +41,78 @@ const rupees = (paise: number) => `₹${Math.round(paise / 100).toLocaleString("
 export type QueueRow = {
   orderId: number;
   brand: string;
-  submittedAt: Date;
-  /** Hours since submission; frozen at approval (§2: the clock stops). */
+  /** Null on a partial row: not submitted yet. */
+  submittedAt: Date | null;
+  /**
+   * Hours since submission, frozen at approval (§2: the clock stops). On a
+   * partial row, hours since payment — "with the founder", never the breach clock.
+   */
   hours: number;
-  overall: string;
-  band: string;
-  status: ReviewStatus;
+  overall: string | null;
+  band: string | null;
+  status: ReviewStatus | PartialStatus;
+  /** ANSWERING: the section he would resume at, of his own total (T2A-ST-ANSWERING). */
+  progress: { section: number; total: number } | null;
   approvedBy: string | null;
   approvedAt: Date | null;
 };
 
-/** Screen 8: oldest first, because the oldest is the one about to breach (§2). */
+const PARTIAL: (ReviewStatus | PartialStatus)[] = ["paid", "answering"];
+
+/** Where a partial run stands: not started, or the section of his first unanswered question. */
+async function partial(orderId: number): Promise<Pick<QueueRow, "status" | "progress">> {
+  const run = await loadRunByOrder(orderId);
+  if (!run || Object.keys(run.answers).length === 0) return { status: "paid", progress: null };
+  const questionnaire = questionnaireFor(run);
+  const next = unanswered(run)[0];
+  const section = questionnaire.questions.find((q) => q.code === next)?.section ?? questionnaire.sections.length;
+  return { status: "answering", progress: { section, total: questionnaire.sections.length } };
+}
+
+/**
+ * Screen 8: oldest first, because the oldest is the one about to breach (§2).
+ * Partial rows (paid, not submitted; Admin v1.4) follow, oldest payment first;
+ * a refunded partial is shown as refunded.
+ */
 export async function queue(filter: Filter): Promise<{ rows: QueueRow[]; counts: Record<Filter, number> }> {
   const [rows] = await getDatabase().query<RowDataPacket[]>(
-    `SELECT o.id, a.brand_name, o.submitted_at, d.overall_score, d.band, d.approved_at, u.name AS approved_by,
-            ${STATUS_SQL} AS status
+    `SELECT o.id, a.brand_name, o.paid_at, o.submitted_at, d.overall_score, d.band, d.approved_at, u.name AS approved_by,
+            CASE WHEN o.refunded_at IS NOT NULL THEN 'refunded'
+                 WHEN o.submitted_at IS NULL THEN 'partial'
+                 WHEN d.approved_at IS NOT NULL THEN 'approved'
+                 WHEN d.returned_at IS NOT NULL THEN 'returned' ELSE 'waiting' END AS status
        FROM report_orders o
-       JOIN report_documents d ON d.order_id = o.id
        JOIN audit_submissions a ON a.id = o.audit_submission_id
+       LEFT JOIN report_documents d ON d.order_id = o.id
        LEFT JOIN panel_users u ON u.id = d.approved_by
-      WHERE o.status = 'paid' AND o.submitted_at IS NOT NULL
-      ORDER BY o.submitted_at ASC`,
+      WHERE o.status = 'paid' AND (o.submitted_at IS NULL OR d.order_id IS NOT NULL)
+      ORDER BY o.submitted_at IS NULL, COALESCE(o.submitted_at, o.paid_at) ASC`,
   );
   const now = Date.now();
-  const all: QueueRow[] = rows.map((row) => {
-    const submitted = new Date(row.submitted_at);
-    const end = row.approved_at ? new Date(row.approved_at).getTime() : now;
-    return {
-      orderId: Number(row.id),
-      brand: row.brand_name,
-      submittedAt: submitted,
-      hours: Math.max(0, Math.floor((end - submitted.getTime()) / 3_600_000)),
-      overall: Number(row.overall_score).toFixed(1),
-      band: row.band,
-      status: row.status,
-      approvedBy: row.approved_by ?? null,
-      approvedAt: row.approved_at ? new Date(row.approved_at) : null,
-    };
-  });
-  const counts = { waiting: 0, approved: 0, returned: 0, refunded: 0, all: all.length } as Record<Filter, number>;
-  for (const row of all) counts[row.status] += 1;
-  return { rows: filter === "all" ? all : all.filter((row) => row.status === filter), counts };
+  const all: QueueRow[] = await Promise.all(
+    rows.map(async (row) => {
+      const submitted = row.submitted_at ? new Date(row.submitted_at) : null;
+      const from = submitted ?? new Date(row.paid_at);
+      const end = row.approved_at ? new Date(row.approved_at).getTime() : now;
+      const state = row.status === "partial" ? await partial(Number(row.id)) : { status: row.status, progress: null };
+      return {
+        orderId: Number(row.id),
+        brand: row.brand_name,
+        submittedAt: submitted,
+        hours: Math.max(0, Math.floor((end - from.getTime()) / 3_600_000)),
+        overall: row.overall_score === null ? null : Number(row.overall_score).toFixed(1),
+        band: row.band ?? null,
+        ...state,
+        approvedBy: row.approved_by ?? null,
+        approvedAt: row.approved_at ? new Date(row.approved_at) : null,
+      };
+    }),
+  );
+  const counts = { waiting: 0, inprogress: 0, approved: 0, returned: 0, refunded: 0, all: all.length } as Record<Filter, number>;
+  for (const row of all) counts[PARTIAL.includes(row.status) ? "inprogress" : (row.status as ReviewStatus)] += 1;
+  const shown =
+    filter === "all" ? all : filter === "inprogress" ? all.filter((row) => PARTIAL.includes(row.status)) : all.filter((row) => row.status === filter);
+  return { rows: shown, counts };
 }
 
 export type Edit = { slot: string; pieceId: string; original: Paragraphs; edited: Paragraphs; by: string; at: Date };
@@ -343,4 +382,56 @@ export async function editRates(): Promise<RateRow[]> {
     })
     .filter((row) => row.edited > 0)
     .sort((a, b) => b.rate - a.rate || b.edited - a.edited);
+}
+
+/** {link_type} in T2A-RESEND-CONFIRM: the library's four words; "both" names its two (Find-Result v1.1 §8). */
+const LINK_TYPE: Record<RecoveryPlan["kind"], string> = {
+  audit: "result",
+  questions: "questionnaire",
+  waiting: "status",
+  report: "Report",
+  both: "result and Report",
+};
+
+/** The order's address now: a correction made on Screen 5 wins (T2A-RESEND-CONFIRM reads it live). */
+async function liveEmail(orderId: number): Promise<string | null> {
+  const [rows] = await getDatabase().query<RowDataPacket[]>(
+    `SELECT COALESCE(o.delivery_email, a.email) AS email
+       FROM report_orders o JOIN audit_submissions a ON a.id = o.audit_submission_id
+      WHERE o.id = ? AND o.status = 'paid'`,
+    [orderId],
+  );
+  return rows[0]?.email ?? null;
+}
+
+async function resendPlan(orderId: number) {
+  const email = await liveEmail(orderId);
+  return email ? planRecovery({ kind: "email", value: email.trim().toLowerCase() }) : null;
+}
+
+/**
+ * What "Resend their link" would send (Admin v1.4): the same furthest point
+ * the self-service page resolves, so the two routes cannot disagree.
+ */
+export async function resendPreview(orderId: number): Promise<{ brand: string; linkType: string; email: string } | null> {
+  const plan = await resendPlan(orderId);
+  return plan ? { brand: plan.brand, linkType: LINK_TYPE[plan.kind], email: plan.to } : null;
+}
+
+export type ResendResult = { state: "done" | "wait" | "fail"; email: string | null };
+
+/**
+ * Sends it. Rate-limited by contact, in the public route's window, so a
+ * reviewer clicking twice — or a founder and a reviewer both asking — sends
+ * once (T2A-RESEND-WAIT). Any role may resend: it changes nothing but a link.
+ */
+export async function resendLink(orderId: number): Promise<ResendResult> {
+  const email = await liveEmail(orderId);
+  if (!email) return { state: "fail", email: null };
+  const contact = { kind: "email" as const, value: email.trim().toLowerCase() };
+  if (!(await admitRequest(contact, null))) return { state: "wait", email };
+  const plan = await planRecovery(contact);
+  if (!plan) return { state: "fail", email };
+  await plan.send();
+  return { state: "done", email: plan.to };
 }
