@@ -167,11 +167,23 @@ export function parseGapLines(markdown: string, pillars: { code: string; name: s
   return gapLines;
 }
 
+/**
+ * Group E's blocks: a block quote, or (E3 from v1.2) a `| Key | Copy |` table,
+ * one row per paragraph. A section headed RETIRED is not read (E2, v1.3: T175).
+ */
 export function parseFraming(markdown: string) {
   const framing = new Map<string, Paragraphs>();
   for (const line of lines(markdown)) {
     const id = /^## (E\d)\. /.exec(line)?.[1];
-    if (id) framing.set(id, quoted(slice(markdown, new RegExp(`^## ${id}\\. `))));
+    if (!id || /RETIRED/.test(line)) continue;
+    const block = slice(markdown, new RegExp(`^## ${id}\\. `));
+    const quote = quoted(block);
+    const rows = block
+      .filter(isRow)
+      .map(cells)
+      .filter(([key]) => /^`[A-Z0-9-]+`$/.test(key))
+      .map(([, copy]) => copy);
+    framing.set(id, quote.length ? quote : rows);
   }
   return framing;
 }

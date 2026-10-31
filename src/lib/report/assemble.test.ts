@@ -97,7 +97,11 @@ describe("Report content: the libraries hold every block the assembly can choose
       for (const sev of ["Major", "Moderate", "Minor"]) assert.ok(library.gapLines.get(`${p.code}:${sev}`), `${p.code} ${sev}`);
       assert.ok(library.subtitles.get(p.code), p.code);
     }
-    for (let i = 1; i <= 8; i++) assert.ok(library.framing.get(`E${i}`)?.length, `E${i}`);
+    for (const id of ["E1", "E3", "E4", "E5", "E6", "E7", "E8"]) assert.ok(library.framing.get(id)?.length, id);
+    // Group E v1.4: E2 is retired (it held the formal pillar names, T175); E3 is a keyed table (T174).
+    assert.equal(library.framing.get("E2"), undefined);
+    assert.equal(library.framing.get("E3")?.length, 3);
+    assert.match(library.framing.get("E3")![0], /^\*\*These gaps are ordered by what they cost you/);
     assert.ok(library.blocks.get("I-LEAD-STRONG"));
   });
 
@@ -328,7 +332,15 @@ describe("Report assembly: derived, never written", () => {
     for (const answers of [ordinary(), { ...ordinary(), G2: option("G2", "No"), G4: option("G4", "No") }]) {
       assert.deepEqual(build(answers).missing, []);
     }
-    assert.ok(build(ordinary()).flags.some((f) => f.startsWith("E6 is the stale version")));
+  });
+
+  it("Section 10 carries neither deleted line (handoff v3.1 §2.1–2.2, Group E v1.4)", () => {
+    const report = build(ordinary());
+    const ten = JSON.stringify(section(report, "10")!.paragraphs);
+    assert.doesNotMatch(ten, /seventeen|reviewed by an analyst/);
+    assert.match(ten, /It asks a further set of questions — most of them financial/);
+    assert.match(ten, /The Roadmap is ₹5,999 \+ 18% GST\."/);
+    assert.ok(!report.flags.some((f) => f.startsWith("E6 is the stale version") || f.startsWith("E6 still says")));
   });
 
   it("Section 06 prints each answer as the founder saw it (Group I §5.0, T135)", () => {

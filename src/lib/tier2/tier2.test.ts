@@ -9,7 +9,7 @@ import path from "node:path";
 import { describe, it } from "node:test";
 import { payableLabel, priceLabel } from "../pricing.ts";
 import { parseLibraryKeys, plain, segments } from "./library.ts";
-import { HANDOFF_DIR as HANDOFF, LIBRARY_DIR as LIBRARY } from "./library-source.ts";
+import { HANDOFF_DIR as HANDOFF, librarySource } from "./library-source.ts";
 import { parseLandingProse } from "./landing-prose.ts";
 import { AUDIT_EMAIL_ERROR } from "./live-strings.ts";
 
@@ -23,7 +23,7 @@ const index = JSON.parse(read(path.join(CONTENT, "keys.json"))) as { keys: Recor
 
 describe("Tier 2 libraries: repo copies match the source", () => {
   for (const file of libraryFiles()) {
-    const source = path.join(LIBRARY, file);
+    const source = librarySource(file);
     it(`${file} is identical to the library`, { skip: !existsSync(source) }, () => {
       assert.equal(read(path.join(CONTENT, file)), read(source));
     });

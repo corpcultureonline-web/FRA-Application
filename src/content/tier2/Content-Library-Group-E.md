@@ -1,5 +1,11 @@
 # Content Library — Group E: Exclusions & Framing Copy
 
+**Version 1.4 · 30 October 2026** — **the summary table still listed `E2` as *Ready*** *(Sakthikkumaran · T176)*. v1.3 retired the section and left the row, and **the table is what a developer seeds from** — so the retirement would have been invisible at exactly the moment it mattered. Both places now carry it, and the rule is written down.
+
+**Version 1.3 · 30 October 2026** — **`E2` is retired and `E6` loses two lines that were deleted five days ago** *(Design · T175)*. **`E2` is where the Report's formal pillar names came from**, still marked *Ready*; seeding this file as written would have put them back along with the sentence both canvases removed this week. `E6` still carried *"seventeen further questions"* and *"reviewed by an analyst"*. **v1.2 keyed `E3` and touched nothing else in the file, which is how both survived a version bump.**
+
+**Version 1.2 · 30 October 2026** — **`E3`'s three lines are keyed** as `T2R-04-RANK-HEAD`, `-WHY` and `-CLOSE` *(Design, 30 October · T174)*. They render live on the Report and were authored here as an unkeyed block quote, which is how a fourth paragraph from the sample generator came to sit beside them on the boards with nothing to check it against.
+
 **Version 1.1 · 20 October 2026** — `E1`'s fixed question count becomes `{n_total}` *(T99)*. `CANONICAL-VALUES.md` §8 forbids a fixed Tier 2 count in public copy, and "forty-four" was wrong for every brand.
 
 > **Pricing in this document was corrected on 8 October 2026.** Tier 2 is **₹1,999 + 18% GST** and Tier 3 is **₹5,999 + 18% GST**. `CANONICAL-VALUES.md` §1 is the only authority. Decision Log **P8** supersedes **C6**.
@@ -24,7 +30,21 @@ This is the connective tissue of the Tier 2 report — the copy that frames the 
 
 ---
 
-## E2. Score Explanation
+## E2. Score Explanation — **RETIRED, do not seed**
+
+> **Retired 30 October** *(Design · T175)*. **This block is where the Report's formal pillar names came from**, and it was still marked *Ready*. Seeding Group E as written would put back the seven formal names and the sentence *"Unit Economics and Operational Repeatability carry the most weight…"* — both removed from the boards in the two rounds before this one.
+>
+> **Parts of it survived, under their own keys. Those are the live versions:**
+>
+> | Line here | Where it lives now |
+> |---|---|
+> | The opening sentence | **`T2R-03-INTRO`** — *"Seven pillars, each weighted by how much it decides franchise success rather than business success."* Shorter, and it says *pillars* |
+> | The weights table | **The Section 03 score table**, which prints each pillar's weight beside its score. **Display names only** *(T173)* |
+> | *"Unit Economics and Operational Repeatability carry the most weight…"* | **Nowhere, deliberately.** Section 03 has no lead paragraph on the live Report; `T2R-03-INTRO` makes the point on the cover without naming pillars. **`T1L-FAQ-SCORE` makes it on the free landing page using the plain names** |
+> | *"Legal and IP readiness is assessed separately…"* | The Section 03 footnote, pointing at Section 05 |
+> | *"This score is final."* | **`T2R-FINAL`**, the pill under the score |
+>
+> **My reply of 30 October called this sentence the sample generator's. It was this library's** — the generator inherited it. Design was right to go to the source *(T175)*.
 
 *Sits immediately below the headline score.*
 
@@ -52,11 +72,13 @@ This is the connective tissue of the Tier 2 report — the copy that frames the 
 
 *Sits directly above the ranked gap list. This is the piece that prevents the ordering from looking wrong.*
 
-> **These gaps are ordered by what they cost you, not by which score is lowest.**
->
-> A weakness in a pillar carrying 20% of the assessment holds you back more than a larger weakness in one carrying 8%. So your lowest score may not appear first — what appears first is whatever is doing the most damage to your overall readiness.
->
-> Fixing them in this order recovers the most ground for the least effort.
+| Key | Copy |
+|---|---|
+| `T2R-04-RANK-HEAD` | **These gaps are ordered by what they cost you, not by which score is lowest.** |
+| `T2R-04-RANK-WHY` | A weakness in a pillar carrying 20% of the assessment holds you back more than a larger weakness in one carrying 8%. So your lowest score may not appear first — what appears first is whatever is doing the most damage to your overall readiness. |
+| `T2R-04-RANK-CLOSE` | Fixing them in this order recovers the most ground for the least effort. |
+
+**Keyed 30 October** *(Design · T174)*. They were authored here as an unkeyed block quote and render live on the Report, which is the gap that let a fourth paragraph — the sample's *"Your clearest example"* — sit beside them on the boards with nothing to check it against.
 
 **Note on the last line:** it says "fixing them in this order" without saying how to fix anything — the ordering is information, not instruction. This is the closest Group E comes to the Tier 2 boundary, and it stays on the right side of it. If an edit turns this into guidance about *what to do first*, it has crossed into Tier 3.
 
@@ -100,13 +122,20 @@ This is the connective tissue of the Tier 2 report — the copy that frames the 
 
 > **The Franchise Readiness Roadmap — ₹5,999 + 18% GST**
 >
-> The Roadmap picks up where this report stops. It asks seventeen further questions — most of them financial — and produces the five things listed above.
+> The Roadmap picks up where this report stops. It asks a further set of questions — most of them financial — and produces the five things listed above.
 >
 > The centre of it is a franchisee economics model: your investment, fee, royalty and revenue figures worked through to show what a partner actually earns and how long their payback runs. That calculation is rated separately from your Readiness Score, and the two frequently disagree — a business can be broadly ready to franchise while the specific deal it is offering does not pay back fast enough to attract good partners. Knowing which of those you are is usually worth more than the score itself.
 >
-> The Roadmap is ₹5,999 + 18% GST, and it is reviewed by an analyst before it reaches you.
+> The Roadmap is ₹5,999 + 18% GST.
 
-**Note:** this frames the upgrade around the Risk Check specifically, because that is Tier 3's genuinely distinctive output. Listing five deliverables is a feature list; naming the one finding a founder cannot get anywhere else is a reason.
+**Note:** this frames the upgrade around the franchisee economics model, because that is Tier 3's genuinely distinctive output. Listing five deliverables is a feature list; naming the one finding a founder cannot get anywhere else is a reason.
+
+**Two lines were deleted on 30 October** *(Design · T175)*, both ruled out in `Design-Handoff-27Oct.md` and both still here five days later:
+
+- ***"It asks seventeen further questions"*** — **a fixed count in public copy**, banned by `CANONICAL-VALUES.md` §8, and the Tier 3 set is not final. The same fault as *"asks 44"* on the landing page.
+- ***"it is reviewed by an analyst before it reaches you"*** — it contradicted `T2R-CTA-REVIEWED`, the boards, and the settled line that the Roadmap is reviewed by **Ronak and the analyst team** *(T148/T149)*.
+
+**The note itself said *Risk Check* while the block it describes had been rewritten around the economics model.** A note that outlived the text under it.
 
 ---
 
@@ -152,13 +181,15 @@ This is the connective tissue of the Tier 2 report — the copy that frames the 
 | Piece | Purpose | Status |
 |---|---|---|
 | E1 | Report introduction | Ready |
-| E2 | Score explanation | Ready |
-| E3 | Ranked gap explanation | Ready — critical for Group D |
+| **E2** | **Score explanation** | **RETIRED — DO NOT SEED.** Holds the seven formal pillar names; superseded by `T2R-03-INTRO`, the Section 03 score table and `T2R-FINAL`. **Seeding it puts the formal names back on the Report** *(T173, T175)* |
+| E3 | Ranked gap explanation | Ready — keyed `T2R-04-RANK-*`. Critical for Group D |
 | E4 | Non-negotiables framing | Ready |
 | E5 | What is not included | Ready |
-| E6 | Tier 3 upgrade framing | Ready |
+| E6 | Tier 3 upgrade framing | Ready — **two lines deleted 30 October**; do not restore from an older copy |
 | E7 | Category positioning template | Template — needs real patterns |
 | E8 | Insufficient comparables | Ready |
+
+**A retired piece is marked here as well as at the piece itself** *(Sakthikkumaran, 30 October · T176)*. **This table is what a developer seeds from** — it is the only place in the file that lists all eight in one view — so a status that lives only in the section body is a status the seeding pass never sees. **If any future piece is retired, both places change in the same edit.**
 
 ---
 
