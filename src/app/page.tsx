@@ -11,6 +11,7 @@ import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
 import { Rich } from "@/components/Rich";
 import { withBasePath } from "@/lib/base-path";
+import { T1F } from "@/lib/find-result/strings";
 import { CANONICAL_URL, isNoIndex } from "@/lib/seo";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/company";
 
@@ -119,9 +120,18 @@ export default function Home() {
             <p className="mt-8 text-lg leading-relaxed text-body sm:text-xl">
               11 questions. About 4 minutes. Free, with no signup.
             </p>
-            <div className="mt-10 flex flex-col items-stretch gap-8 sm:flex-row sm:items-center">
-              <StartAuditButton />
-              <div className="text-center sm:text-left">
+            <div className="mt-10 flex flex-col items-stretch gap-8 sm:flex-row sm:items-start">
+              <div className="flex flex-col items-stretch gap-3 sm:items-start">
+                <StartAuditButton />
+                {/* T1F-ENTRY-LINK: a text link, never a button, so it does not compete with Start the audit. */}
+                <Link
+                  href="/find-my-result"
+                  className="text-center text-[14px] font-bold text-muted underline underline-offset-4 hover:text-ink sm:text-left"
+                >
+                  {T1F["T1F-ENTRY-LINK"]}
+                </Link>
+              </div>
+              <div className="text-center sm:pt-4 sm:text-left">
                 <SampleReportLink />
               </div>
             </div>
