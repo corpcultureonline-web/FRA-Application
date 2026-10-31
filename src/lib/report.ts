@@ -23,6 +23,16 @@ export function isReportToken(value: string) {
 }
 
 /**
+ * The Report's landing page as this brand (?audit=), where the Report is on
+ * sale: "Get my full report" on the result page, and the recovery email's
+ * second action. Undefined while TIER2_URL is unset.
+ */
+export function tier2LinkFor(token: string) {
+  const base = process.env.TIER2_URL?.trim();
+  return base ? `${base}${base.includes("?") ? "&" : "?"}audit=${token}` : undefined;
+}
+
+/**
  * Public origin of the site, for links that leave the server (the Zoho email)
  * and for the page Chromium prints. SITE_URL wins; otherwise the proxy
  * headers of the current request.

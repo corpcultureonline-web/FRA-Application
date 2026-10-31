@@ -4,17 +4,16 @@ import type { RowDataPacket } from "mysql2/promise";
 import { withBasePath } from "@/lib/base-path";
 import { getDatabase } from "@/lib/db";
 import { EmailUnavailable, sendEmail } from "@/lib/messages/email";
+import { replaceResumeLink } from "@/lib/payments/resume";
+import { tier2LinkFor } from "@/lib/report";
 import { SITE_ORIGIN } from "@/lib/seo";
 import type { Contact } from "./contact";
-import { recoveryEmail, type Recovery } from "./email";
+import { recoveryEmail, type Recovery, type Stage } from "./email";
 
 /**
  * /find-my-result (handoff v3.1 §6, Find-Result library §8). Three rules:
  * the link is never in the response; the response is the same whether or not
  * the contact exists; and requests are rate-limited by contact and by IP.
- *
- * The Audit result only: where the Report is on sale, the paid states
- * (questions, waiting, report) are added with it.
  */
 
 /** One request per contact in this window; T1F-RESEND-WAIT says "a few minutes". */
@@ -46,18 +45,48 @@ export async function admitRequest(contact: Contact, ip: string): Promise<boolea
   return true;
 }
 
-/** The contact's most recent Audit (§8: several audits resolve to the latest). */
-async function latestAudit(contact: Contact) {
-  const match = contact.kind === "email" ? "email = ?" : "phone = ?";
+type Furthest = {
+  stage: Stage;
+  founderName: string;
+  auditEmail: string;
+  completedAt: Date;
+  reportToken: string;
+  orderId: number | null;
+  orderToken: string | null;
+  deliveryEmail: string | null;
+};
+
+/**
+ * The furthest point this contact reached (§6.1): a paid Report before a free
+ * result, so a founder who paid and later retook the Audit is never handed
+ * back only the free one; then the most recent.
+ */
+async function furthest(contact: Contact): Promise<Furthest | null> {
+  const match = contact.kind === "email" ? "(a.email = ? OR o.delivery_email = ?)" : "(a.phone = ? OR o.mobile = ?)";
   const [rows] = await getDatabase().query<RowDataPacket[]>(
-    `SELECT founder_name, email, created_at, report_token
-       FROM audit_submissions
-      WHERE ${match} AND report_token IS NOT NULL
-      ORDER BY created_at DESC
+    `SELECT a.founder_name, a.email, a.created_at, a.report_token,
+            o.id AS order_id, o.token AS order_token, o.delivery_email, o.submitted_at, o.report_sent_at
+       FROM audit_submissions a
+       LEFT JOIN report_orders o ON o.audit_submission_id = a.id AND o.status = 'paid'
+      WHERE ${match} AND a.report_token IS NOT NULL
+      ORDER BY o.id IS NOT NULL DESC, COALESCE(o.paid_at, a.created_at) DESC
       LIMIT 1`,
-    [contact.value],
+    [contact.value, contact.value],
   );
-  return rows[0] ?? null;
+  const row = rows[0];
+  if (!row) return null;
+  const paid = row.order_id != null && row.order_token;
+  const stage: Stage = !paid ? "audit" : row.report_sent_at ? "report" : row.submitted_at ? "waiting" : "questions";
+  return {
+    stage,
+    founderName: row.founder_name,
+    auditEmail: row.email,
+    completedAt: new Date(row.created_at),
+    reportToken: row.report_token,
+    orderId: paid ? Number(row.order_id) : null,
+    orderToken: paid ? row.order_token : null,
+    deliveryEmail: row.delivery_email ?? null,
+  };
 }
 
 const absolute = (path: string) => `${SITE_ORIGIN}${withBasePath(path)}`;
@@ -76,21 +105,38 @@ async function deliver(recovery: Recovery) {
 }
 
 /**
- * Sends the result link, or does nothing when the contact is unknown. Runs
- * after the response, so how long it takes says nothing about whether the
- * contact exists.
+ * Sends the link for the furthest point reached, or does nothing when the
+ * contact is unknown. Runs after the response, so how long it takes says
+ * nothing about whether the contact exists.
  *
- * A mobile entry is answered by email, to the address on the Audit, until
+ * A mobile entry is answered by email, to the address on the record, until
  * the WhatsApp channel (§7) is built: the link still reaches only its owner.
  */
 export async function sendRecovery(contact: Contact) {
-  const audit = await latestAudit(contact);
-  if (!audit) return;
-  await deliver({
-    stage: "audit",
-    to: contact.kind === "email" ? contact.value : audit.email,
-    founderName: audit.founder_name,
-    completedAt: new Date(audit.created_at),
-    url: absolute(`/audit/report/${audit.report_token}`),
-  });
+  const found = await furthest(contact);
+  if (!found) return;
+  const to =
+    contact.kind === "email"
+      ? contact.value
+      : found.stage === "audit"
+        ? found.auditEmail
+        : (found.deliveryEmail ?? found.auditEmail);
+  const base = { stage: found.stage, to, founderName: found.founderName, completedAt: found.completedAt };
+
+  switch (found.stage) {
+    case "audit":
+      return deliver({
+        ...base,
+        url: absolute(`/audit/report/${found.reportToken}`),
+        secondUrl: tier2LinkFor(found.reportToken),
+      });
+    case "questions":
+      // Screen 7, not /questions (§5). A fresh resume link replaces the old one only once it is sent.
+      await replaceResumeLink(found.orderId!, (token) => deliver({ ...base, url: absolute(`/report/resume/${token}`) }));
+      return;
+    case "waiting":
+      return deliver({ ...base, url: absolute(`/report/my/${found.orderToken}`) });
+    case "report":
+      return deliver({ ...base, url: absolute(`/report/my/${found.orderToken}/report`) });
+  }
 }

@@ -18,6 +18,7 @@ import page6 from "@/assets/tier2/sample/page-6.jpg";
 import upi from "@/assets/tier2/upi.png";
 import visa from "@/assets/tier2/visa.png";
 import { withBasePath } from "@/lib/base-path";
+import { T1F } from "@/lib/find-result/strings";
 import { CONTACT_EMAIL, WHATSAPP_DISPLAY } from "@/lib/company";
 import { LEGAL_PAGES } from "@/lib/legal/documents";
 import { GST_PERCENT, payableLabel, TIERS } from "@/lib/pricing";
@@ -337,6 +338,10 @@ export default async function ReportLanding({
               <div className={styles.pcardAct}>
                 {cta}
                 {cold && <p className={styles.coldnote}>{p("T2L-PRICE-COLD")}</p>}
+                {/* T1F-ENTRY-LINK under the price card (handoff v3.1 §6.4): a text link, never a button. */}
+                <Link href="/find-my-result" className={styles.findlink}>
+                  {T1F["T1F-ENTRY-LINK"]}
+                </Link>
               </div>
               <div className={styles.trust}>
                 <Image className={styles.rzp} src={razorpay} alt="" />

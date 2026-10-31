@@ -154,6 +154,7 @@ CREATE TABLE IF NOT EXISTS report_orders (
   UNIQUE KEY report_orders_razorpay_payment (razorpay_payment_id),
   UNIQUE KEY report_orders_token (token),
   INDEX report_orders_submission (audit_submission_id, status),
+  INDEX report_orders_mobile (mobile),
   CONSTRAINT report_orders_submission_fk FOREIGN KEY (audit_submission_id)
     REFERENCES audit_submissions (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

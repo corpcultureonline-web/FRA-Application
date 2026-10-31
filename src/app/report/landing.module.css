@@ -976,6 +976,19 @@
   color: var(--muted);
 }
 
+.findlink {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.findlink:hover {
+  color: var(--ink);
+}
+
 .trust {
   width: 100%;
   margin-top: 4px;
