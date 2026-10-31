@@ -9,16 +9,23 @@ import { T1F } from "./strings.ts";
  * layout, never words.
  */
 export type Stage = "audit" | "questions" | "waiting" | "report";
+/** A paid order and a newer free Audit from the same contact (§8, v1.1): both, in one message. */
+export type MailKind = Stage | "both";
 
 export type Recovery = {
-  stage: Stage;
+  stage: MailKind;
   to: string;
   founderName: string;
-  /** When the Audit was completed; the audit email prints it. */
+  /** When the Audit was completed; the audit and both emails print it. */
   completedAt: Date;
+  /** When the Report was bought; the both email prints it. */
+  paidAt?: Date;
   /** Where the main action goes. */
   url: string;
-  /** The audit email's second action, to the Report's landing page, where it is on sale. */
+  /**
+   * The second action: on the audit email, the Report's landing page where it
+   * is on sale; on the both email, the paid Report's own link.
+   */
   secondUrl?: string;
 };
 
@@ -27,7 +34,11 @@ const MAIL = {
   questions: { subject: "T1F-MAIL-QUESTIONS-SUBJ", body: "T1F-MAIL-QUESTIONS-BODY", cta: "T1F-MAIL-QUESTIONS-CTA" },
   waiting: { subject: "T1F-MAIL-WAITING-SUBJ", body: "T1F-MAIL-WAITING-BODY", cta: "T1F-MAIL-WAITING-CTA" },
   report: { subject: "T1F-MAIL-REPORT-SUBJ", body: "T1F-MAIL-REPORT-BODY", cta: "T1F-MAIL-REPORT-CTA" },
+  both: { subject: "T1F-MAIL-BOTH-SUBJ", body: "T1F-MAIL-BOTH-BODY", cta: "T1F-MAIL-BOTH-CTA" },
 } as const;
+
+/** Only these two carry a second action (§5, §8). */
+const SECOND_CTA = { audit: "T1F-MAIL-AUDIT-CTA2", both: "T1F-MAIL-BOTH-CTA2" } as const;
 
 /** "21 October 2026", as the board prints {date}, in India time. */
 export function longDate(date: Date) {
@@ -40,12 +51,13 @@ const escape = (text: string) =>
 export function recoveryEmail(recovery: Recovery) {
   const keys = MAIL[recovery.stage];
   const greeting = T1F["T1F-MAIL-GREETING"].replace("{founder_name}", recovery.founderName);
-  const body = T1F[keys.body].replace("{date}", longDate(recovery.completedAt));
+  const body = T1F[keys.body]
+    .replace("{date}", longDate(recovery.completedAt))
+    .replace("{paid_date}", recovery.paidAt ? longDate(recovery.paidAt) : "");
   const actions: { label: string; url: string }[] = [{ label: T1F[keys.cta], url: recovery.url }];
-  // Only the audit email carries a second action: the only state with something left to sell (§5).
-  if (recovery.stage === "audit" && recovery.secondUrl) {
-    actions.push({ label: T1F["T1F-MAIL-AUDIT-CTA2"], url: recovery.secondUrl });
-  }
+  // The audit email offers the Report where it is on sale (§5); the both email, the paid Report (§8).
+  const second = recovery.stage === "audit" || recovery.stage === "both" ? SECOND_CTA[recovery.stage] : null;
+  if (second && recovery.secondUrl) actions.push({ label: T1F[second], url: recovery.secondUrl });
   const footer = [T1F["T1F-MAIL-WHYTHIS"], BRAND_ENTITY_LINE];
 
   const text = [

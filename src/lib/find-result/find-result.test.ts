@@ -64,6 +64,24 @@ describe("find-my-result: the four emails", () => {
     }
   });
 
+  it("a paid Report and a newer free Audit go in one email, the newer first (§8, v1.1)", () => {
+    const mail = recoveryEmail({
+      stage: "both",
+      to: "founder@example.com",
+      founderName: "Anita Rao",
+      completedAt: new Date("2027-04-02T06:00:00Z"),
+      paidAt: new Date("2026-10-21T06:00:00Z"),
+      url: "https://app.example/latest-audit",
+      secondUrl: "https://app.example/paid-report",
+    });
+    assert.equal(mail.subject, "Your Franchise Readiness result and Report");
+    assert.ok(mail.text.includes("Here is the Audit you completed on 2 April 2027, and the Report you bought on 21 October 2026."));
+    const latest = mail.text.indexOf("Open my latest result: https://app.example/latest-audit");
+    const report = mail.text.indexOf("Open my Report: https://app.example/paid-report");
+    assert.ok(latest > 0 && report > latest);
+    assert.ok(mail.text.includes(T1F["T1F-MAIL-WHYTHIS"]));
+  });
+
   it("dates are India time", () => {
     assert.equal(longDate(new Date("2026-10-21T20:00:00Z")), "22 October 2026");
   });

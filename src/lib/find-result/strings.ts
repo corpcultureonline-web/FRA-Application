@@ -1,8 +1,8 @@
 /**
- * "Get your result link again" — Content-Library-Tier1-Find-Result.md v1.0
- * (29 October 2026), copied verbatim, keyed as the library keys them. {date},
- * {founder_name} and {brand} are filled at send time. The WhatsApp messages
- * (§7) wait for the WhatsApp channel and are not here yet.
+ * "Get your result link again" — Content-Library-Tier1-Find-Result.md v1.1
+ * (30 October 2026), copied verbatim, keyed as the library keys them. {date},
+ * {paid_date}, {founder_name} and {brand} are filled at send time. The WhatsApp
+ * messages (§7, T1F-WA-BOTH) wait for the WhatsApp channel and are not here yet.
  */
 export const T1F = {
   "T1F-ENTRY-LINK": "Already taken the audit? Get your result link again",
@@ -35,6 +35,11 @@ export const T1F = {
   "T1F-MAIL-REPORT-SUBJ": "Your Franchise Readiness Report",
   "T1F-MAIL-REPORT-BODY": "Your Report is ready. The PDF is yours to forward — the link is not.",
   "T1F-MAIL-REPORT-CTA": "Open my Report",
+  // §8 (v1.1): a paid order and a newer free Audit — both, in one message, the newer first.
+  "T1F-MAIL-BOTH-SUBJ": "Your Franchise Readiness result and Report",
+  "T1F-MAIL-BOTH-BODY": "You have two with us. Here is the Audit you completed on {date}, and the Report you bought on {paid_date}.",
+  "T1F-MAIL-BOTH-CTA": "Open my latest result",
+  "T1F-MAIL-BOTH-CTA2": "Open my Report",
 
   "T1F-MAIL-GREETING": "Hello {founder_name},",
   "T1F-MAIL-SIGNOFF": "— Corporate Culture",
