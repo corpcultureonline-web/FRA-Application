@@ -6,7 +6,7 @@ import { RatingPill } from "@/components/RatingPill";
 import { Rich } from "@/components/Rich";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY } from "@/lib/company";
 import { shortPriceLabel } from "@/lib/pricing";
-import type { NoteKind, ReportData } from "@/lib/result";
+import type { GateState, NoteKind, ReportData } from "@/lib/result";
 import { GetReportButton } from "./GetReportButton";
 import { UpgradeBody } from "./ReportDocument";
 import { ResultTracking } from "./ResultTracking";
@@ -61,13 +61,13 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
 
             {content.legal.length ? (
               <Section title="Legal check" track="legal">
-                <Notes notes={content.legal} />
+                <Notes notes={content.legal.map((n) => ({ kind: n.state, text: n.text }))} styles={GATE_STYLES} />
               </Section>
             ) : null}
 
             {content.importantPoints.length ? (
               <Section title="Important points to note" track="important">
-                <Notes notes={content.importantPoints} />
+                <Notes notes={content.importantPoints} styles={NOTE_STYLES} />
               </Section>
             ) : null}
 
@@ -237,17 +237,26 @@ function Numbered({ items }: { items: { heading: string; body: string }[] }) {
   );
 }
 
-const NOTE_STYLES: Record<NoteKind, { label: string; border: string; text: string }> = {
+type NoteStyle = { label: string; border: string; text: string };
+
+const NOTE_STYLES: Record<NoteKind, NoteStyle> = {
   strength: { label: "Strength", border: "border-l-[#2e8b57]", text: "text-[#1b6b2f]" },
   milestone: { label: "Next milestone", border: "border-l-[#e0a100]", text: "text-[#8a5300]" },
   watch: { label: "Watch", border: "border-l-cta", text: "text-brand-deep" },
 };
 
-function Notes({ notes }: { notes: { kind: NoteKind; text: string }[] }) {
+/** T1R-GATE-* (Result Page library §23.3): the legal check's own states, matching the Report's T2R- three. */
+const GATE_STYLES: Record<GateState, NoteStyle> = {
+  clear: { label: "Clear", border: "border-l-[#2e8b57]", text: "text-[#1b6b2f]" },
+  inprogress: { label: "In progress", border: "border-l-[#e0a100]", text: "text-[#8a5300]" },
+  mustresolve: { label: "Must resolve", border: "border-l-cta", text: "text-brand-deep" },
+};
+
+function Notes<K extends string>({ notes, styles }: { notes: { kind: K; text: string }[]; styles: Record<K, NoteStyle> }) {
   return (
     <ul className="space-y-2.5">
       {notes.map((note) => {
-        const style = NOTE_STYLES[note.kind];
+        const style = styles[note.kind];
         return (
           <li
             key={note.text}

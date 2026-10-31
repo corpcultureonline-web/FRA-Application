@@ -83,11 +83,13 @@ export function ProfileForm({
         />
       </Field>
 
-      {/* T1Q-PHONE-*: mandatory, below Email (handoff v3.1 §5.1). The WHY line must not be shortened. */}
+      {/* T1Q-PHONE-* (Tier 1 Questionnaire v1.1): mandatory, below Email. The WHY line must not be
+          shortened. This is T1Q-PHONE-WHY, "until WhatsApp ships"; T1Q-PHONE-WHY-WA replaces it the
+          day WhatsApp delivery goes live, with Privacy v1.7 (T177). */}
       <Field
         id="phone"
         label="Your WhatsApp number"
-        hint="Your result comes to this number on WhatsApp. We may also call once to talk through what it says."
+        hint="Your result comes to your email, and we may call this number once to talk through what it says."
         error={has("phone") ? "Enter a 10-digit mobile number." : undefined}
       >
         <div className="relative">

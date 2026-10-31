@@ -22,8 +22,13 @@ export const CANONICAL_URL = `${SITE_ORIGIN}${BASE_PATH}`;
 
 export const SEO_TITLE = "Is Your Business Ready to Franchise? Free Readiness Audit";
 
+/**
+ * Every page's description, og:description and twitter:description. "Pillars",
+ * not "areas" (T158; staging test report 31 Oct, D1): no library keys metadata,
+ * so this follows the rename ruling word for word and changes nothing else.
+ */
 export const SEO_DESCRIPTION =
-  "Find out if your business is ready to franchise. A free 11-question audit scores 7 areas, including profit, systems and support, in about 4 minutes.";
+  "Find out if your business is ready to franchise. A free 11-question audit scores 7 pillars, including profit, systems and support, in about 4 minutes.";
 
 /** Corporate Culture's main site, for the Organization in structured data. */
 export const ORGANIZATION_URL = "https://corpculture.co";

@@ -230,17 +230,15 @@ export default function Home() {
                 </svg>
                 Legal check
               </p>
+              {/* T1L-SNAP-TM / -DISPUTE take the legal check's own states, T1R-GATE-INPROGRESS and
+                  T1R-GATE-CLEAR (Landing library v1.5): a filed trademark is In progress, as in the Report. */}
               <ul className="mt-2 flex flex-col gap-1 sm:flex-row sm:gap-10">
                 <li className="flex items-center gap-2.5">
-                  <span aria-hidden="true" className="font-bold text-[#c27a00]">
-                    –
-                  </span>
+                  <span className={`${monoCaps} text-[10px] font-bold text-[#8a5300]`}>In progress</span>
                   Trademark: filed, not yet registered
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span aria-hidden="true" className="font-bold text-[#1b6b2f]">
-                    ✓
-                  </span>
+                  <span className={`${monoCaps} text-[10px] font-bold text-[#1b6b2f]`}>Clear</span>
                   Disputes: none declared
                 </li>
               </ul>

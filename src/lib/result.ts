@@ -1,13 +1,13 @@
 import type { Answers, Profile } from "./audit.ts";
 import { buildFacts } from "./content/facts.ts";
-import { selectContent, type ContentPiece, type NoteKind, type ReportContent, type SlotValues } from "./content/select.ts";
+import { selectContent, type ContentPiece, type GateState, type NoteKind, type ReportContent, type SlotValues } from "./content/select.ts";
 import { score, type AnswerMap, type AreaStatus, type ScoringConfig } from "./scoring/engine.ts";
 import { toPublicScore, type PublicScore } from "./scoring/public.ts";
 
 /** What a result is built from: the profile without the WhatsApp number, which no result shows. */
 type ResultProfile = Omit<Profile, "phone">;
 
-export type { NoteKind };
+export type { GateState, NoteKind };
 
 /**
  * Everything the result page and the PDF show — one shape for both, so they
