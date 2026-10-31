@@ -1,7 +1,6 @@
 import type { ResultSetHeader } from "mysql2";
 import { NextResponse } from "next/server";
-import { readProfile } from "@/lib/audit";
-import { linkLead } from "@/lib/audit-leads";
+import { EMPTY_PROFILE, profileProblems, type Profile } from "@/lib/audit";
 import { getDatabase } from "@/lib/db";
 import { auditScoredPayload } from "@/lib/events/payloads";
 import { backfillSubmission, eventContext, logServerEvent, writeEvents } from "@/lib/events/server";
@@ -19,6 +18,17 @@ import { toPublicScore } from "@/lib/scoring/public";
 import { createFraSubmission, fraResult, isZohoConfigured } from "@/lib/crm/adapter";
 
 type Body = { profile?: unknown; answers?: unknown };
+
+function readProfile(value: unknown): Profile | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const profile = { ...EMPTY_PROFILE };
+  for (const key of Object.keys(EMPTY_PROFILE) as (keyof Profile)[]) {
+    if (typeof raw[key] !== "string") return null;
+    profile[key] = (raw[key] as string).trim();
+  }
+  return profileProblems(profile).length === 0 ? profile : null;
+}
 
 /**
  * Every question on the screens is required, so every answer must be one of
@@ -84,14 +94,13 @@ export async function POST(request: Request) {
     await db.beginTransaction();
     const [inserted] = await db.execute<ResultSetHeader>(
       `INSERT INTO audit_submissions
-         (brand_name, founder_name, email, phone, category, outlets, city, scoring_version,
+         (brand_name, founder_name, email, category, outlets, city, scoring_version,
           overall_score, range_low, range_high, score_band, band, gate, weakest_pillar, report_token)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         profile.brandName,
         profile.founderName,
         profile.email,
-        profile.phone,
         profile.category,
         profile.outlets,
         profile.city,
@@ -140,12 +149,6 @@ export async function POST(request: Request) {
     db.release();
   }
 
-  // Closes this session's Section 1 lead (handoff v3.1 §5.1). Best effort and
-  // outside the transaction: bookkeeping must never stop an Audit being scored.
-  await linkLead(getDatabase(), events.sessionId, id).catch((error) =>
-    reportError("Linking the Audit lead failed", error, { submission_id: id }),
-  );
-
   // Everything below leaves the server, so it is built from the public score only.
   const publicScore = toPublicScore(config, result);
   const reportUrl = reportPdfUrl(getSiteOrigin(request), reportToken);
@@ -158,7 +161,6 @@ export async function POST(request: Request) {
           brandName: profile.brandName,
           founderName: profile.founderName,
           email: profile.email,
-          phone: `+91${profile.phone}`,
           result: fraResult(publicScore, reportUrl),
         },
         (call) => void logServerEvent(events, "zoho_push", call, id),

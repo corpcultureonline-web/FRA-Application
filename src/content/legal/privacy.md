@@ -1,4 +1,4 @@
-<!-- Published text of Privacy-Policy.md Version 1.4, copied verbatim, except: §11's sentence "We do not use advertising cookies…" removed 20 October 2026 at Corporate Culture's direction, because the Audit pages now carry the Google Ads tag. The source file should be updated to match. Also §3's email and mobile lines and §4's "Talking to you about your result" row, worded as Developer-Handoff-30Oct.md v3.1 §5.3 gives them, for the WhatsApp number the Audit now asks for; the source file does not carry them yet. -->
+<!-- Published text of Privacy-Policy.md Version 1.4, copied verbatim, except: §11's sentence "We do not use advertising cookies…" removed 20 October 2026 at Corporate Culture's direction, because the Audit pages now carry the Google Ads tag. The source file should be updated to match. -->
 # Privacy Policy
 
 *Last updated: **{{LEGAL_LAST_UPDATED}}***
@@ -32,8 +32,8 @@ This policy covers the Franchise Readiness Audit, Report and Roadmap at `app.cor
 
 - **Your answers.** Eleven questions in the free Audit, about thirty more in the Report questionnaire. These describe your business — revenue, margins, outlets, staff, systems, legal position
 - **Your brand name** and the category you operate in
-- **Your email address**, which you give at the start of the free Audit
-- **Your mobile number**, which you give at the start of the free Audit, used to send your result and your Report on WhatsApp and to call you about them
+- **Your email address**, which you give at the end of the free Audit
+- **Your mobile number**, which you give at checkout, used to send your Report on WhatsApp
 - **Anything you write to us** by email or WhatsApp
 
 ### What we record automatically
@@ -55,7 +55,6 @@ We also record the usual technical information a website receives — your brows
 | Producing your Report | Your answers |
 | Having a person review it before you receive it | Your answers, your brand name |
 | Delivering it | Email address, mobile number |
-| Talking to you about your result | Mobile number, your answers |
 | Taking payment and issuing a receipt or invoice | Payment details via Razorpay, your name and contact details |
 | Answering you when you write to us | Everything above |
 | Knowing whether the product works | The event log |

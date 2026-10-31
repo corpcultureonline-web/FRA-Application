@@ -83,34 +83,6 @@ export function ProfileForm({
         />
       </Field>
 
-      {/* T1Q-PHONE-*: mandatory, below Email (handoff v3.1 §5.1). The WHY line must not be shortened. */}
-      <Field
-        id="phone"
-        label="Your WhatsApp number"
-        hint="Your result comes to this number on WhatsApp. We may also call once to talk through what it says."
-        error={has("phone") ? "Enter a 10-digit mobile number." : undefined}
-      >
-        <div className="relative">
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[17px] text-muted"
-          >
-            +91
-          </span>
-          <input
-            id="phone"
-            type="tel"
-            inputMode="numeric"
-            autoComplete="tel-national"
-            placeholder="98765 43210"
-            maxLength={16}
-            value={profile.phone}
-            onChange={(e) => set("phone")(e.target.value)}
-            className={`${fieldClass} ${border("phone")} pl-14 placeholder:text-muted/60`}
-          />
-        </div>
-      </Field>
-
       <Field id="category" label="Category" error={has("category") ? "Choose a category." : undefined}>
         <div className="relative">
           <select

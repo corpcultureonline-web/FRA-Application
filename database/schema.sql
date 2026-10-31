@@ -37,8 +37,7 @@ CREATE TABLE IF NOT EXISTS audit_submissions (
   brand_name VARCHAR(255) NOT NULL,
   founder_name VARCHAR(255) NOT NULL,
   email VARCHAR(320) NOT NULL,
-  -- The WhatsApp number from Section 1, ten digits (migration 016). Older rows:
-  -- optional, left on the "Get my full report" confirmation, as typed.
+  -- Optional, left on the "Get my full report" confirmation.
   phone VARCHAR(20) NULL,
   category VARCHAR(100) NOT NULL,
   outlets VARCHAR(20) NOT NULL,
@@ -61,8 +60,7 @@ CREATE TABLE IF NOT EXISTS audit_submissions (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY audit_submissions_report_token (report_token),
-  INDEX audit_submissions_email_idx (email),
-  INDEX audit_submissions_phone_idx (phone)
+  INDEX audit_submissions_email_idx (email)
 ) ENGINE=InnoDB;
 
 -- One row per question. A skipped answer is NULL, never 0 (decision S6).
@@ -100,40 +98,4 @@ CREATE TABLE IF NOT EXISTS event_log (
   INDEX idx_session    (session_id),
   INDEX idx_type_time  (event_type, created_at),
   INDEX idx_submission (submission_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Section 1 of the Audit, kept from the moment it is submitted so an abandoner
--- is still reachable (handoff v3.1 §5.1, migration 016).
-CREATE TABLE IF NOT EXISTS audit_leads (
-  id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  session_id     CHAR(36) NOT NULL,
-  brand_name     VARCHAR(255) NOT NULL,
-  founder_name   VARCHAR(255) NOT NULL,
-  email          VARCHAR(320) NOT NULL,
-  -- Ten digits, without +91.
-  phone          CHAR(10) NOT NULL,
-  category       VARCHAR(100) NOT NULL,
-  outlets        VARCHAR(20) NOT NULL,
-  city           VARCHAR(255) NOT NULL,
-  -- Set when this session's Audit is scored; NULL means it was abandoned (so far).
-  submission_id  BIGINT UNSIGNED NULL,
-  created_at     TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  updated_at     TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-  PRIMARY KEY (id),
-  INDEX audit_leads_session (session_id, submission_id),
-  INDEX audit_leads_open (submission_id, created_at),
-  CONSTRAINT audit_leads_submission_fk FOREIGN KEY (submission_id) REFERENCES audit_submissions (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- /find-my-result's rate limit, by contact and by IP, both hashed (§6, migration 016).
-CREATE TABLE IF NOT EXISTS result_link_requests (
-  id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  -- sha256 of the normalised email or ten-digit mobile.
-  contact_hash  CHAR(64) NOT NULL,
-  -- sha256 of the client IP.
-  ip_hash       CHAR(64) NOT NULL,
-  created_at    TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  PRIMARY KEY (id),
-  INDEX result_link_requests_contact (contact_hash, created_at),
-  INDEX result_link_requests_ip (ip_hash, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

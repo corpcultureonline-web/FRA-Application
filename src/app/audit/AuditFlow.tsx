@@ -154,16 +154,6 @@ function AuditSteps() {
     }
     if (!isReview) {
       events.sectionCompleted(step + 1, step === 0 ? 0 : QUESTION_SECTIONS[step - 1].questions.length);
-      // Handoff v3.1 §5.1: Section 1 is kept from here, so an abandoner is still reachable.
-      // Fire and forget: the Audit carries on whether or not it is stored.
-      if (step === 0) {
-        void fetch(withBasePath("/api/audit/lead"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ profile: progress.profile }),
-          keepalive: true,
-        }).catch(() => {});
-      }
       goTo(returnToReview ? REVIEW : step + 1);
       return;
     }
