@@ -350,7 +350,6 @@ function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakC
     ["The 7 areas", "Good, Average or Weak", "Each one explained in writing"],
     ["Your problems", "Named", "Ranked by what they cost you"],
     ["Legal check", "Trademark and disputes", "Full legal and approvals check"],
-    ["Similar brands", "—", "How you compare with brands we have worked with"],
     ["Reviewed by Ronak", "—", "Every report, personally"],
     ["When you get it", "On screen now", "Within 24 hours on working days"],
   ];
@@ -358,7 +357,7 @@ function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakC
     "mt-5 flex h-14 w-full items-center justify-center gap-3 rounded-md bg-cta px-8 text-sm font-bold tracking-[0.18em] uppercase transition-colors hover:bg-cta-hover disabled:opacity-70 sm:w-auto";
   const buttonLabel = (
     <>
-      I’m interested{" "}
+      Get my full report{" "}
       <span aria-hidden="true" className="text-lg leading-none">
         →
       </span>
@@ -422,8 +421,8 @@ function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakC
       {/* The offer and Ronak's bio form one block, never split (R8). */}
       <div className="mt-5 overflow-hidden rounded-xl border border-ink bg-white">
         <div className="p-5 sm:p-9">
-          <p className={`${monoCaps} text-[10px] text-brand-deep`}>Tier 2 · Opening soon</p>
-          {upgrade.title ? <h3 className="mt-3 text-2xl font-bold">{upgrade.title}</h3> : null}
+          {/* Handoff v3.1 §2.4: T1R-UPGRADE-EYEBROW ("Tier 2 · Opening soon") is deleted, not replaced. */}
+          {upgrade.title ? <h3 className="text-2xl font-bold">{upgrade.title}</h3> : null}
           <UpgradeBody body={upgrade.body} className="mt-3" priceClass="text-[34px] font-black text-brand" />
 
           {tier2Url ? (
