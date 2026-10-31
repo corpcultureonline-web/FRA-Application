@@ -20,13 +20,12 @@ const SAMPLE_REPORT_HREF = withBasePath("/sample-report.pdf");
 
 /**
  * The legal pages shared by the Audit, the Report and the Roadmap (CANONICAL-VALUES §4, T84).
- * T1L-FOOT-NAV-*: the Refund Policy is linked because the Report's checkout is two clicks
- * away, and Razorpay expects it reachable from where a customer pays (handoff v3.1 §2c.1).
+ * The Refund Policy is live at /refunds but stays out of this footer until the Report
+ * can be bought: nothing on this page sells anything yet.
  */
 const FOOTER_LINKS = [
   { label: "Privacy Policy", href: withBasePath("/privacy") },
   { label: "Terms & Conditions", href: withBasePath("/terms") },
-  { label: "Refund Policy", href: withBasePath("/refunds") },
   { label: "Contact", href: `mailto:${CONTACT_EMAIL}` },
 ];
 
