@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: TIERS.report.name };
 
-/** "*{mobile}* on WhatsApp" → "{mobile} on WhatsApp": the library marks the placeholder in italics. */
+/** "*{mobile}* for calls about your order" → "{mobile} for calls…": the library marks the placeholder in italics. */
 const unitalic = (copy: string) => plain(copy).replace(/\*/g, "");
 
 function submittedCopy(): SubmittedCopy {

@@ -1,5 +1,9 @@
 # Content Library — Screens 8 and 9, the review panel
 
+**Version 1.5 · 1 November 2026**
+
+> **v1.5** — **`{link_type}` had no wording for the two-link case** *(the developer, 1 November · T178)*. `T2A-RESEND-CONFIRM-BOTH` added, with the plural.
+
 **Version 1.4 · 30 October 2026**
 
 > **v1.4 — the panel could not see anyone who paid and stopped, and had no way to resend a link** *(the developer, 30 October · T177)*. Two new statuses, `PAID` and `ANSWERING`, with an **In progress** filter kept out of the default view and a `T2A-WAITING-ON-THEM` elapsed value that does not run the 24-hour breach clock — **that clock starts at submission, not at payment.** Plus the resend action, five strings: `Content-Library-Tier1-Find-Result.md` §2 named the panel as a resend entry point and never wrote the copy for it.
@@ -194,6 +198,14 @@ Shown above the Report, not buried in a panel:
 **Added 30 October** *(the developer · T177)*. `Content-Library-Tier1-Find-Result.md` §2 named this as one of three entry points and gave it no strings; **the self-service page has copy and the panel action never did.**
 
 **`{link_type}` is resolved, not chosen.** The reviewer does not pick which link to send — the system sends the furthest point the contact reached, exactly as the self-service page does, so the two routes cannot disagree. The confirmation names it so the reviewer knows what the founder will get: *result*, *questionnaire*, *status* or *Report*.
+
+**For the two-link case, it is *result and Report*, and the sentence takes a plural** *(the developer, 1 November · T178)*:
+
+| Key | Copy |
+|---|---|
+| `T2A-RESEND-CONFIRM-BOTH` | Sends {brand}'s **result and Report links** to {email}. Nothing else changes. |
+
+**Not *"result and Report link"***. One message carries two links, and a reviewer who reads the singular will think something was dropped.
 
 **`T2A-RESEND-CONFIRM` reads the address live**, as `T2A-APPROVE-CONFIRM` does. A founder who corrected his email on Screen 5 gets it at the corrected one.
 

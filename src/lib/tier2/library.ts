@@ -15,8 +15,12 @@ const KEY_CELL = /^`(T2[A-Z]*-[A-Z0-9-]+)`$/;
 const NOTE = /\s*\*\([^)]*\)\*\s*$/;
 /** A decision reference inside the copy, "expires in 15 minutes *(T79)*.": the library's annotation, never the founder's words. */
 const DECISION_NOTE = /\s*\*\((?:[TPDRBS]\d+|T\d+[^)]*)\)\*/g;
-/** "**New** — Resend their link": the library flagging a string as added (Admin v1.4), never shown. */
-const NEW_MARK = /^\*\*New\*\* — /;
+/**
+ * "**New** — Resend their link": the library flagging a string as added (Admin v1.4), or
+ * "**Until WhatsApp ships** — …" / "**When WhatsApp ships** — …" naming which of a pair is
+ * live (Checkout v1.2, Submitted v1.3). The library's, never shown.
+ */
+const NEW_MARK = /^\*\*(?:New|Until WhatsApp ships|When WhatsApp ships)\*\* — /;
 /** A cell that points elsewhere ("*§3.1 above*") rather than holding copy. */
 const POINTER = /^\*§/;
 

@@ -7,7 +7,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
-import { contradictions, isAnswered, marginBand, marginFrom, parseNumber, type Answers } from "./rules.ts";
+import { parseLibraryKeys } from "../tier2/library.ts";
+import { contradictions, isAnswered, marginBand, marginFrom, numberProblem, parseNumber, type Answers } from "./rules.ts";
 import { brandProfile, buildQuestionnaire, forBrand, parseRange } from "./source.ts";
 
 const read = (file: string) => readFileSync(path.join(process.cwd(), "src", "content", "tier2", file), "utf8");
@@ -158,6 +159,35 @@ describe("questionnaire: numeric fields (Field Help §5)", () => {
     assert.equal(parseNumber("0", fl5), 0);
     assert.equal(parseNumber("90", fl5), 90);
     assert.equal(parseNumber("91", fl5), null);
+  });
+
+  it("an entry that is not an answer says why, against the field (Field Help v1.4 §5, T178)", () => {
+    const mr5 = byCode("MR5").input!;
+    // Empty, or still being typed: nothing to say yet.
+    for (const draft of ["", "-", "4.", "−"]) assert.equal(numberProblem(draft, bp3), null, draft);
+    assert.equal(numberProblem("4.2", bp3), null);
+    assert.equal(numberProblem("14", bp3), "range");
+    assert.equal(numberProblem("4.25", bp3), "decimals");
+    assert.equal(numberProblem("8.45", ue7), "decimals");
+    assert.equal(numberProblem("100.5", ue7), "range");
+    assert.equal(numberProblem("12.5", bp4), "range");
+    assert.equal(numberProblem("abc", bp4), "range");
+    assert.equal(numberProblem("91", fl5), "range");
+    // MR5: 1 contradicts the profile and is queried (T2V-MR5-ONE); 0, a negative or a fraction is refused.
+    assert.equal(numberProblem("1", mr5), "below");
+    assert.equal(numberProblem("0", mr5), "range");
+    assert.equal(numberProblem("-3", mr5), "range");
+    assert.equal(numberProblem("2.5", mr5), "range");
+    assert.equal(numberProblem("3", mr5), null);
+  });
+
+  it("every number field has its range line in Field Help, and one-decimal fields the decimal line", () => {
+    const keys = parseLibraryKeys(read("Content-Library-Tier2-Field-Help.md"));
+    const numeric = q.questions.filter((x) => x.input);
+    assert.deepEqual(numeric.map((x) => x.code).sort(), ["BP3", "BP4", "FL5", "MR5", "UE7"]);
+    for (const question of numeric) assert.ok(keys.get(`T2V-RANGE-${question.code}`), question.code);
+    assert.equal(keys.get("T2V-RANGE-DEC"), "One decimal place, please — for example 4.2.");
+    assert.equal(keys.get("T2V-RANGE-BP3"), "A Google rating is between 1.0 and 5.0.");
   });
 
   it("an escape answers the question only where that question offers it (T43)", () => {

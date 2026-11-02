@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { marginFrom, parseNumber, type Answer, type Contradiction } from "@/lib/questionnaire/rules";
+import { marginFrom, numberProblem, parseNumber, type Answer, type Contradiction } from "@/lib/questionnaire/rules";
 import type { Question } from "@/lib/questionnaire/source";
 import styles from "./questionnaire.module.css";
 
@@ -39,6 +39,9 @@ function Alert() {
   );
 }
 
+/** Field Help §5's errors for one number field (T178): its own range line, and the one-decimal line where it takes decimals. */
+export type RangeErrors = { range: string; decimals: string | null };
+
 export type BlockCopy = {
   helpA11y: string;
   anchorNote: string;
@@ -65,6 +68,7 @@ export function QuestionBlock({
   draft,
   help,
   belowNote,
+  rangeErrors,
   helpOpen,
   single,
   warnings,
@@ -81,6 +85,8 @@ export function QuestionBlock({
   help: string | null;
   /** Shown when a whole number below the field's minimum is typed and it means something (MR5 = 1: T2V-MR5-ONE). */
   belowNote: string | null;
+  /** Shown against the field when what is typed is not an answer (T2V-RANGE-*): the counter says how many remain, only the field can say why. */
+  rangeErrors: RangeErrors | null;
   helpOpen: boolean;
   /** The only question on the screen: its stem is the heading. */
   single: boolean;
@@ -97,6 +103,9 @@ export function QuestionBlock({
   const id = `q-${question.code}`;
   const escaped = Boolean(answer?.escape);
   const anchored = question.type === "anchored";
+  const problem = question.input && !escaped ? numberProblem(draft, question.input) : null;
+  const fieldError =
+    problem === "range" ? (rangeErrors?.range ?? null) : problem === "decimals" ? (rangeErrors?.decimals ?? rangeErrors?.range ?? null) : null;
 
   const choose = (option: number) => onAnswer({ option, number: null, escape: null, computed: false });
 
@@ -151,14 +160,21 @@ export function QuestionBlock({
               inputMode={question.input.inputmode}
               autoComplete="off"
               aria-labelledby={`${id}-stem`}
+              aria-invalid={fieldError ? true : undefined}
+              aria-describedby={fieldError ? `${id}-error` : undefined}
               value={escaped ? "" : draft}
               onChange={(event) => typeNumber(event.target.value)}
             />
             {question.input.suffix && <span className={styles.suf}>{question.input.suffix}</span>}
           </div>
-          {belowNote && !escaped && /^\s*-?\d+\s*$/.test(draft) && Number(draft) < question.input.min && (
+          {belowNote && problem === "below" && (
             <p className={styles.belowNote} role="status">
               {belowNote}
+            </p>
+          )}
+          {fieldError && (
+            <p id={`${id}-error`} className={styles.rangeError} role="alert">
+              {fieldError}
             </p>
           )}
 

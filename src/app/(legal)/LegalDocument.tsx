@@ -3,7 +3,7 @@ import { Fragment, type ReactNode } from "react";
 import logo from "@/assets/logo.png";
 import { BRAND_ENTITY_LINE } from "@/lib/company";
 import { FOOTER_POLICIES, LEGAL_LAST_UPDATED, LEGAL_PAGES, loadLegalDocument, type LegalSlug } from "@/lib/legal/documents";
-import { DATE_TOKEN, type Block, type Inline } from "@/lib/legal/markdown";
+import type { Block, Inline } from "@/lib/legal/markdown";
 import { withBasePath } from "@/lib/base-path";
 import styles from "./legal.module.css";
 
@@ -54,7 +54,7 @@ function renderInline(nodes: Inline[], key = "i"): ReactNode {
   });
 }
 
-function renderBlock(block: Block, i: number): ReactNode {
+function renderBlock(block: Block, i: number, slug: LegalSlug): ReactNode {
   switch (block.t) {
     case "title":
       return <h1 key={i}>{block.text}</h1>;
@@ -62,7 +62,7 @@ function renderBlock(block: Block, i: number): ReactNode {
       return (
         <p key={i} className={styles.updated}>
           {block.label}
-          {LEGAL_LAST_UPDATED ?? <span className={styles.placeholder}>{DATE_TOKEN}</span>}
+          {LEGAL_LAST_UPDATED[slug]}
         </p>
       );
     case "section":
@@ -158,7 +158,7 @@ export function LegalDocument({ slug }: { slug: LegalSlug }) {
       <header className={styles.top}>
         <Image src={logo} alt="Corporate Culture" unoptimized priority className={styles.logo} />
       </header>
-      <main className={styles.main}>{blocks.map(renderBlock)}</main>
+      <main className={styles.main}>{blocks.map((block, i) => renderBlock(block, i, slug))}</main>
       <footer className={styles.foot}>
         <nav aria-label="Policies">
           {LEGAL_PAGES.filter((page) => FOOTER_POLICIES.includes(page.slug)).map((page) => (

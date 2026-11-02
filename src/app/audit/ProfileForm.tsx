@@ -85,7 +85,7 @@ export function ProfileForm({
 
       {/* T1Q-PHONE-* (Tier 1 Questionnaire v1.1): mandatory, below Email. The WHY line must not be
           shortened. This is T1Q-PHONE-WHY, "until WhatsApp ships"; T1Q-PHONE-WHY-WA replaces it the
-          day WhatsApp delivery goes live, with Privacy v1.7 (T177). */}
+          day WhatsApp delivery goes live, with the four Tier 2 -WA strings and Privacy v1.8 (T178). */}
       <Field
         id="phone"
         label="Your WhatsApp number"

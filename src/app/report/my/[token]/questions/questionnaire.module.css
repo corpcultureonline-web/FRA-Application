@@ -842,3 +842,11 @@
   line-height: 1.5;
   color: #8a4205;
 }
+
+/* Field Help §5 (T178): an entry the field cannot take, named against the field. */
+.rangeError {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--red-deep);
+}

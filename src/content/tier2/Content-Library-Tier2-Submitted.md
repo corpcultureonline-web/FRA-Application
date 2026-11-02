@@ -1,6 +1,8 @@
 # Content Library — Tier 2 Screen 5, Submitted
 
-**Version 1.2 · 15 October 2026**
+**Version 1.3 · 1 November 2026**
+
+> **v1.3** — **`T2S-WHERE-PHONE` read *"{mobile} on WhatsApp"* and nothing sends** *(the developer, 1 November · T178)*. Interim version shipped; `-WA` replaces it with the channel.
 
 > **v1.2** — `T2S-WHEN` and `T2S-STILL` promised a bare "24 hours", contradicting the Terms and the Refund Policy, which both limit it to working days *(Design, v44)*.
 
@@ -38,7 +40,8 @@ Every string on the screen a founder sees the moment he taps **Finish and send**
 | `T2S-WHEN` | It comes back within 24 hours on working days. |
 | `T2S-WHERE-LABEL` | We'll send it to |
 | `T2S-WHERE-EMAIL` | *{email}* |
-| `T2S-WHERE-PHONE` | *{mobile}* on WhatsApp |
+| `T2S-WHERE-PHONE` | **Until WhatsApp ships** — *{mobile}* for calls about your order |
+| `T2S-WHERE-PHONE-WA` | **When WhatsApp ships** — *{mobile}* on WhatsApp |
 | `T2S-CHANGE` | Change |
 | `T2S-CLOSE-OK` | You can close this page. Nothing is lost. |
 

@@ -33,7 +33,9 @@ export default async function QueuePage({ searchParams }: { searchParams: Promis
     if (!preview) return null;
     return {
       label: p("T2A-RESEND"),
-      confirm: p("T2A-RESEND-CONFIRM").replace("{brand}", preview.brand).replace("{link_type}", preview.linkType).replace("{email}", preview.email),
+      confirm: (preview.linkType ? p("T2A-RESEND-CONFIRM").replace("{link_type}", preview.linkType) : p("T2A-RESEND-CONFIRM-BOTH"))
+        .replace("{brand}", preview.brand)
+        .replace("{email}", preview.email),
       cancel: p("T2A-CANCEL"),
       done: p("T2A-RESEND-DONE"),
       wait: p("T2A-RESEND-WAIT"),

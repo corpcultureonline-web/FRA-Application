@@ -1,6 +1,8 @@
 # Content Library — Tier 2 Checkout (Screen 2)
 
-**Version 1.1 · 15 October 2026**
+**Version 1.2 · 1 November 2026**
+
+> **v1.2** — **`T2C-MOBILE-WHY` and `T2C-NEXT` both promised WhatsApp delivery, which is not built** *(the developer, 1 November · T178)*. Two versions of each; ship the plain ones. **These were two of the five places one purchase promised WhatsApp.**
 
 > **v1.1** — the refund line drops the deadline *(T72)*; a consent checkbox is added *(T75)*; the mobile number moves to our own field *(developer audit item 7)*.
 
@@ -29,7 +31,8 @@ Every element added here is an opportunity to reconsider. No feature list, no te
 | `T2C-PRICE-HEAD` | **₹1,999** + 18% GST |
 | `T2C-PRICE-PAY` | ₹2,359 payable |
 | `T2C-ENTITY` | Corporate Culture is a brand of Blue Bird Ventures |
-| `T2C-NEXT` | After payment you will get a link to your questions, by email and WhatsApp. |
+| `T2C-NEXT` | **Until WhatsApp ships** — After payment you will get a link to your questions by email. |
+| `T2C-NEXT-WA` | **When WhatsApp ships** — After payment you will get a link to your questions, by email and WhatsApp. |
 | `T2C-PAY-BTN` | **Pay ₹2,359** |
 
 **`T2C-PAY-BTN` renders the payable total, never the base price.** The number on the button is the number leaving their account. Showing ₹1,999 and then charging ₹2,359 inside Razorpay is the commonest cause of abandonment on an Indian payment page — the figure changes at the exact moment the founder is deciding whether to trust us. The amount is computed from config like every other price; it is never typed.
@@ -41,8 +44,13 @@ The Audit does not collect a mobile number, so this screen asks for it. *(Decisi
 | Key | Copy |
 |---|---|
 | `T2C-MOBILE-LABEL` | Your mobile number |
-| `T2C-MOBILE-WHY` | We send your Report link to this number on WhatsApp, and by email. |
+| `T2C-MOBILE-WHY` | **Until WhatsApp ships** — We send your Report link by email, and we may call this number about your order. |
+| `T2C-MOBILE-WHY-WA` | **When WhatsApp ships** — We send your Report link to this number on WhatsApp, and by email. |
 | `T2C-MOBILE-ERR` | Please enter a 10-digit mobile number. |
+
+**Two versions of each, because WhatsApp sending is not built** *(the developer, 1 November · T178)*. Ship the plain ones; swap to the `-WA` pair on the day the channel goes live, with `T1Q-PHONE-WHY-WA`, `T2S-WHERE-PHONE-WA` and Privacy v1.8 — **all five move together or the funnel contradicts itself again.**
+
+**The interim `T2C-MOBILE-WHY` still earns the field.** It says what the number is for — the order, and a call — so a founder is not handing over a mobile for no stated reason. **What it must not do is promise a channel that does not send.**
 
 **`T2C-MOBILE-WHY` is the WhatsApp opt-in** — Decision T41, the one exception to the no-consent-UI rule. It is a single plain line beneath the field, never a checkbox and never a modal. A cookie banner protects us; this tells a paying customer where their Report will arrive, which is information they want.
 

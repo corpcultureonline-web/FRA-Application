@@ -384,13 +384,16 @@ export async function editRates(): Promise<RateRow[]> {
     .sort((a, b) => b.rate - a.rate || b.edited - a.edited);
 }
 
-/** {link_type} in T2A-RESEND-CONFIRM: the library's four words; "both" names its two (Find-Result v1.1 §8). */
-const LINK_TYPE: Record<RecoveryPlan["kind"], string> = {
+/**
+ * {link_type} in T2A-RESEND-CONFIRM: the library's four words. The two-link
+ * case (Find-Result v1.1 §8) has its own string, T2A-RESEND-CONFIRM-BOTH, in
+ * the plural (Admin v1.5), so it has no entry here.
+ */
+const LINK_TYPE: Record<Exclude<RecoveryPlan["kind"], "both">, string> = {
   audit: "result",
   questions: "questionnaire",
   waiting: "status",
   report: "Report",
-  both: "result and Report",
 };
 
 /** The order's address now: a correction made on Screen 5 wins (T2A-RESEND-CONFIRM reads it live). */
@@ -413,9 +416,10 @@ async function resendPlan(orderId: number) {
  * What "Resend their link" would send (Admin v1.4): the same furthest point
  * the self-service page resolves, so the two routes cannot disagree.
  */
-export async function resendPreview(orderId: number): Promise<{ brand: string; linkType: string; email: string } | null> {
+export async function resendPreview(orderId: number): Promise<{ brand: string; linkType: string | null; email: string } | null> {
   const plan = await resendPlan(orderId);
-  return plan ? { brand: plan.brand, linkType: LINK_TYPE[plan.kind], email: plan.to } : null;
+  // linkType null: both links, read with T2A-RESEND-CONFIRM-BOTH.
+  return plan ? { brand: plan.brand, linkType: plan.kind === "both" ? null : LINK_TYPE[plan.kind], email: plan.to } : null;
 }
 
 export type ResendResult = { state: "done" | "wait" | "fail"; email: string | null };

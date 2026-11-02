@@ -6,7 +6,7 @@ import logo from "@/assets/logo.png";
 import { withBasePath } from "@/lib/base-path";
 import { contradictions, isAnswered, type Answer, type Answers, type Contradiction, type ContradictionPair } from "@/lib/questionnaire/rules";
 import type { Questionnaire as QuestionnaireData, Question } from "@/lib/questionnaire/source";
-import { Marked, QuestionBlock, unmark, type BlockCopy } from "./QuestionBlock";
+import { Marked, QuestionBlock, unmark, type BlockCopy, type RangeErrors } from "./QuestionBlock";
 import styles from "./questionnaire.module.css";
 
 export type QuestionnaireCopy = Record<
@@ -71,6 +71,7 @@ export function Questionnaire({
   copy,
   help,
   belowNotes,
+  rangeErrors,
 }: {
   token: string;
   questionnaire: QuestionnaireData;
@@ -82,6 +83,8 @@ export function Questionnaire({
   help: Record<string, string>;
   /** Field Help's below-range notes by question code (MR5: T2V-MR5-ONE). */
   belowNotes: Record<string, string>;
+  /** Field Help §5's out-of-range errors by question code (T2V-RANGE-*, T178). */
+  rangeErrors: Record<string, RangeErrors>;
 }) {
   const { questions, screens, sections } = questionnaire;
   const byCode = useMemo(() => new Map(questions.map((q) => [q.code, q])), [questions]);
@@ -482,6 +485,7 @@ export function Questionnaire({
                 draft={drafts[question.code] ?? ""}
                 help={help[question.code] ?? null}
                 belowNote={belowNotes[question.code] ?? null}
+                rangeErrors={rangeErrors[question.code] ?? null}
                 helpOpen={openHelp === question.code}
                 single={single}
                 warnings={onScreen.filter((c) => c.under === question.code)}

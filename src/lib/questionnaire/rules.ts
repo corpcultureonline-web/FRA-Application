@@ -27,6 +27,30 @@ export function parseNumber(raw: string, input: NumericInput): number | null {
   return value;
 }
 
+/**
+ * Why a typed number is not an answer, so the field can say so (Field Help §5,
+ * T178), rather than leaving the counter at "Answer 1 more question":
+ *
+ * - "below": a positive whole number under the minimum where the field has a
+ *   note for it (MR5 = 1, T2V-MR5-ONE): a misread of an earlier answer, queried.
+ * - "decimals": a number with more decimal places than a one-decimal field
+ *   takes (T2V-RANGE-DEC).
+ * - "range": anything else that is not an answer (T2V-RANGE-{code}).
+ *
+ * Null when it is an answer, empty, or still being typed ("-", "4.").
+ * It never changes what counts as answered; parseNumber decides that.
+ */
+export function numberProblem(raw: string, input: NumericInput): "below" | "decimals" | "range" | null {
+  const text = raw.replace(/[\s,]/g, "").replace(/^−/, "-");
+  if (text === "" || text === "-" || /^-?\d+\.$/.test(text)) return null;
+  if (parseNumber(raw, input) !== null) return null;
+  const value = Number(text);
+  if (input.belowRange && /^\d+$/.test(text) && value > 0 && value < input.min) return "below";
+  const withinRange = value >= input.min && (input.max === null || value <= input.max);
+  if (input.decimals > 0 && /^-?\d+\.\d+$/.test(text) && withinRange) return "decimals";
+  return "range";
+}
+
 export function isAnswered(question: Question, answer: Answer | undefined): boolean {
   if (!answer) return false;
   if (answer.escape) return question.escape?.kind === answer.escape;

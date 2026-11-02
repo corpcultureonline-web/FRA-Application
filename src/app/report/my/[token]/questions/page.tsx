@@ -66,6 +66,14 @@ export default async function QuestionsPage({
       belowNotes={Object.fromEntries(
         questionnaire.questions.filter((q) => q.input?.belowRange).map((q) => [q.code, plain(t2(q.input!.belowRange!))]),
       )}
+      rangeErrors={Object.fromEntries(
+        questionnaire.questions
+          .filter((q) => q.input)
+          .map((q) => [
+            q.code,
+            { range: plain(t2(`T2V-RANGE-${q.code}`)), decimals: q.input!.decimals > 0 ? plain(t2("T2V-RANGE-DEC")) : null },
+          ]),
+      )}
     />
   );
 }

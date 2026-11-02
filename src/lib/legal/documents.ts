@@ -3,14 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { parseLegalMarkdown, type Block } from "./markdown";
 
-/**
- * The date at the top of all three legal pages ({{LEGAL_LAST_UPDATED}} in the
- * documents). Set once, to the day the pages go live, as a fixed string —
- * never today's date at request time: Privacy §13 and Terms §14 tell the reader
- * this is when the document last changed. Until it is set the page shows the
- * token itself, so an unset date cannot pass unnoticed.
- */
-export const LEGAL_LAST_UPDATED: string | null = "20 October 2026";
+export { LEGAL_LAST_UPDATED } from "./dates";
 
 export type LegalSlug = "privacy" | "terms" | "refunds";
 

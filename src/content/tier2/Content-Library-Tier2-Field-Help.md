@@ -8,6 +8,8 @@
 
 > **v1.4** — `T2V-CONTRA-MARGIN`'s trigger was still the unbuildable one. The ruling in `Response-to-Developer-Audit.md` had never reached this file, which is the file Design and the developer actually build from *(Design, v41)*.
 
+> **v1.4** — **§5 gains the out-of-range error strings** *(the developer, 1 November · T178)*. The ranges were specified in v1.0 and the message shown when a value falls outside one never was, so the field blocked silently and the counter said nothing useful. Six keys.
+
 > **v1.3** — developer audit items 2, 10 and 18: the "I don't know" threshold drops to three (only four questions offer it); the invented "I don't track this" answer is withdrawn; `T2H-SI6-HELP` no longer claims the Report makes recommendations, which P6 forbids; §6 item 4 renamed per T59.
 
 > **v1.2** — `T2H-SI6-HELP` rewritten. It named the Roadmap, which both the questionnaire rules and the help-page rules forbid, and it did so on two surfaces. The consequence it threatened is kept; the surface it named is now the Report, which is what the founder has actually bought.
@@ -233,6 +235,29 @@ Sixteen fields. One help note each, opened by a `?` beside the label, closed by 
 | `BP4` Google reviews | Whole number, 0 and upward |
 | `FL5` Days without you | **0 to 90.** The question asks about the last 90 days; nothing above 90 is a possible answer |
 | `MR5` Outlets trading | **Whole number, 2 and upward.** The question is only asked when the brand has more than one outlet, so **1 is not a possible answer here** — a founder entering 1 has misread it, or his profile is wrong. `T2V-MR5-ONE` |
+
+### The message shown when a value is out of range — **new, 1 November**
+
+**The ranges above were specified and the error text never was** *(T178)*. Found on staging: `14` in `BP3` left the gate reading *"Answer 1 more question to continue"* with **every field visibly filled, no message, and nothing to say which field was wrong.** A founder fifteen minutes into a paid questionnaire has no way to work that out.
+
+**Shown against the field, not at the foot of the screen.** The counter says how many remain; only the field can say why.
+
+| Key | Field | Copy |
+|---|---|---|
+| `T2V-RANGE-UE7` | `UE7` EBITDA % | Enter a margin between −100 and 100. |
+| `T2V-RANGE-BP3` | `BP3` Google rating | A Google rating is between 1.0 and 5.0. |
+| `T2V-RANGE-BP4` | `BP4` Google reviews | Enter a whole number, 0 or more. |
+| `T2V-RANGE-FL5` | `FL5` Days without you | The question covers the last 90 days, so enter 0 to 90. |
+| `T2V-RANGE-MR5` | `MR5` Outlets trading | Enter 2 or more — you told us you run more than one outlet. |
+| `T2V-RANGE-DEC` | Any one-decimal field | One decimal place, please — for example 4.2. |
+
+**Each one names the bound rather than saying *invalid*.** A founder who typed 14 into a rating field has made a units mistake, not a typing mistake, and *"a Google rating is between 1.0 and 5.0"* corrects the mistake he actually made.
+
+**`T2V-RANGE-MR5` and `T2V-MR5-ONE` are different messages and must not be merged.** `1` is a contradiction with an earlier answer and is **queried, not refused**. `0`, a negative, or a fraction is out of range and **is** refused. One is a warning, the other blocks.
+
+**An out-of-range value is treated as no value for the gate counter** — that part is correct and stays. The fault was silence, not the counting.
+
+---
 
 ### Warning, never blocking
 

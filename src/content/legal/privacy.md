@@ -1,4 +1,4 @@
-<!-- Published text of Privacy-Policy.md Version 1.6, copied verbatim, except: §11's sentence "We do not use advertising cookies…" removed 20 October 2026 at Corporate Culture's direction, because the Audit pages now carry the Google Ads tag. The source file should be updated to match. -->
+<!-- Published text of Privacy-Policy.md Version 1.7, copied verbatim. Edit the source, then re-copy. -->
 # Privacy Policy
 
 *Last updated: **{{LEGAL_LAST_UPDATED}}***
@@ -55,8 +55,8 @@ We also record the usual technical information a website receives — your brows
 | Producing your Report | Your answers |
 | Having a person review it before you receive it | Your answers, your brand name |
 | Delivering it | Email address, mobile number |
-| **Calling you once to talk through your result** | **Mobile number, your name, your result** |
 | Taking payment and issuing a receipt or invoice | Payment details via Razorpay, your name and contact details |
+| **Calling you once to talk through your result** | **Mobile number, your name, your result** |
 | Answering you when you write to us | Everything above |
 | Knowing whether the product works | The event log |
 | Meeting tax and accounting obligations | Payment records |
@@ -161,6 +161,8 @@ Your answers are held on servers with access limited to the people in §6. Payme
 We use a session cookie to keep your place in the questionnaire, so you can close the tab and come back without losing your answers.
 
 **There is no account and no password.** You never sign in to read your Report — the private link we send you is what identifies you, which is why §10 asks you not to forward it.
+
+**We use Google's advertising tag** so we can measure which adverts bring founders to the Audit, and show the Audit to people who have visited before. **We do not let other companies track you across unrelated sites from our pages**, and we do not pass your answers to any advertising platform.
 
 ---
 
