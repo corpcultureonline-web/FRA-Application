@@ -39,7 +39,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/a
     });
     return (
       <>
-        <GoogleAdsTag />
+        <GoogleAdsTag path="/audit/report" />
         <ResultPage report={report} tier2Url={tier2Url} />
       </>
     );

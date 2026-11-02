@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { EMPTY_PROFILE, normaliseMobile, profileProblems, readProfile } from "./audit.ts";
+import { EMPTY_PROFILE, isValidEmail, normaliseMobile, profileProblems, readProfile } from "./audit.ts";
 
 const filled = {
   ...EMPTY_PROFILE,
@@ -17,9 +17,16 @@ const filled = {
   city: "Chennai",
 };
 
+describe("the email address on Section 1", () => {
+  it("takes one @ with a dotted domain, and refuses a doubled @ (staging test, 2 Nov, V3)", () => {
+    for (const typed of ["founder@brand.in", " a.b+c@mail.co.uk "]) assert.equal(isValidEmail(typed), true, typed);
+    for (const typed of ["two@@at.com", "a@b@c.com", "a@b", "nospace @x.com", "@x.com", ""]) assert.equal(isValidEmail(typed), false, typed);
+  });
+});
+
 describe("the WhatsApp number on Section 1", () => {
   it("accepts ten digits starting 6–9, with spaces, dashes, +91 or 0", () => {
-    for (const typed of ["9876543210", "98765 43210", "98765-43210", "+91 98765 43210", "+919876543210", "09876543210"]) {
+    for (const typed of ["9876543210", "98765 43210", "98765-43210", "+91 98765 43210", "+919876543210", "919876543210", "09876543210"]) {
       assert.equal(normaliseMobile(typed), "9876543210", typed);
     }
   });

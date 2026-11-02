@@ -20,6 +20,26 @@ const nextConfig: NextConfig = {
 
   env: { NEXT_PUBLIC_SENTRY_RELEASE: releaseSha() },
 
+  async headers() {
+    return [
+      {
+        // Every page and API response (staging test, 2 Nov 2026, T2 and T3).
+        source: "/:path*",
+        headers: [
+          // Result, Report and resume links carry their private token in the path:
+          // another site is told our origin only, never the page.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Checkout must not be framed by another site (clickjacking).
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // This host only, no includeSubDomains: the WordPress site is not ours to commit.
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
+        ],
+      },
+    ];
+  },
+
   async redirects() {
     return [
       // The domain root, where the app owns the whole (sub)domain.

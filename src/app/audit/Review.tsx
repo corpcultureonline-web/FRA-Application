@@ -3,6 +3,7 @@ import {
   PROFILE_SECTION,
   QUESTION_SECTIONS,
   displayAnswer,
+  normaliseMobile,
   type Answers,
   type Profile,
 } from "@/lib/audit";
@@ -64,7 +65,12 @@ export function Review({
       <ReviewCard
         number={1}
         title={PROFILE_SECTION.title}
-        rows={PROFILE_FIELDS.map(({ key, label }) => ({ key, label, value: profile[key] }))}
+        rows={PROFILE_FIELDS.map(({ key, label }) => ({
+          key,
+          label,
+          // The number as it is stored, ten digits: "+919876543210" typed under the +91 block reads back as 9876543210 (staging test, 2 Nov, V2).
+          value: key === "phone" ? (normaliseMobile(profile.phone) ?? profile.phone) : profile[key],
+        }))}
         onEdit={() => onEdit(0)}
       />
       {QUESTION_SECTIONS.map((section, i) => (

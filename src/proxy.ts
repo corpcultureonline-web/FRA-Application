@@ -45,5 +45,7 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Pages and API routes; not build assets, images or files with an extension.
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\.[a-zA-Z0-9]+$).*)"],
+  // "/" too: the landing page at the bare base path (/franchise-audit) matches
+  // nothing else, and went out without X-Robots-Tag on staging (2 Nov, T1).
+  matcher: ["/", "/((?!_next/static|_next/image|favicon\\.ico|.*\\.[a-zA-Z0-9]+$).*)"],
 };

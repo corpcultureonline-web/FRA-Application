@@ -229,8 +229,9 @@ export const ALL_QUESTIONS = QUESTION_SECTIONS.flatMap((section) => section.ques
 
 export type Answers = Record<string, string>;
 
+/** One "@", with something on each side and a dot in the domain: "two@@at.com" is a typo, not an address (staging test, 2 Nov 2026, V3). */
 export function isValidEmail(value: string) {
-  return /^\S+@\S+\.\S+$/.test(value.trim());
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
 /**
