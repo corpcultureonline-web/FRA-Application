@@ -243,10 +243,17 @@ export function normaliseMobile(input: string): string | null {
   return /^[6-9]\d{9}$/.test(digits) ? digits : null;
 }
 
+/**
+ * The longest brand name Screen 1 takes (set 3 Nov 2026, after a 200-character
+ * name pushed the result page to 4,903px wide; staging test V1). The input stops
+ * at it, and the server refuses anything longer.
+ */
+export const BRAND_NAME_MAX = 150;
+
 /** Fields of the profile that are still missing or invalid. */
 export function profileProblems(profile: Profile): (keyof Profile)[] {
   const problems: (keyof Profile)[] = [];
-  if (!profile.brandName.trim()) problems.push("brandName");
+  if (!profile.brandName.trim() || profile.brandName.trim().length > BRAND_NAME_MAX) problems.push("brandName");
   if (!profile.founderName.trim()) problems.push("founderName");
   if (!isValidEmail(profile.email)) problems.push("email");
   if (!normaliseMobile(profile.phone)) problems.push("phone");

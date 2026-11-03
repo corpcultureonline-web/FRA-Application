@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { EMPTY_PROFILE, isValidEmail, normaliseMobile, profileProblems, readProfile } from "./audit.ts";
+import { BRAND_NAME_MAX, EMPTY_PROFILE, isValidEmail, normaliseMobile, profileProblems, readProfile } from "./audit.ts";
 
 const filled = {
   ...EMPTY_PROFILE,
@@ -16,6 +16,15 @@ const filled = {
   outlets: "2–5",
   city: "Chennai",
 };
+
+describe("the brand name on Section 1", () => {
+  it("takes up to 150 characters and refuses more (staging test, 2 Nov, V1)", () => {
+    assert.equal(BRAND_NAME_MAX, 150);
+    assert.deepEqual(profileProblems({ ...filled, brandName: "B".repeat(150) }), []);
+    assert.deepEqual(profileProblems({ ...filled, brandName: "B".repeat(151) }), ["brandName"]);
+    assert.equal(readProfile({ ...filled, brandName: "B".repeat(151) }), null);
+  });
+});
 
 describe("the email address on Section 1", () => {
   it("takes one @ with a dotted domain, and refuses a doubled @ (staging test, 2 Nov, V3)", () => {

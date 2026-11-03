@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CATEGORIES, OUTLET_BANDS, profileProblems, type Profile } from "@/lib/audit";
+import { BRAND_NAME_MAX, CATEGORIES, OUTLET_BANDS, profileProblems, type Profile } from "@/lib/audit";
 
 const fieldClass =
   "h-[52px] w-full rounded-md border bg-white px-4 text-[17px] text-ink outline-none transition-colors focus:border-ink focus:ring-1 focus:ring-ink";
@@ -50,6 +50,7 @@ export function ProfileForm({
           <input
             id="brandName"
             autoComplete="organization"
+            maxLength={BRAND_NAME_MAX}
             value={profile.brandName}
             onChange={(e) => set("brandName")(e.target.value)}
             className={`${fieldClass} ${border("brandName")}`}
