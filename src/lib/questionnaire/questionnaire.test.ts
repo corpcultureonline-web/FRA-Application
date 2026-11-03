@@ -170,6 +170,10 @@ describe("questionnaire: numeric fields (Field Help §5)", () => {
     assert.equal(numberProblem("4.25", bp3), "decimals");
     assert.equal(numberProblem("8.45", ue7), "decimals");
     assert.equal(numberProblem("100.5", ue7), "range");
+    // The staging test's four on UE7 (2 Nov): three named against the field; empty leaves only the counter.
+    for (const draft of ["500", "-200", "abc"]) assert.equal(numberProblem(draft, ue7), "range", draft);
+    assert.equal(numberProblem("", ue7), null);
+    assert.equal(numberProblem("17", ue7), null);
     assert.equal(numberProblem("12.5", bp4), "range");
     assert.equal(numberProblem("abc", bp4), "range");
     assert.equal(numberProblem("91", fl5), "range");
