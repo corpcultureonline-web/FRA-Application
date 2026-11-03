@@ -5,7 +5,7 @@ import founderPhoto from "@/assets/ronak-patel.jpg";
 import { Logo } from "@/components/Logo";
 import { Rich } from "@/components/Rich";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY } from "@/lib/company";
-import type { NoteKind, ReportData } from "@/lib/result";
+import type { GateState, NoteKind, ReportData } from "@/lib/result";
 import { GetReportButton } from "./GetReportButton";
 import { reportFont } from "./report-font";
 
@@ -67,13 +67,13 @@ export function ReportDocument({
 
       {content.legal.length ? (
         <Section title="Legal Check">
-          <Notes notes={content.legal} />
+          <Notes notes={content.legal.map((n) => ({ kind: n.state, text: n.text }))} styles={GATE_STYLES} />
         </Section>
       ) : null}
 
       {content.importantPoints.length ? (
         <Section title="Important Points to Note">
-          <Notes notes={content.importantPoints} />
+          <Notes notes={content.importantPoints} styles={NOTE_STYLES} />
         </Section>
       ) : null}
 
@@ -223,17 +223,26 @@ function Numbered({ items }: { items: { heading: string; body: string }[] }) {
   );
 }
 
-const NOTE_STYLES: Record<NoteKind, { label: string; border: string; text: string }> = {
+type NoteStyle = { label: string; border: string; text: string };
+
+const NOTE_STYLES: Record<NoteKind, NoteStyle> = {
   strength: { label: "Strength", border: "border-l-[#2e7d4f]", text: "text-[#2e7d4f]" },
   milestone: { label: "Next milestone", border: "border-l-cta", text: "text-[#b86e00]" },
   watch: { label: "Watch", border: "border-l-brand", text: "text-brand" },
 };
 
-function Notes({ notes }: { notes: { kind: NoteKind; text: string }[] }) {
+/** T1R-GATE-* (Result Page library §23.3): the legal check's own states, matching the Report's T2R- three. */
+const GATE_STYLES: Record<GateState, NoteStyle> = {
+  clear: { label: "Clear", border: "border-l-[#2e7d4f]", text: "text-[#2e7d4f]" },
+  inprogress: { label: "In progress", border: "border-l-cta", text: "text-[#b86e00]" },
+  mustresolve: { label: "Must resolve", border: "border-l-brand", text: "text-brand" },
+};
+
+function Notes<K extends string>({ notes, styles }: { notes: { kind: K; text: string }[]; styles: Record<K, NoteStyle> }) {
   return (
     <ul className="space-y-3">
       {notes.map((note) => {
-        const style = NOTE_STYLES[note.kind];
+        const style = styles[note.kind];
         return (
           <li key={note.text} className={`break-inside-avoid border-l-[3px] py-0.5 pl-4 ${style.border}`}>
             <p className={`${caps} text-[10px] ${style.text}`}>{style.label}</p>

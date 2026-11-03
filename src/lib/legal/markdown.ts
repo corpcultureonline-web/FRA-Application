@@ -26,11 +26,8 @@ export type Block =
   /** A two-column table with an empty header row: label and value pairs. */
   | { t: "kv"; rows: { label: Inline[]; value: Inline[] }[] }
   | { t: "table"; head: Inline[][]; rows: Inline[][][] }
-  /** The "Last updated" line; `label` is its wording, the date is set at deploy. */
+  /** The "Last updated" line; `label` is its wording, the date is each document's own (dates.ts). */
   | { t: "updated"; label: string };
-
-/** The deploy-time date token shared by all three documents. */
-export const DATE_TOKEN = "{{LEGAL_LAST_UPDATED}}";
 
 const UPDATED = /^\*(.+?)\*\*\{\{LEGAL_LAST_UPDATED\}\}\*\*\*$/;
 const HEADING = /^(#{1,6}) (.+)$/;

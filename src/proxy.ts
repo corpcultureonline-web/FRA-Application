@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { BASE_PATH } from "@/lib/base-path";
+import { isNoIndex } from "@/lib/seo";
 import {
   INTERNAL_COOKIE,
   INTERNAL_HEADER,
@@ -36,10 +37,15 @@ export function proxy(request: NextRequest) {
     response.cookies.set(NEW_SESSION_COOKIE, "1", options);
   }
   if (internal) response.cookies.set(INTERNAL_COOKIE, "1", options);
+  // A staging copy: every page and API response says noindex, whatever its
+  // own metadata says (seo.ts).
+  if (isNoIndex()) response.headers.set("X-Robots-Tag", "noindex, nofollow");
   return response;
 }
 
 export const config = {
   // Pages and API routes; not build assets, images or files with an extension.
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\.[a-zA-Z0-9]+$).*)"],
+  // "/" too: the landing page at the bare base path (/franchise-audit) matches
+  // nothing else, and went out without X-Robots-Tag on staging (2 Nov, T1).
+  matcher: ["/", "/((?!_next/static|_next/image|favicon\\.ico|.*\\.[a-zA-Z0-9]+$).*)"],
 };

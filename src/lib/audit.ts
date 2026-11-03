@@ -39,6 +39,8 @@ export type Profile = {
   brandName: string;
   founderName: string;
   email: string;
+  /** The WhatsApp number, as typed; stored as ten digits (normaliseMobile). */
+  phone: string;
   category: string;
   outlets: string;
   city: string;
@@ -48,6 +50,7 @@ export const EMPTY_PROFILE: Profile = {
   brandName: "",
   founderName: "",
   email: "",
+  phone: "",
   category: "",
   outlets: "",
   city: "",
@@ -57,6 +60,7 @@ export const PROFILE_FIELDS: { key: keyof Profile; label: string }[] = [
   { key: "brandName", label: "Brand name" },
   { key: "founderName", label: "Your name" },
   { key: "email", label: "Email" },
+  { key: "phone", label: "Your WhatsApp number" },
   { key: "category", label: "Category" },
   { key: "outlets", label: "Outlets" },
   { key: "city", label: "City" },
@@ -225,20 +229,56 @@ export const ALL_QUESTIONS = QUESTION_SECTIONS.flatMap((section) => section.ques
 
 export type Answers = Record<string, string>;
 
+/** One "@", with something on each side and a dot in the domain: "two@@at.com" is a typo, not an address (staging test, 2 Nov 2026, V3). */
 export function isValidEmail(value: string) {
-  return /^\S+@\S+\.\S+$/.test(value.trim());
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
+
+/**
+ * An Indian mobile as ten digits, after removing spaces, dashes and a +91 or 0
+ * prefix; null when it is not one. Format only, no OTP (handoff v3.1 §5.1).
+ */
+export function normaliseMobile(input: string): string | null {
+  const digits = input.replace(/[\s-]/g, "").replace(/^(\+?91|0)(?=\d{10}$)/, "");
+  return /^[6-9]\d{9}$/.test(digits) ? digits : null;
+}
+
+/**
+ * The longest brand name Screen 1 takes (set 3 Nov 2026, after a 200-character
+ * name pushed the result page to 4,903px wide; staging test V1). The input stops
+ * at it, and the server refuses anything longer.
+ */
+export const BRAND_NAME_MAX = 150;
 
 /** Fields of the profile that are still missing or invalid. */
 export function profileProblems(profile: Profile): (keyof Profile)[] {
   const problems: (keyof Profile)[] = [];
-  if (!profile.brandName.trim()) problems.push("brandName");
+  if (!profile.brandName.trim() || profile.brandName.trim().length > BRAND_NAME_MAX) problems.push("brandName");
   if (!profile.founderName.trim()) problems.push("founderName");
   if (!isValidEmail(profile.email)) problems.push("email");
+  if (!normaliseMobile(profile.phone)) problems.push("phone");
   if (!CATEGORIES.includes(profile.category)) problems.push("category");
   if (!OUTLET_BANDS.includes(profile.outlets)) problems.push("outlets");
   if (!profile.city.trim()) problems.push("city");
   return problems;
+}
+
+/**
+ * The profile as posted to the server: every field a string, every problem
+ * absent, and the phone normalised to the ten digits that are stored and that
+ * checkout reads back (handoff v3.1 §5.1). Null when anything is wrong.
+ */
+export function readProfile(value: unknown): Profile | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const profile = { ...EMPTY_PROFILE };
+  for (const key of Object.keys(EMPTY_PROFILE) as (keyof Profile)[]) {
+    if (typeof raw[key] !== "string") return null;
+    profile[key] = (raw[key] as string).trim();
+  }
+  if (profileProblems(profile).length) return null;
+  // Stored as ten digits, as checkout reads it back (handoff v3.1 §5.1).
+  return { ...profile, phone: normaliseMobile(profile.phone)! };
 }
 
 export function isAnswered(question: Question, answers: Answers) {

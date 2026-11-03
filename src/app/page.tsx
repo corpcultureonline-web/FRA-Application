@@ -11,7 +11,8 @@ import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
 import { Rich } from "@/components/Rich";
 import { withBasePath } from "@/lib/base-path";
-import { CANONICAL_URL } from "@/lib/seo";
+import { T1F } from "@/lib/find-result/strings";
+import { CANONICAL_URL, isNoIndex } from "@/lib/seo";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/company";
 
 const START_AUDIT_HREF = "/audit";
@@ -20,12 +21,13 @@ const SAMPLE_REPORT_HREF = withBasePath("/sample-report.pdf");
 
 /**
  * The legal pages shared by the Audit, the Report and the Roadmap (CANONICAL-VALUES §4, T84).
- * The Refund Policy is live at /refunds but stays out of this footer until the Report
- * can be bought: nothing on this page sells anything yet.
+ * T1L-FOOT-NAV-*: the Refund Policy is linked because the Report's checkout is two clicks
+ * away, and Razorpay expects it reachable from where a customer pays (handoff v3.1 §2c.1).
  */
 const FOOTER_LINKS = [
   { label: "Privacy Policy", href: withBasePath("/privacy") },
   { label: "Terms & Conditions", href: withBasePath("/terms") },
+  { label: "Refund Policy", href: withBasePath("/refunds") },
   { label: "Contact", href: `mailto:${CONTACT_EMAIL}` },
 ];
 
@@ -93,7 +95,7 @@ function SampleReportLink() {
 /** The one indexed page (T17): its own canonical address, so a copy on any other host never competes. */
 export const metadata: Metadata = {
   alternates: { canonical: CANONICAL_URL },
-  robots: { index: true, follow: true },
+  robots: isNoIndex() ? { index: false, follow: false } : { index: true, follow: true },
 };
 
 export default function Home() {
@@ -118,9 +120,18 @@ export default function Home() {
             <p className="mt-8 text-lg leading-relaxed text-body sm:text-xl">
               11 questions. About 4 minutes. Free, with no signup.
             </p>
-            <div className="mt-10 flex flex-col items-stretch gap-8 sm:flex-row sm:items-center">
-              <StartAuditButton />
-              <div className="text-center sm:text-left">
+            <div className="mt-10 flex flex-col items-stretch gap-8 sm:flex-row sm:items-start">
+              <div className="flex flex-col items-stretch gap-3 sm:items-start">
+                <StartAuditButton />
+                {/* T1F-ENTRY-LINK: a text link, never a button, so it does not compete with Start the audit. */}
+                <Link
+                  href="/find-my-result"
+                  className="text-center text-[14px] font-bold text-muted underline underline-offset-4 hover:text-ink sm:text-left"
+                >
+                  {T1F["T1F-ENTRY-LINK"]}
+                </Link>
+              </div>
+              <div className="text-center sm:pt-4 sm:text-left">
                 <SampleReportLink />
               </div>
             </div>
@@ -219,17 +230,15 @@ export default function Home() {
                 </svg>
                 Legal check
               </p>
+              {/* T1L-SNAP-TM / -DISPUTE take the legal check's own states, T1R-GATE-INPROGRESS and
+                  T1R-GATE-CLEAR (Landing library v1.5): a filed trademark is In progress, as in the Report. */}
               <ul className="mt-2 flex flex-col gap-1 sm:flex-row sm:gap-10">
                 <li className="flex items-center gap-2.5">
-                  <span aria-hidden="true" className="font-bold text-[#c27a00]">
-                    –
-                  </span>
+                  <span className={`${monoCaps} text-[10px] font-bold text-[#8a5300]`}>In progress</span>
                   Trademark: filed, not yet registered
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span aria-hidden="true" className="font-bold text-[#1b6b2f]">
-                    ✓
-                  </span>
+                  <span className={`${monoCaps} text-[10px] font-bold text-[#1b6b2f]`}>Clear</span>
                   Disputes: none declared
                 </li>
               </ul>

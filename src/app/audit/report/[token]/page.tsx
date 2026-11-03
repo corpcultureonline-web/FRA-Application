@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { notFound } from "next/navigation";
 import { withBasePath } from "@/lib/base-path";
 import { eventContext, logResultViewed } from "@/lib/events/server";
-import { loadReport, originFromHeaders, reportExists } from "@/lib/report";
+import { loadReport, originFromHeaders, reportExists, tier2LinkFor } from "@/lib/report";
 import { ReportDocument } from "../ReportDocument";
 import { ResultPage } from "../ResultPage";
 
@@ -26,7 +26,9 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/a
   if (!report) notFound();
 
   const requestHeaders = await headers();
-  const tier2Url = process.env.TIER2_URL?.trim() || undefined;
+  // Set only where the Report is on sale: "Get my full report" then opens its
+  // landing page as this brand (?audit=), instead of registering interest.
+  const tier2Url = tier2LinkFor(token);
   if (query.print !== "1") {
     // Event log: logged after the response, never delaying the page. The print
     // view is Chromium rendering the PDF, not a founder reading, so it is skipped.
@@ -37,7 +39,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/a
     });
     return (
       <>
-        <GoogleAdsTag />
+        <GoogleAdsTag path="/audit/report" />
         <ResultPage report={report} tier2Url={tier2Url} />
       </>
     );

@@ -1,10 +1,13 @@
 import type { Answers, Profile } from "./audit.ts";
 import { buildFacts } from "./content/facts.ts";
-import { selectContent, type ContentPiece, type NoteKind, type ReportContent, type SlotValues } from "./content/select.ts";
+import { selectContent, type ContentPiece, type GateState, type NoteKind, type ReportContent, type SlotValues } from "./content/select.ts";
 import { score, type AnswerMap, type AreaStatus, type ScoringConfig } from "./scoring/engine.ts";
 import { toPublicScore, type PublicScore } from "./scoring/public.ts";
 
-export type { NoteKind };
+/** What a result is built from: the profile without the WhatsApp number, which no result shows. */
+type ResultProfile = Omit<Profile, "phone">;
+
+export type { GateState, NoteKind };
 
 /**
  * Everything the result page and the PDF show — one shape for both, so they
@@ -55,7 +58,7 @@ function listText(items: string[]) {
  * chosen option, read from the *active* config so past reports gain improved
  * wording while their scores still come from the version they were saved under.
  */
-function restatements(active: ScoringConfig, answers: AnswerMap, profile: Profile): SlotValues {
+function restatements(active: ScoringConfig, answers: AnswerMap, profile: ResultProfile): SlotValues {
   const slots: Record<string, string | undefined> = {
     outlets_label: active.profile?.outlets?.find((o) => o.label === profile.outlets)?.restatement,
   };
@@ -84,7 +87,7 @@ export function buildReport({
   onError,
 }: {
   token: string;
-  profile: Profile;
+  profile: ResultProfile;
   answers: AnswerMap;
   submittedAt: Date;
   /** The scoring config version the submission was scored with. */

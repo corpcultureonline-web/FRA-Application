@@ -1,4 +1,4 @@
-<!-- Published text of Privacy-Policy.md Version 1.4, copied verbatim, except: §11's sentence "We do not use advertising cookies…" removed 20 October 2026 at Corporate Culture's direction, because the Audit pages now carry the Google Ads tag. The source file should be updated to match. -->
+<!-- Published text of Privacy-Policy.md Version 1.7, copied verbatim. Edit the source, then re-copy. -->
 # Privacy Policy
 
 *Last updated: **{{LEGAL_LAST_UPDATED}}***
@@ -12,7 +12,7 @@ This policy covers the Franchise Readiness Audit, Report and Roadmap at `app.cor
 | | |
 |---|---|
 | Entity | **Blue Bird Ventures, a partnership firm** |
-| Registered office | 3, C-3 Block, Hamsadhwani Apartment, 10th Street, Anna Nagar East, Chennai, Tamil Nadu 600102 |
+| Registered office | Shivalaya Buildings, 16, Ethiraj Salai, Egmore, Chennai, Tamil Nadu 600008 |
 | GSTIN | 33AAWFB6475E1Z5 |
 | Contact | bd@corpculture.co |
 
@@ -32,8 +32,8 @@ This policy covers the Franchise Readiness Audit, Report and Roadmap at `app.cor
 
 - **Your answers.** Eleven questions in the free Audit, about thirty more in the Report questionnaire. These describe your business — revenue, margins, outlets, staff, systems, legal position
 - **Your brand name** and the category you operate in
-- **Your email address**, which you give at the end of the free Audit
-- **Your mobile number**, which you give at checkout, used to send your Report on WhatsApp
+- **Your email address**, which you give at the start of the free Audit
+- **Your mobile number**, which you give at the start of the free Audit and again at checkout. **We use it to send you your result and your Report, and we may call you once to talk through what your result says.** If you buy a Report, we also use it to reach you about that order
 - **Anything you write to us** by email or WhatsApp
 
 ### What we record automatically
@@ -56,6 +56,7 @@ We also record the usual technical information a website receives — your brows
 | Having a person review it before you receive it | Your answers, your brand name |
 | Delivering it | Email address, mobile number |
 | Taking payment and issuing a receipt or invoice | Payment details via Razorpay, your name and contact details |
+| **Calling you once to talk through your result** | **Mobile number, your name, your result** |
 | Answering you when you write to us | Everything above |
 | Knowing whether the product works | The event log |
 | Meeting tax and accounting obligations | Payment records |
@@ -141,7 +142,7 @@ Under the Digital Personal Data Protection Act, 2023, you may:
 
 **Corrina Almeida**
 bd@corpculture.co
-Blue Bird Ventures, a partnership firm, 3, C-3 Block, Hamsadhwani Apartment, 10th Street, Anna Nagar East, Chennai, Tamil Nadu 600102
+Blue Bird Ventures, a partnership firm, Shivalaya Buildings, 16, Ethiraj Salai, Egmore, Chennai, Tamil Nadu 600008
 
 If you are not satisfied with our answer, you may complain to the **Data Protection Board of India**.
 
@@ -160,6 +161,8 @@ Your answers are held on servers with access limited to the people in §6. Payme
 We use a session cookie to keep your place in the questionnaire, so you can close the tab and come back without losing your answers.
 
 **There is no account and no password.** You never sign in to read your Report — the private link we send you is what identifies you, which is why §10 asks you not to forward it.
+
+**We use Google's advertising tag** so we can measure which adverts bring founders to the Audit, and show the Audit to people who have visited before. **We do not let other companies track you across unrelated sites from our pages**, and we do not pass your answers to any advertising platform.
 
 ---
 

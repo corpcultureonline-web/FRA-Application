@@ -238,6 +238,15 @@ describe("gates", () => {
     assert.match(content.canDoNow?.lead ?? "", /^One thing has to be settled/);
     assert.equal(content.canDoNow?.actions[0].heading, "Resolve the dispute.");
   });
+
+  it("labels the legal check Clear / In progress / Must resolve, never Strength (§23.3, T1R-GATE-*)", () => {
+    const states = (answers: AnswerMap) => report(answers).content.legal.map((n) => n.state);
+    // Strings: trademark filed, no dispute.
+    assert.deepEqual(states(vector("Strings")), ["inprogress", "clear"]);
+    assert.deepEqual(states({ ...vector("Strings"), G1: "Registered" }), ["clear", "clear"]);
+    assert.deepEqual(states({ ...vector("Strings"), G3: "Yes" }), ["mustresolve", "inprogress"]);
+    assert.deepEqual(states(vector("Career Craft"))[0], "mustresolve");
+  });
 });
 
 describe("range and weak-area variants", () => {

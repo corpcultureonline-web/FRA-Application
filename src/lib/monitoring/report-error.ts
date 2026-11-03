@@ -9,7 +9,7 @@ import * as Sentry from "@sentry/nextjs";
 export function reportError(
   message: string,
   error: unknown,
-  tags: { submission_id?: number | string; session_id?: string } = {},
+  tags: { submission_id?: number | string; session_id?: string; order_id?: number | string } = {},
 ) {
   console.error(message, error);
   Sentry.captureException(error, {

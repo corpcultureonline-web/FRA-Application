@@ -15,6 +15,24 @@ export type ContentPiece = {
 export type NoteKind = "strength" | "milestone" | "watch";
 
 type Note = { kind: NoteKind; text: string };
+
+/**
+ * The legal check's own three states (Result Page library §23.3, ruled 28
+ * October; handoff v3.1 §7.1): a gate is Clear, In progress or Must resolve,
+ * never a Strength or a Watch. `gate_state` belongs to the legal cards only;
+ * Important points keeps its three note kinds.
+ */
+export type GateState = "clear" | "inprogress" | "mustresolve";
+export type LegalNote = { state: GateState; text: string };
+
+/** By piece: a filed trademark is In progress — weaker than registered, not a strength (Group I §1.2). */
+const GATE_STATES: Record<string, GateState> = {
+  "LG-TM-REG": "clear",
+  "LG-NO-DISPUTE": "clear",
+  "LG-TM-FILED": "inprogress",
+  "LG-TM-NONE": "mustresolve",
+  "LG-DISPUTE": "mustresolve",
+};
 type Item = { heading: string; body: string };
 
 export type ReportContent = {
@@ -27,7 +45,7 @@ export type ReportContent = {
   /** Keyed by pillar code. */
   subtitles: Record<string, string>;
   importantPoints: Note[];
-  legal: Note[];
+  legal: LegalNote[];
   nutshell: string[];
   /** Closing line (CT-CLOSE) only once Ronak activates it — §22.4. */
   cannotTell: { intro: string | null; items: Item[]; close: string | null } | null;
@@ -151,7 +169,12 @@ export function selectContent(
   const importantPoints = section("IMPORTANT_POINTS").slice(0, 6).map(note);
 
   // Never capped, never omitted.
-  const legal = section("LEGAL_CHECK").map(note);
+  const legal = section("LEGAL_CHECK").map(
+    (r): LegalNote => ({
+      state: GATE_STATES[r.piece.id] ?? (r.piece.note_type === "warn" ? "mustresolve" : "clear"),
+      text: r.body,
+    }),
+  );
 
   const nutshell = section("IN_A_NUTSHELL")
     .slice(0, 5)

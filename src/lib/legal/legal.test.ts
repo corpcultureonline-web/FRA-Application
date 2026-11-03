@@ -6,7 +6,8 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
-import { LIBRARY_DIR as LIBRARY } from "../tier2/library-source.ts";
+import { librarySource } from "../tier2/library-source.ts";
+import { LEGAL_LAST_UPDATED } from "./dates.ts";
 import { parseInline, parseLegalMarkdown, type Block } from "./markdown.ts";
 
 const CONTENT = path.join(process.cwd(), "src", "content", "legal");
@@ -23,7 +24,7 @@ const sections = (blocks: Block[]) => blocks.filter((block) => block.t === "sect
 
 describe("legal pages: text matches the content library", () => {
   for (const doc of DOCUMENTS) {
-    const sourceFile = path.join(LIBRARY, doc.source);
+    const sourceFile = librarySource(doc.source);
     it(`${doc.slug}.md is a verbatim excerpt of ${doc.source}`, { skip: !existsSync(sourceFile) }, () => {
       const source = new Set(
         read(sourceFile)
@@ -35,6 +36,14 @@ describe("legal pages: text matches the content library", () => {
         .filter((line) => line.trim() !== "" && !line.startsWith("<!--"));
       const missing = copied.filter((line) => !source.has(line));
       assert.deepEqual(missing, [], "lines not found in the source; re-copy the published text");
+    });
+
+    it(`${doc.slug}'s date is the one on ${doc.source}'s version line (T179)`, { skip: !existsSync(sourceFile) }, () => {
+      const version = /Version ([0-9.]+)/.exec(read(path.join(CONTENT, `${doc.slug}.md`)).split("\n")[0])?.[1];
+      assert.ok(version, `${doc.slug}.md records no version`);
+      const line = new RegExp(`Version ${version.replace(/\./g, "\\.")} · (\\d{1,2} \\w+ \\d{4})`).exec(read(sourceFile));
+      assert.ok(line, `${doc.source} has no version line for ${version}`);
+      assert.equal(LEGAL_LAST_UPDATED[doc.slug], line[1]);
     });
   }
 });
@@ -59,7 +68,7 @@ describe("legal pages: what is and is not published", () => {
     assert.ok(!read(path.join(CONTENT, "refunds.md")).includes("How this gets used"));
   });
 
-  it("every page carries one date, near the top, waiting for the deploy constant", () => {
+  it("every page carries one date, near the top", () => {
     for (const doc of DOCUMENTS) {
       const blocks = parse(doc.slug);
       const updated = blocks.filter((block) => block.t === "updated");

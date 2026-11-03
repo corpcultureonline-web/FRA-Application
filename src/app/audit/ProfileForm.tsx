@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CATEGORIES, OUTLET_BANDS, profileProblems, type Profile } from "@/lib/audit";
+import { BRAND_NAME_MAX, CATEGORIES, OUTLET_BANDS, profileProblems, type Profile } from "@/lib/audit";
 
 const fieldClass =
   "h-[52px] w-full rounded-md border bg-white px-4 text-[17px] text-ink outline-none transition-colors focus:border-ink focus:ring-1 focus:ring-ink";
@@ -50,6 +50,7 @@ export function ProfileForm({
           <input
             id="brandName"
             autoComplete="organization"
+            maxLength={BRAND_NAME_MAX}
             value={profile.brandName}
             onChange={(e) => set("brandName")(e.target.value)}
             className={`${fieldClass} ${border("brandName")}`}
@@ -81,6 +82,36 @@ export function ProfileForm({
           onChange={(e) => set("email")(e.target.value)}
           className={`${fieldClass} ${border("email")}`}
         />
+      </Field>
+
+      {/* T1Q-PHONE-* (Tier 1 Questionnaire v1.1): mandatory, below Email. The WHY line must not be
+          shortened. This is T1Q-PHONE-WHY, "until WhatsApp ships"; T1Q-PHONE-WHY-WA replaces it the
+          day WhatsApp delivery goes live, with the four Tier 2 -WA strings and Privacy v1.8 (T178). */}
+      <Field
+        id="phone"
+        label="Your WhatsApp number"
+        hint="Your result comes to your email, and we may call this number once to talk through what it says."
+        error={has("phone") ? "Enter a 10-digit mobile number." : undefined}
+      >
+        <div className="relative">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[17px] text-muted"
+          >
+            +91
+          </span>
+          <input
+            id="phone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            placeholder="98765 43210"
+            maxLength={16}
+            value={profile.phone}
+            onChange={(e) => set("phone")(e.target.value)}
+            className={`${fieldClass} ${border("phone")} pl-14 placeholder:text-muted/60`}
+          />
+        </div>
       </Field>
 
       <Field id="category" label="Category" error={has("category") ? "Choose a category." : undefined}>

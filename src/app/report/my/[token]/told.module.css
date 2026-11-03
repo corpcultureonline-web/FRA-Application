@@ -1,0 +1,249 @@
+/*
+ * Screen 3, "What you already told us" (handoff boards 3-S3Told*). On phones
+ * the action docks to the bottom of the screen; from 768px it sits at the end
+ * of a 720px card on cream.
+ */
+.page {
+  --ink: #231f20;
+  --cream: #f5f0eb;
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--font-dm-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.page p {
+  margin: 0;
+}
+
+.top {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--cream);
+  border-bottom: 1px solid rgba(35, 31, 32, 0.08);
+}
+
+.logo {
+  display: block;
+  width: auto;
+  height: 40px;
+}
+
+/* Room at the end so the docked action never covers the last line. */
+.main {
+  flex: 1;
+  padding: 16px 20px 150px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.intro h1 {
+  margin: 0;
+  font-family: var(--font-lexend), var(--font-dm-sans), sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  text-wrap: balance;
+}
+
+.sub {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(35, 31, 32, 0.75);
+}
+
+/* The restatements are never capped or truncated (Carried §2): lines wrap. */
+.told {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.told li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  column-gap: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.told li svg {
+  margin-top: 3px;
+}
+
+.told strong {
+  font-weight: 600;
+}
+
+.range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 2px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--cream);
+}
+
+.rangeLabel {
+  font-family: var(--font-dm-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: rgba(35, 31, 32, 0.65);
+}
+
+.rangeValue {
+  font: 600 20px/1.2 var(--font-lexend), sans-serif;
+  letter-spacing: -0.3px;
+  color: #ef4423;
+  white-space: nowrap;
+}
+
+.rangeNote {
+  flex-basis: 100%;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(35, 31, 32, 0.72);
+}
+
+.fix {
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(35, 31, 32, 0.62);
+}
+
+.fix a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(35, 31, 32, 0.3);
+  text-underline-offset: 3px;
+}
+
+.act {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  background: #ffffff;
+  border-top: 1px solid rgba(35, 31, 32, 0.1);
+}
+
+/* The fade above the docked action, so text runs out under it rather than stopping. */
+.act::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  height: 28px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff);
+  pointer-events: none;
+}
+
+.start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 28px;
+  border-radius: 6px;
+  background: #f78f1e;
+  color: var(--ink);
+  font: 600 14px/1.2 var(--font-dm-sans), sans-serif;
+  letter-spacing: 1.5px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.start:hover {
+  background: #ea8611;
+}
+
+.time {
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+  color: rgba(35, 31, 32, 0.72);
+}
+
+@media (min-width: 768px) {
+  .page {
+    background: var(--cream);
+  }
+
+  .top {
+    height: 96px;
+    padding: 0 clamp(20px, 8.33vw, 120px);
+    border-bottom: 0;
+  }
+
+  .logo {
+    height: 72px;
+  }
+
+  .main {
+    padding: 48px 20px 80px;
+  }
+
+  .card {
+    gap: 24px;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 48px;
+    background: #ffffff;
+    border: 1px solid rgba(35, 31, 32, 0.1);
+    border-radius: 10px;
+  }
+
+  .intro h1 {
+    font-size: 32px;
+    letter-spacing: -0.6px;
+  }
+
+  .act {
+    position: static;
+    gap: 10px;
+    padding: 0;
+    border-top: 0;
+  }
+
+  .act::before {
+    display: none;
+  }
+}

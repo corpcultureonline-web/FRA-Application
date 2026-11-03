@@ -34,6 +34,8 @@
 }
 
 body {
+  /* A word longer than its line breaks rather than widening the page: a long unbroken brand name pushed the result page to 4,903px (staging test, 2 Nov 2026, V1). */
+  overflow-wrap: break-word;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;

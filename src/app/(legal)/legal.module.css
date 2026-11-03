@@ -79,13 +79,6 @@
   color: var(--ink-muted);
 }
 
-.placeholder {
-  background: var(--surface-sand);
-  box-shadow: inset 0 -1px 0 rgba(184, 54, 15, 0.45);
-  border-radius: 2px;
-  padding: 0 2px;
-}
-
 .main h2 {
   display: flex;
   gap: 10px;

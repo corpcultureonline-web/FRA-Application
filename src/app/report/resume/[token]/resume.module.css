@@ -1,0 +1,181 @@
+/* Screen 7, Resume (handoff boards 7-S7*). Fits a 390 screen without scrolling. */
+.page {
+  --ink: #231f20;
+  --cream: #f5f0eb;
+  --g: 20px;
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--font-dm-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 359px) {
+  .page {
+    --g: 16px;
+  }
+}
+
+.page :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.page p {
+  margin: 0;
+}
+
+.bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 56px;
+  padding: 0 var(--g);
+  background: var(--cream);
+  border-bottom: 1px solid rgba(35, 31, 32, 0.08);
+}
+
+.logo {
+  display: block;
+  width: auto;
+  height: 36px;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  padding: 36px var(--g) 32px;
+}
+
+.main h1 {
+  margin: 0;
+  font: 600 30px/1.15 var(--font-lexend), sans-serif;
+  letter-spacing: -0.6px;
+  text-wrap: balance;
+}
+
+.safe {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--cream);
+  font: 600 19px/1.4 var(--font-lexend), sans-serif;
+  letter-spacing: -0.2px;
+}
+
+.safe svg {
+  margin-top: 2px;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.facts b {
+  font-weight: 600;
+}
+
+.progress {
+  font: 600 19px/1.4 var(--font-lexend), sans-serif;
+  letter-spacing: -0.2px;
+}
+
+.go {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 6px;
+  background: #f78f1e;
+  color: var(--ink);
+  font: 600 14px/1.2 var(--font-dm-sans), sans-serif;
+  letter-spacing: 1.5px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #ea8611;
+}
+
+.time {
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: rgba(35, 31, 32, 0.7);
+}
+
+.sub {
+  font: 600 19px/1.45 var(--font-lexend), sans-serif;
+  letter-spacing: -0.2px;
+}
+
+.sent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--cream);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sent svg {
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .page {
+    background: var(--cream);
+  }
+
+  .bar {
+    height: 72px;
+    padding: 0 clamp(20px, 8.33vw, 120px);
+    border-bottom: 0;
+  }
+
+  .logo {
+    height: 52px;
+  }
+
+  .main {
+    max-width: 520px;
+    margin: 48px auto;
+    padding: 40px 44px;
+    background: #ffffff;
+    border: 1px solid rgba(35, 31, 32, 0.1);
+    border-radius: 10px;
+  }
+
+  .safe {
+    background: var(--cream);
+  }
+}

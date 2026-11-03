@@ -6,7 +6,7 @@ import { RatingPill } from "@/components/RatingPill";
 import { Rich } from "@/components/Rich";
 import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY } from "@/lib/company";
 import { shortPriceLabel } from "@/lib/pricing";
-import type { NoteKind, ReportData } from "@/lib/result";
+import type { GateState, NoteKind, ReportData } from "@/lib/result";
 import { GetReportButton } from "./GetReportButton";
 import { UpgradeBody } from "./ReportDocument";
 import { ResultTracking } from "./ResultTracking";
@@ -61,13 +61,13 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
 
             {content.legal.length ? (
               <Section title="Legal check" track="legal">
-                <Notes notes={content.legal} />
+                <Notes notes={content.legal.map((n) => ({ kind: n.state, text: n.text }))} styles={GATE_STYLES} />
               </Section>
             ) : null}
 
             {content.importantPoints.length ? (
               <Section title="Important points to note" track="important">
-                <Notes notes={content.importantPoints} />
+                <Notes notes={content.importantPoints} styles={NOTE_STYLES} />
               </Section>
             ) : null}
 
@@ -237,17 +237,26 @@ function Numbered({ items }: { items: { heading: string; body: string }[] }) {
   );
 }
 
-const NOTE_STYLES: Record<NoteKind, { label: string; border: string; text: string }> = {
+type NoteStyle = { label: string; border: string; text: string };
+
+const NOTE_STYLES: Record<NoteKind, NoteStyle> = {
   strength: { label: "Strength", border: "border-l-[#2e8b57]", text: "text-[#1b6b2f]" },
   milestone: { label: "Next milestone", border: "border-l-[#e0a100]", text: "text-[#8a5300]" },
   watch: { label: "Watch", border: "border-l-cta", text: "text-brand-deep" },
 };
 
-function Notes({ notes }: { notes: { kind: NoteKind; text: string }[] }) {
+/** T1R-GATE-* (Result Page library §23.3): the legal check's own states, matching the Report's T2R- three. */
+const GATE_STYLES: Record<GateState, NoteStyle> = {
+  clear: { label: "Clear", border: "border-l-[#2e8b57]", text: "text-[#1b6b2f]" },
+  inprogress: { label: "In progress", border: "border-l-[#e0a100]", text: "text-[#8a5300]" },
+  mustresolve: { label: "Must resolve", border: "border-l-cta", text: "text-brand-deep" },
+};
+
+function Notes<K extends string>({ notes, styles }: { notes: { kind: K; text: string }[]; styles: Record<K, NoteStyle> }) {
   return (
     <ul className="space-y-2.5">
       {notes.map((note) => {
-        const style = NOTE_STYLES[note.kind];
+        const style = styles[note.kind];
         return (
           <li
             key={note.text}
@@ -338,7 +347,7 @@ const STEPS = [
     title: "Answer about thirty more questions",
     body: "About 15 minutes. Your 11 answers carry over, so no question is asked twice.",
   },
-  { title: "Get your report within 24 hours", body: "Reviewed personally by Ronak before it reaches you." },
+  { title: "Get your report within 24 hours on working days", body: "Reviewed personally by Ronak before it reaches you." },
 ];
 
 function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakCount: number; tier2Url?: string }) {
@@ -350,15 +359,14 @@ function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakC
     ["The 7 areas", "Good, Average or Weak", "Each one explained in writing"],
     ["Your problems", "Named", "Ranked by what they cost you"],
     ["Legal check", "Trademark and disputes", "Full legal and approvals check"],
-    ["Similar brands", "—", "How you compare with brands we have worked with"],
     ["Reviewed by Ronak", "—", "Every report, personally"],
-    ["When you get it", "On screen now", "Within 24 hours"],
+    ["When you get it", "On screen now", "Within 24 hours on working days"],
   ];
   const buttonClass =
     "mt-5 flex h-14 w-full items-center justify-center gap-3 rounded-md bg-cta px-8 text-sm font-bold tracking-[0.18em] uppercase transition-colors hover:bg-cta-hover disabled:opacity-70 sm:w-auto";
   const buttonLabel = (
     <>
-      I’m interested{" "}
+      Get my full report{" "}
       <span aria-hidden="true" className="text-lg leading-none">
         →
       </span>
@@ -422,8 +430,8 @@ function FullReport({ report, weakCount, tier2Url }: { report: ReportData; weakC
       {/* The offer and Ronak's bio form one block, never split (R8). */}
       <div className="mt-5 overflow-hidden rounded-xl border border-ink bg-white">
         <div className="p-5 sm:p-9">
-          <p className={`${monoCaps} text-[10px] text-brand-deep`}>Tier 2 · Opening soon</p>
-          {upgrade.title ? <h3 className="mt-3 text-2xl font-bold">{upgrade.title}</h3> : null}
+          {/* Handoff v3.1 §2.4: T1R-UPGRADE-EYEBROW ("Tier 2 · Opening soon") is deleted, not replaced. */}
+          {upgrade.title ? <h3 className="text-2xl font-bold">{upgrade.title}</h3> : null}
           <UpgradeBody body={upgrade.body} className="mt-3" priceClass="text-[34px] font-black text-brand" />
 
           {tier2Url ? (
