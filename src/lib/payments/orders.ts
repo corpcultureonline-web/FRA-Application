@@ -5,6 +5,7 @@ import { getDatabase } from "@/lib/db";
 import { isReportToken } from "@/lib/report";
 import { GST_PERCENT, payable, TIERS } from "@/lib/pricing";
 import { createRazorpayOrder } from "./razorpay";
+import { TEST_PRICE_RUPEES } from "./test-price";
 
 /**
  * Report orders (report_orders, migration 007). An order is created when Pay
@@ -47,21 +48,25 @@ export async function createOrder({
   auditId,
   mobile,
   consentVersions,
+  testPrice = false,
 }: {
   auditId: number;
   mobile: string;
   consentVersions: ConsentVersions;
+  /** The one-rupee test charge (test-price.ts, REPORT_TEST_EMAILS). */
+  testPrice?: boolean;
 }) {
   const db = getDatabase();
-  const basePaise = TIERS.report.base * 100;
-  const amountPaise = payable("report") * 100;
+  const base = testPrice ? TEST_PRICE_RUPEES : TIERS.report.base;
+  const basePaise = base * 100;
+  const amountPaise = (testPrice ? Math.round(base * (1 + GST_PERCENT / 100)) : payable("report")) * 100;
   const [insert] = await db.execute<ResultSetHeader>(
     `INSERT INTO report_orders (audit_submission_id, base_paise, gst_percent, amount_paise, mobile, consent_at, consent_versions)
      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP(3), ?)`,
     [auditId, basePaise, GST_PERCENT, amountPaise, mobile, JSON.stringify(consentVersions)],
   );
   const orderId = insert.insertId;
-  const razorpayOrderId = await createRazorpayOrder({ amountPaise, receipt: `report-${orderId}`, orderId });
+  const razorpayOrderId = await createRazorpayOrder({ amountPaise, receipt: `report-${orderId}`, orderId, testPrice });
   await db.execute("UPDATE report_orders SET razorpay_order_id = ? WHERE id = ?", [razorpayOrderId, orderId]);
   return { orderId, razorpayOrderId, amountPaise };
 }

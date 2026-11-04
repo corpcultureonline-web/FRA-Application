@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { describe, it } from "node:test";
 import { isValidPaymentSignature, isValidWebhookSignature, normaliseMobile } from "./signatures.ts";
+import { isTestPriceEmail, TEST_PRICE_RUPEES } from "./test-price.ts";
 
 const SECRET = "test_secret";
 const sign = (message: string) => createHmac("sha256", SECRET).update(message).digest("hex");
@@ -53,5 +54,26 @@ describe("mobile number", () => {
     for (const bad of ["", "987654321", "98765432101", "5876543210", "98765abcde", "+1 9876543210"]) {
       assert.equal(normaliseMobile(bad), null, bad);
     }
+  });
+});
+
+describe("the one-rupee test price (REPORT_TEST_EMAILS)", () => {
+  const env = { REPORT_TEST_EMAILS: " Tester@Example.com, second@example.com " };
+
+  it("matches the listed addresses only, ignoring case and spaces", () => {
+    assert.equal(isTestPriceEmail("tester@example.com", env), true);
+    assert.equal(isTestPriceEmail("  SECOND@example.com ", env), true);
+    assert.equal(isTestPriceEmail("founder@brand.in", env), false);
+    assert.equal(isTestPriceEmail("example.com", env), false);
+  });
+
+  it("matches nobody while unset or empty, so everyone pays the real price", () => {
+    assert.equal(isTestPriceEmail("tester@example.com", {}), false);
+    assert.equal(isTestPriceEmail("", { REPORT_TEST_EMAILS: "" }), false);
+    assert.equal(isTestPriceEmail("", { REPORT_TEST_EMAILS: " , " }), false);
+  });
+
+  it("charges ₹1, the 18% GST rounding to the nearest rupee as every price does", () => {
+    assert.equal(Math.round(TEST_PRICE_RUPEES * 1.18), 1);
   });
 });

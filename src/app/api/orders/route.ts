@@ -5,6 +5,7 @@ import { auditForCheckout, createOrder, paidOrderToken } from "@/lib/payments/or
 import { razorpayKeys } from "@/lib/payments/razorpay";
 import { personalLinkPath } from "@/lib/payments/record";
 import { normaliseMobile } from "@/lib/payments/signatures";
+import { isTestPriceEmail } from "@/lib/payments/test-price";
 import { TIERS } from "@/lib/pricing";
 import { withBasePath } from "@/lib/base-path";
 
@@ -37,7 +38,12 @@ export async function POST(request: Request) {
     const existing = await paidOrderToken(audit.id);
     if (existing) return NextResponse.json({ paid: withBasePath(personalLinkPath(existing)) });
 
-    const order = await createOrder({ auditId: audit.id, mobile, consentVersions: legalVersions() });
+    const order = await createOrder({
+      auditId: audit.id,
+      mobile,
+      consentVersions: legalVersions(),
+      testPrice: isTestPriceEmail(audit.email),
+    });
     return NextResponse.json({
       key: razorpayKeys().keyId,
       orderId: order.razorpayOrderId,

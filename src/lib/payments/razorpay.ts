@@ -22,10 +22,12 @@ export async function createRazorpayOrder({
   amountPaise,
   receipt,
   orderId,
+  testPrice = false,
 }: {
   amountPaise: number;
   receipt: string;
   orderId: number;
+  testPrice?: boolean;
 }): Promise<string> {
   const { keyId, keySecret } = razorpayKeys();
   const response = await fetch(`${API}/orders`, {
@@ -36,7 +38,13 @@ export async function createRazorpayOrder({
     },
     // Our own order id travels in the notes, so a webhook can be matched even
     // if the Razorpay order id were ever missing from our row.
-    body: JSON.stringify({ amount: amountPaise, currency: "INR", receipt, notes: { order_id: String(orderId) } }),
+    // test_price marks a one-rupee test order in the Razorpay dashboard (test-price.ts).
+    body: JSON.stringify({
+      amount: amountPaise,
+      currency: "INR",
+      receipt,
+      notes: { order_id: String(orderId), ...(testPrice ? { test_price: "1" } : {}) },
+    }),
     cache: "no-store",
   });
   const body = (await response.json().catch(() => null)) as { id?: string; error?: { description?: string } } | null;
