@@ -16,7 +16,9 @@ const geistMono = Geist_Mono({
 
 /**
  * Defaults for every page. Icons and the share image are file-based
- * (favicon.ico, icon.png, apple-icon.png, opengraph-image.jpg in app/).
+ * (favicon.ico, apple-icon.png, opengraph-image.jpg in app/). The 512px mark
+ * sits in public/: it is the Organization logo, and a second rel="icon" would
+ * compete with favicon.ico in browser tabs.
  */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
