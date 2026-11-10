@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import logo from "@/assets/logo.png";
 import { resolveResumeLink } from "@/lib/payments/resume";
@@ -11,6 +10,7 @@ import { plain, segments } from "@/lib/tier2/library";
 import { t2 } from "@/lib/tier2/strings";
 import { Expired } from "./Expired";
 import styles from "./resume.module.css";
+import { withBasePath } from "@/lib/base-path";
 
 export const dynamic = "force-dynamic";
 
@@ -88,12 +88,13 @@ export default async function ResumePage({ params }: { params: Promise<{ token: 
           </p>
         </div>
         <div className={styles.go}>
-          <Link className={styles.btn} href={continueHref}>
+          {/* A plain link, a full load: the Google tag must never see the token in an in-app move (GoogleTag). */}
+          <a className={styles.btn} href={withBasePath(continueHref)}>
             {plain(t2("T2RS-CONTINUE"))}
             <svg width="16" height="11" viewBox="0 0 18 12" fill="none" aria-hidden="true">
               <path d="M1 6h15M11 1l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </Link>
+          </a>
           {/* ceil(remaining × 0.5) minutes, minimum 1; hidden when all are answered (§3). */}
           {remaining > 0 && (
             <p className={styles.time}>

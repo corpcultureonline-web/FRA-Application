@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import founderPhoto from "@/assets/ronak-patel.jpg";
 import { Logo } from "@/components/Logo";
@@ -8,6 +7,7 @@ import { BRAND_ENTITY_LINE, CONTACT_EMAIL, FOUNDER_STATS, WHATSAPP_DISPLAY } fro
 import type { GateState, NoteKind, ReportData } from "@/lib/result";
 import { GetReportButton } from "./GetReportButton";
 import { reportFont } from "./report-font";
+import { withBasePath } from "@/lib/base-path";
 
 const caps = "text-[11px] font-bold uppercase tracking-[0.22em]";
 const UPGRADE_ANCHOR = "full-report";
@@ -145,9 +145,10 @@ export function ReportDocument({
 function Masthead() {
   return (
     <header className="border-b-[3px] border-brand pb-3">
-      <Link href="/" aria-label="Corporate Culture home">
+      {/* A plain link, a full load: the Google tag must never see the token in an in-app move (GoogleTag). */}
+      <a href={withBasePath("/")} aria-label="Corporate Culture home">
         <Logo />
-      </Link>
+      </a>
       <div className="mt-3 flex items-baseline justify-between gap-4">
         <p className="text-[11px] tracking-[0.3em] text-brand uppercase">Franchise. Fund. Scale.</p>
         <p className="text-[13px] text-muted">corpculture.co</p>

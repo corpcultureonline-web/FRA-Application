@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { TIERS } from "@/lib/pricing";
 import { notFound } from "next/navigation";
 import logo from "@/assets/logo.png";
@@ -14,6 +13,7 @@ import { plain } from "@/lib/tier2/library";
 import { t2 } from "@/lib/tier2/strings";
 import { Submitted, type SubmittedCopy } from "./Submitted";
 import styles from "./told.module.css";
+import { withBasePath } from "@/lib/base-path";
 
 export const dynamic = "force-dynamic";
 
@@ -136,12 +136,13 @@ export default async function PersonalLinkPage({
           </p>
 
           <div className={styles.act}>
-            <Link className={styles.start} href={`/report/my/${token}/questions`}>
+            {/* A plain link, a full load: the Google tag must never see the token in an in-app move (GoogleTag). */}
+            <a className={styles.start} href={withBasePath(`/report/my/${token}/questions`)}>
               <span>{plain(t2("T2W-START"))}</span>
               <svg width="16" height="11" viewBox="0 0 18 12" fill="none" aria-hidden="true">
                 <path d="M1 6h15M11 1l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </Link>
+            </a>
             <p className={styles.time}>{plain(t2("T2W-TIME"))}</p>
           </div>
         </div>

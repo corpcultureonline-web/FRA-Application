@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AuditHeader } from "@/components/AuditHeader";
 import { EntityLine } from "@/components/EntityLine";
+import { withBasePath } from "@/lib/base-path";
 import { RESULT_STORAGE_KEY, type SavedSubmission } from "@/lib/result";
 import { useIsBrowser } from "@/lib/useIsBrowser";
 
@@ -33,12 +33,12 @@ export function ResultView() {
 }
 
 function Forward() {
-  const router = useRouter();
   const token = readToken();
 
   useEffect(() => {
-    if (token) router.replace(`/audit/report/${token}`);
-  }, [router, token]);
+    // A full load, so the Google tag reports the result without its token (GoogleTag).
+    if (token) window.location.replace(withBasePath(`/audit/report/${token}`));
+  }, [token]);
 
   if (token) return null;
 

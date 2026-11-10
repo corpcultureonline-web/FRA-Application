@@ -68,10 +68,12 @@ const Arrow = () => (
 /** The one primary action: to checkout for a known visitor, to the free Audit for a cold one. */
 function Cta({ href, label }: { href: string; label: string }) {
   return (
-    <Link className={styles.btn} href={href}>
+    // A plain link, a full load: ?audit= carries the result token, and the
+    // Google tag must never see it in an in-app move (GoogleTag).
+    <a className={styles.btn} href={withBasePath(href)}>
       {label}
       <Arrow />
-    </Link>
+    </a>
   );
 }
 
@@ -339,9 +341,9 @@ export default async function ReportLanding({
                 {cta}
                 {cold && <p className={styles.coldnote}>{p("T2L-PRICE-COLD")}</p>}
                 {/* T1F-ENTRY-LINK under the price card (handoff v3.1 §6.4): a text link, never a button. */}
-                <Link href="/find-my-result" className={styles.findlink}>
+                <a href={withBasePath("/find-my-result")} className={styles.findlink}>
                   {T1F["T1F-ENTRY-LINK"]}
-                </Link>
+                </a>
               </div>
               <div className={styles.trust}>
                 <Image className={styles.rzp} src={razorpay} alt="" />
@@ -455,9 +457,9 @@ export default async function ReportLanding({
           <div className={styles.base}>
             <nav aria-label="Legal">
               {LEGAL_PAGES.map((page) => (
-                <Link key={page.slug} className={styles.m} href={`/${page.slug}`}>
+                <a key={page.slug} className={styles.m} href={withBasePath(`/${page.slug}`)}>
                   {page.label}
-                </Link>
+                </a>
               ))}
               <a className={styles.m} href={`mailto:${CONTACT_EMAIL}`}>
                 {PROTOTYPE.contact}
