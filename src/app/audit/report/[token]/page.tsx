@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GoogleAdsTag } from "@/components/GoogleAdsTag";
+import { GoogleTag } from "@/components/GoogleTag";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { notFound } from "next/navigation";
@@ -39,7 +39,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/a
     });
     return (
       <>
-        <GoogleAdsTag path="/audit/report" />
+        <GoogleTag />
         <ResultPage report={report} tier2Url={tier2Url} />
       </>
     );

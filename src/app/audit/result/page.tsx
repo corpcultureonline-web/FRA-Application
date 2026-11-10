@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GoogleAdsTag } from "@/components/GoogleAdsTag";
+import { GoogleTag } from "@/components/GoogleTag";
 import { ResultView } from "./ResultView";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function ResultPage() {
   return (
     <>
-      <GoogleAdsTag />
+      <GoogleTag />
       <ResultView />
     </>
   );

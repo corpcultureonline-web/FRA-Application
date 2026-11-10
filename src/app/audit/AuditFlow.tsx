@@ -115,6 +115,17 @@ function AuditSteps() {
     latest.current = progress;
   }, [progress]);
 
+  // Back from the result can restore this page from the browser's cache, still
+  // "Submitting…" with the sent answers; reload it so it opens fresh, as it did
+  // when the result was a client-side route.
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) window.location.reload();
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
   useEffect(() => {
     events.started(Boolean(saved && Object.keys(saved.answers).length));
     return setExitContext(() => events.exitContext(latest.current.answers, latest.current.furthest));
@@ -170,6 +181,7 @@ function AuditSteps() {
 
     setSubmitting(true);
     setSubmitError(null);
+    let leaving = false;
     events.submitted(progress.answers);
     // Everything queued must be stored before scoring, so the backfill attaches it.
     await flushEvents();
@@ -203,11 +215,18 @@ function AuditSteps() {
         window.localStorage.setItem(RESULT_STORAGE_KEY, JSON.stringify(submission));
         window.localStorage.removeItem(STORAGE_KEY);
       } catch {}
-      router.push(result.reportToken ? `/audit/report/${result.reportToken}` : "/audit/result");
+      // A full load, so the Google tag reports the result without its token (GoogleTag).
+      // The button stays on "Submitting…" until the page goes, so it cannot be sent twice.
+      if (result.reportToken) {
+        leaving = true;
+        window.location.assign(withBasePath(`/audit/report/${result.reportToken}`));
+      } else {
+        router.push("/audit/result");
+      }
     } catch {
       setSubmitError("Unable to reach the server. Please try again.");
     } finally {
-      setSubmitting(false);
+      if (!leaving) setSubmitting(false);
     }
   }
 
