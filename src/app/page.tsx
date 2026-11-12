@@ -6,6 +6,7 @@ import { FaqItem } from "./_landing/FaqItem";
 import { jsonLd, landingStructuredData } from "./_landing/structured-data";
 import { HeroIllustration, ReportThumbnail } from "./_landing/Illustrations";
 import founderPhoto from "@/assets/ronak-patel.jpg";
+import { ClarityTag } from "@/components/ClarityTag";
 import { GoogleTag } from "@/components/GoogleTag";
 import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
@@ -103,6 +104,7 @@ export default function Home() {
     <div className="flex flex-1 flex-col bg-white text-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(landingStructuredData()) }} />
       <GoogleTag />
+      <ClarityTag />
       {/* Hero */}
       <header className="bg-cream">
         <div className={`${container} pt-3 sm:pt-4`}>

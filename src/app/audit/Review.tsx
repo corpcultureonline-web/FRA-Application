@@ -61,7 +61,8 @@ export function Review({
   onEdit: (section: number) => void;
 }) {
   return (
-    <div className="flex flex-col gap-3.5">
+    // The profile and every answer read back: masked in Clarity's recordings (ClarityTag).
+    <div data-clarity-mask="true" className="flex flex-col gap-3.5">
       <ReviewCard
         number={1}
         title={PROFILE_SECTION.title}

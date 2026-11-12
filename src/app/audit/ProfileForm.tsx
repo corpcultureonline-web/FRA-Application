@@ -44,7 +44,8 @@ export function ProfileForm({
   const set = (field: keyof Profile) => (value: string) => onChange({ ...profile, [field]: value });
 
   return (
-    <div className="flex flex-col gap-6 rounded-xl border border-black/10 bg-white p-4 sm:p-6">
+    // Name, email and phone stay out of Clarity's recordings (ClarityTag).
+    <div data-clarity-mask="true" className="flex flex-col gap-6 rounded-xl border border-black/10 bg-white p-4 sm:p-6">
       <div className="grid gap-6 sm:grid-cols-2 sm:gap-5">
         <Field id="brandName" label="Brand name" error={has("brandName") ? "Enter your brand name." : undefined}>
           <input
