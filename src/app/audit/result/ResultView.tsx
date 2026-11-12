@@ -25,7 +25,8 @@ function readToken(): string | null {
 export function ResultView() {
   const isBrowser = useIsBrowser();
   return (
-    <div className="flex min-h-screen flex-1 flex-col bg-cream text-ink">
+    // Masked in Clarity's recordings, like the result itself (ClarityTag).
+    <div data-clarity-mask="true" className="flex min-h-screen flex-1 flex-col bg-cream text-ink">
       <AuditHeader />
       {isBrowser ? <Forward /> : null}
     </div>

@@ -28,6 +28,7 @@ function Option({
   const tone = selected ? "border-cta bg-cta" : "border-black/20 bg-white hover:border-ink/50";
   const input = (
     <input
+      data-clarity-mask="true"
       type="radio"
       name={question.id}
       value={option}

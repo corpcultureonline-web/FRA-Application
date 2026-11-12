@@ -56,7 +56,9 @@ export function FindResultForm() {
         <label htmlFor="contact" className="text-[16px] font-bold">
           {T1F["T1F-FIELD-LABEL"]}
         </label>
+        {/* The address stays out of Clarity's recordings (ClarityTag). */}
         <input
+          data-clarity-mask="true"
           id="contact"
           type="text"
           inputMode="email"

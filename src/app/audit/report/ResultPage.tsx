@@ -26,7 +26,8 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
   const weakCount = report.areas.filter((a) => a.status === "Weak").length;
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col bg-cream text-ink">
+    // Every word the brand's result shows is masked in Clarity's recordings (ClarityTag).
+    <div data-clarity-mask="true" className="flex min-h-screen flex-1 flex-col bg-cream text-ink">
       <AuditHeader />
       <main className="mx-auto w-full max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-14 xl:px-0">
         <p className={`${monoCaps} text-[10px] text-muted`}>Franchise Readiness Audit — Preliminary result</p>

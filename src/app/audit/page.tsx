@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClarityTag } from "@/components/ClarityTag";
 import { GoogleTag } from "@/components/GoogleTag";
 import { AuditFlow } from "./AuditFlow";
 
@@ -12,6 +13,7 @@ export default function AuditPage() {
   return (
     <>
       <GoogleTag />
+      <ClarityTag />
       <AuditFlow />
     </>
   );
