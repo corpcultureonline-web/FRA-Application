@@ -6,17 +6,20 @@ export const CLARITY_PROJECT_ID = "zbxgfjk67t";
 const CLARITY_HOST = "app.corpculture.co";
 
 /**
- * Microsoft Clarity (heatmaps and session recordings), to see where visitors
- * leave the free Audit: the landing page, the questionnaire, find-my-result and
- * the result (/audit/result and /audit/report/{token}). Not on the Report's
- * screens, the legal pages or the panel; those are entered by a full load, so
- * Clarity, which follows in-app moves, never reaches them from a tracked page.
+ * Microsoft Clarity (heatmaps and session recordings), to see where founders
+ * leave the funnel: the landing page, the Audit questionnaire, find-my-result,
+ * the result (/audit/result and /audit/report/{token}) and every Report screen
+ * (report/layout.tsx), the paid questionnaire included. Not on the legal pages
+ * or the panel. The Razorpay payment window is Razorpay's own page in a frame,
+ * so it is never recorded.
  *
- * Founders' data is masked in recordings (data-clarity-mask): every input, the
- * Review step, and the whole result page. Clarity cannot mask the page address,
- * so recordings of the result carry its token, which opens the brand's answers:
- * accepted by Corporate Culture (12 November 2026), so Clarity dashboard access
- * is access to every recorded result.
+ * Founders' data is masked in recordings (data-clarity-mask): every Audit
+ * input, the Review step, the whole result page and every Report screen whole.
+ * Clarity cannot mask the page address, so recordings of the result and the
+ * Report carry their tokens (/audit/report/{token}, ?audit=, /report/my/{token},
+ * /report/resume/{token}), which open the brand's answers, the paid ones
+ * included: accepted by Corporate Culture (12 November 2026), so Clarity
+ * dashboard access is access to every recorded founder's answers.
  *
  * Off in the PDF's print view and in automated browsers, like the Google tag;
  * loaded after the page is interactive, so it never delays the page.
