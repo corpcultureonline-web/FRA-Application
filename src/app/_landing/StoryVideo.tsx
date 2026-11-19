@@ -1,0 +1,75 @@
+"use client";
+
+import Image, { type StaticImageData } from "next/image";
+import { useState } from "react";
+
+/**
+ * The founder clip as a click-to-play façade (handoff, 13 November): a poster
+ * and a play control, and the YouTube iframe injected only on tap. A live embed
+ * inside Instagram's in-app browser hands the visitor to the YouTube app, out
+ * of the funnel, and the page carries no player weight until someone chooses to
+ * watch. With no clip yet (videoId null), the poster shows alone: no control
+ * that plays nothing.
+ */
+export function StoryVideo({
+  poster,
+  alt,
+  videoId,
+  playLabel,
+}: {
+  poster: StaticImageData;
+  alt: string;
+  videoId: string | null;
+  /** T1L-STORY-PLAY: announced to screen readers, never printed. */
+  playLabel: string;
+}) {
+  const [playing, setPlaying] = useState(false);
+  const frame = "relative aspect-square w-full overflow-hidden rounded-lg bg-ink";
+  const picture = (
+    <Image
+      src={poster}
+      alt={videoId ? "" : alt}
+      fill
+      sizes="(min-width: 768px) 460px, 100vw"
+      placeholder="blur"
+      className="object-cover"
+    />
+  );
+
+  if (!videoId) return <div className={frame}>{picture}</div>;
+
+  if (playing) {
+    // The clip is 16:9 and the poster square: the frame takes the clip's shape on tap, so it plays without bars.
+    return (
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-ink">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&playsinline=1&rel=0`}
+          title={playLabel}
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowFullScreen
+          className="absolute inset-0 size-full border-0"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setPlaying(true)}
+      aria-label={playLabel}
+      className={`${frame} group block cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink`}
+    >
+      {picture}
+      {/* Top right, clear of Ronak's face at the centre of the poster. */}
+      <span
+        aria-hidden="true"
+        className="absolute top-3 right-3 flex size-12 items-center justify-center rounded-full bg-cta shadow-lg ring-4 ring-cta/30 transition-transform group-hover:scale-105 sm:size-14 sm:ring-[6px]"
+      >
+        <svg viewBox="0 0 24 24" className="ml-0.5 size-6 text-ink sm:size-7">
+          <path d="M7 4.5v15l12.5-7.5z" fill="currentColor" />
+        </svg>
+      </span>
+    </button>
+  );
+}

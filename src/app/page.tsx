@@ -5,6 +5,9 @@ import { FAQ } from "./_landing/faq";
 import { FaqItem } from "./_landing/FaqItem";
 import { jsonLd, landingStructuredData } from "./_landing/structured-data";
 import { HeroIllustration, ReportThumbnail } from "./_landing/Illustrations";
+import { STORY_ARTICLE_URL, STORY_CLIP_YOUTUBE_ID, T1L_STORY, splitBody2 } from "./_landing/founder-story";
+import { StoryVideo } from "./_landing/StoryVideo";
+import careerStory from "@/assets/ronak-career-story.jpg";
 import founderPhoto from "@/assets/ronak-patel.jpg";
 import { ClarityTag } from "@/components/ClarityTag";
 import { GoogleTag } from "@/components/GoogleTag";
@@ -66,13 +69,13 @@ const container = "mx-auto w-full max-w-[1200px] px-5 sm:px-8 xl:px-0";
 const eyebrow = "text-brand-deep";
 const monoCaps = "font-mono text-[11px] uppercase tracking-[0.25em]";
 
-function StartAuditButton({ className = "" }: { className?: string }) {
+function StartAuditButton({ className = "", label = "Start the audit" }: { className?: string; label?: string }) {
   return (
     <Link
       href={START_AUDIT_HREF}
       className={`inline-flex h-14 items-center justify-center gap-3 rounded bg-cta px-9 text-sm font-bold tracking-[0.18em] text-ink uppercase transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${className}`}
     >
-      Start the audit
+      {label}
       <span aria-hidden="true" className="text-lg leading-none">
         →
       </span>
@@ -90,6 +93,93 @@ function SampleReportLink() {
     >
       See a sample report
     </a>
+  );
+}
+
+/**
+ * The founder block (Landing library v1.7 §7; handoff 13 November), after the
+ * sample card and before How it works. It replaces "Who conducts your audit".
+ * The order is the design: kicker → headline → video → watch link → body →
+ * Ronak and the stats → bridge → button. The stats never move below the
+ * bridge: the bridge ends on "these 11 questions" and the button starts them.
+ * T1L-STORY-HEAD and the body are Ronak speaking, in the first person.
+ */
+function FounderStory() {
+  const { lead, quote } = splitBody2();
+  return (
+    <section aria-labelledby="founder-story" className="py-16 md:py-24">
+      <div className={`${container} grid gap-10 md:grid-cols-[minmax(0,440px)_1fr] md:gap-14 xl:gap-20`}>
+        <div>
+          <p className={eyebrow}>{T1L_STORY["T1L-STORY-KICKER"]}</p>
+          <h2 id="founder-story" className="mt-1 text-3xl leading-tight font-extrabold md:text-[2.5rem]">
+            {T1L_STORY["T1L-STORY-HEAD"]}
+          </h2>
+          <div className="mt-8">
+            <StoryVideo
+              poster={careerStory}
+              alt={T1L_STORY["T1L-BIO-NAME"]}
+              videoId={STORY_CLIP_YOUTUBE_ID}
+              playLabel={T1L_STORY["T1L-STORY-PLAY"]}
+            />
+          </div>
+          {/* Same tab, never YouTube, and not rendered at all until the article exists (T188). */}
+          {STORY_ARTICLE_URL ? (
+            <a
+              href={STORY_ARTICLE_URL}
+              className="mt-4 inline-block border-b border-brand-deep pb-0.5 font-bold text-brand-deep hover:text-brand"
+            >
+              {T1L_STORY["T1L-STORY-WATCH"]}
+            </a>
+          ) : null}
+        </div>
+
+        <div className="md:pt-2">
+          <div className="space-y-5 text-lg leading-[1.8] text-body">
+            <p>{T1L_STORY["T1L-STORY-BODY-1"]}</p>
+            <p>{lead}</p>
+            {/* The pull-quote is the end of T1L-STORY-BODY-2, lifted for display; the key stays one string. */}
+            {quote ? (
+              <p className="border-l-4 border-brand py-1 pl-5 text-2xl leading-snug font-extrabold text-ink md:text-[1.75rem]">
+                {quote}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="mt-10 border-t border-black/15 pt-8">
+            <div className="flex items-center gap-4">
+              {/* The portrait is full-length: zoomed onto his face for the round crop. */}
+              <div className="size-16 shrink-0 overflow-hidden rounded-full bg-sand">
+                <Image
+                  src={founderPhoto}
+                  alt=""
+                  sizes="192px"
+                  className="size-full origin-[50%_18%] scale-[2.6] object-cover object-top"
+                />
+              </div>
+              <div>
+                <p className="text-xl font-extrabold">{T1L_STORY["T1L-BIO-NAME"]}</p>
+                <p className="text-body">{T1L_STORY["T1L-BIO-ROLE"]}</p>
+              </div>
+            </div>
+            <p className="mt-4 leading-relaxed text-body">{T1L_STORY["T1L-BIO-BODY"]}</p>
+            <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-6 xl:grid-cols-4">
+              {FOUNDER_STATS.map((stat) => (
+                <div key={stat.label} className="flex flex-col-reverse justify-end">
+                  <dt className="mt-1.5 text-[12px] font-bold tracking-[0.15em] text-muted uppercase">{stat.label}</dt>
+                  <dd className="text-3xl font-extrabold whitespace-nowrap text-brand">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <p className="mt-10 text-xl leading-relaxed font-bold text-ink">{T1L_STORY["T1L-STORY-BRIDGE"]}</p>
+          <div className="mt-6 flex flex-col items-stretch gap-3 sm:items-start">
+            <StartAuditButton label={T1L_STORY["T1L-STORY-CTA"]} />
+            <p className="text-center text-sm text-muted sm:text-left">{T1L_STORY["T1L-STORY-CTA-SUB"]}</p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -305,58 +395,24 @@ export default function Home() {
           </div>
         </section>
 
-        {/* How it works */}
-        <section className={`${container} py-16 md:py-24`}>
-          <p className={eyebrow}>How it works</p>
-          <h2 className="mt-1 text-3xl leading-tight font-extrabold md:text-[2.1rem]">
-            3 steps. Nothing to prepare.
-          </h2>
-          <ol className="mt-10 grid gap-x-14 md:mt-12 md:grid-cols-3">
-            {STEPS.map((step, i) => (
-              <li key={step.title} className="border-t border-black/10 py-6 md:pb-0">
-                <p className="text-4xl text-brand">{i + 1}</p>
-                <h3 className="mt-3 text-xl font-bold">{step.title}</h3>
-                <p className="mt-4 leading-relaxed text-body">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <FounderStory />
 
-        {/* Founder */}
+        {/* How it works: on cream now, so the sections still alternate with the founder block on white. */}
         <section className="bg-cream py-16 md:py-24">
-          <div className={`${container} grid items-center gap-10 md:grid-cols-[400px_1fr] md:gap-20`}>
-            <Image
-              src={founderPhoto}
-              alt="Ronak Patel, Founder of Corporate Culture"
-              className="w-full rounded-lg"
-              sizes="(min-width: 768px) 400px, 100vw"
-              placeholder="blur"
-            />
-            <div>
-              <p className="text-sm font-bold tracking-[0.18em] text-brand uppercase">
-                Who conducts your audit
-              </p>
-              <h2 className="mt-3 text-5xl font-extrabold tracking-tight">Ronak Patel</h2>
-              <p className="mt-3 text-lg text-body">Founder, Corporate Culture</p>
-              <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 border-b border-black/15 pb-8 lg:grid-cols-[auto_auto_auto_auto] lg:justify-between">
-                {FOUNDER_STATS.map((stat) => (
-                  <div key={stat.label} className="flex flex-col-reverse justify-end">
-                    <dt className="mt-2 max-w-[9rem] text-[13px] font-bold tracking-[0.15em] text-muted uppercase">
-                      {stat.label}
-                    </dt>
-                    <dd className="text-3xl font-extrabold whitespace-nowrap text-brand sm:text-4xl xl:text-5xl">
-                      {stat.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="mt-8 text-lg leading-[1.8] text-body md:px-9">
-                Corporate Culture has worked with consumer brands across F&amp;B, retail,
-                lifestyle, wellness and education — helping them scale with structure, funding
-                access and long-term expansion clarity. The 7 areas in this assessment come from
-                those engagements.
-              </p>
-            </div>
+          <div className={container}>
+            <p className={eyebrow}>How it works</p>
+            <h2 className="mt-1 text-3xl leading-tight font-extrabold md:text-[2.1rem]">
+              3 steps. Nothing to prepare.
+            </h2>
+            <ol className="mt-10 grid gap-x-14 md:mt-12 md:grid-cols-3">
+              {STEPS.map((step, i) => (
+                <li key={step.title} className="border-t border-black/10 py-6 md:pb-0">
+                  <p className="text-4xl text-brand">{i + 1}</p>
+                  <h3 className="mt-3 text-xl font-bold">{step.title}</h3>
+                  <p className="mt-4 leading-relaxed text-body">{step.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
 
