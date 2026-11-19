@@ -61,11 +61,12 @@ export function StoryVideo({
       className={`${frame} group block cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink`}
     >
       {picture}
+      {/* Top right, clear of Ronak's face at the centre of the poster. */}
       <span
         aria-hidden="true"
-        className="absolute top-1/2 left-1/2 flex size-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-cta ring-[10px] ring-cta/30 transition-transform group-hover:scale-105"
+        className="absolute top-3 right-3 flex size-12 items-center justify-center rounded-full bg-cta shadow-lg ring-4 ring-cta/30 transition-transform group-hover:scale-105 sm:size-14 sm:ring-[6px]"
       >
-        <svg viewBox="0 0 24 24" className="ml-1 size-8 text-ink">
+        <svg viewBox="0 0 24 24" className="ml-0.5 size-6 text-ink sm:size-7">
           <path d="M7 4.5v15l12.5-7.5z" fill="currentColor" />
         </svg>
       </span>
