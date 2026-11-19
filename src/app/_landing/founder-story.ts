@@ -48,7 +48,7 @@ export const STORY_CLIP_YOUTUBE_ID: string | null = "yQHqmYpqR6U";
 
 /**
  * T1L-STORY-WATCH's target: the founder article on corpculture.co, same tab,
- * never YouTube (T188). The article is not built yet, and until it is the link
- * is not rendered at all: hidden, not disabled.
+ * never YouTube (T188). Live and supplied 19 November 2026 ("Why Businesses
+ * Fail to Scale and What I Learned"). Null hides the link: hidden, not disabled.
  */
-export const STORY_ARTICLE_URL: string | null = null;
+export const STORY_ARTICLE_URL: string | null = "https://corpculture.co/why-businesses-fail-to-scale/";
