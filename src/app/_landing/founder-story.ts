@@ -37,12 +37,14 @@ export function splitBody2(body: string = T1L_STORY["T1L-STORY-BODY-2"]) {
 }
 
 /**
- * The 35-second clip, a YouTube video ID. It does not exist yet (handoff, 13
- * November): while this is null the poster shows with no play control, because
- * a play button that plays nothing is worse than none. Set it and the façade
- * goes live: poster and play control, the iframe injected only on tap.
+ * The 35-second clip, a YouTube video ID: "I Lost 2 Businesses Before I Learned
+ * This About Scaling" on Corporate Culture's channel, supplied 19 November
+ * 2026 (youtu.be/yQHqmYpqR6U), 16:9 and embeddable. Played through the façade:
+ * poster and play control, the iframe injected only on tap. Null shows the
+ * poster with no play control, because a button that plays nothing is worse
+ * than none.
  */
-export const STORY_CLIP_YOUTUBE_ID: string | null = null;
+export const STORY_CLIP_YOUTUBE_ID: string | null = "yQHqmYpqR6U";
 
 /**
  * T1L-STORY-WATCH's target: the founder article on corpculture.co, same tab,

@@ -39,8 +39,9 @@ export function StoryVideo({
   if (!videoId) return <div className={frame}>{picture}</div>;
 
   if (playing) {
+    // The clip is 16:9 and the poster square: the frame takes the clip's shape on tap, so it plays without bars.
     return (
-      <div className={frame}>
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-ink">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&playsinline=1&rel=0`}
           title={playLabel}
