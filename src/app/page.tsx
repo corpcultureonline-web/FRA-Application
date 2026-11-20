@@ -10,6 +10,7 @@ import { StoryVideo } from "./_landing/StoryVideo";
 import careerStory from "@/assets/ronak-career-story.jpg";
 import founderPhoto from "@/assets/ronak-patel.jpg";
 import { ClarityTag } from "@/components/ClarityTag";
+import { MetaPixel } from "@/components/MetaPixel";
 import { GoogleTag } from "@/components/GoogleTag";
 import { Logo } from "@/components/Logo";
 import { RatingPill, type Rating } from "@/components/RatingPill";
@@ -195,6 +196,7 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(landingStructuredData()) }} />
       <GoogleTag />
       <ClarityTag />
+      <MetaPixel />
       {/* Hero */}
       <header className="bg-cream">
         <div className={`${container} pt-3 sm:pt-4`}>

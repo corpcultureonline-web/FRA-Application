@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { MetaPixel } from "@/components/MetaPixel";
 import { tier2FontVariables } from "@/lib/tier2/fonts";
 
 /**
@@ -7,5 +8,10 @@ import { tier2FontVariables } from "@/lib/tier2/fonts";
  * scoped to these pages so the rest of the app is unaffected.
  */
 export default function LegalLayout({ children }: { children: ReactNode }) {
-  return <div className={`${tier2FontVariables} flex flex-1 flex-col`}>{children}</div>;
+  return (
+    <div className={`${tier2FontVariables} flex flex-1 flex-col`}>
+      <MetaPixel />
+      {children}
+    </div>
+  );
 }

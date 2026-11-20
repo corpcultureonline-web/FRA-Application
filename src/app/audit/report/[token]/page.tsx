@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClarityTag } from "@/components/ClarityTag";
+import { MetaPixel } from "@/components/MetaPixel";
 import { GoogleTag } from "@/components/GoogleTag";
 import { headers } from "next/headers";
 import { after } from "next/server";
@@ -42,6 +43,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/a
       <>
         <GoogleTag />
         <ClarityTag />
+        <MetaPixel />
         <ResultPage report={report} tier2Url={tier2Url} />
       </>
     );

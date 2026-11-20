@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AuditHeader } from "@/components/AuditHeader";
 import { EntityLine } from "@/components/EntityLine";
 import { ClarityTag } from "@/components/ClarityTag";
+import { MetaPixel } from "@/components/MetaPixel";
 import { GoogleTag } from "@/components/GoogleTag";
 import { T1F } from "@/lib/find-result/strings";
 import { FindResultForm } from "./FindResultForm";
@@ -22,6 +23,7 @@ export default function FindMyResultPage() {
     <div className="flex min-h-screen flex-col bg-white">
       <GoogleTag ads={false} />
       <ClarityTag />
+      <MetaPixel />
       <AuditHeader />
       <main className="mx-auto w-full max-w-[480px] flex-1 px-5 pt-10 pb-16 sm:pt-16">
         {/* T1F-BACK goes to the Audit's own landing page, not the marketing site. */}
