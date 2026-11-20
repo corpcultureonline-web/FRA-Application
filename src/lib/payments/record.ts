@@ -1,4 +1,5 @@
 import "server-only";
+import { onPaymentSucceeded } from "@/lib/events/lifecycle";
 import { logOrderEvent, type EventContext } from "@/lib/events/server";
 import { markFailed, markPaid } from "./orders";
 
@@ -23,6 +24,8 @@ export async function recordPayment(context: EventContext, razorpayOrderId: stri
       order.orderId,
       order.auditId,
     );
+    // A Customer, and GA4's purchase, sent from here — never from the browser (handoffs, 20 Nov).
+    await onPaymentSucceeded(context, order.orderId, order.auditId, order.amountPaise);
   }
   return order;
 }

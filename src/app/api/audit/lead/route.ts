@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readProfile } from "@/lib/audit";
 import { saveLead } from "@/lib/audit-leads";
+import { onSection1 } from "@/lib/events/lifecycle";
 import { eventContext } from "@/lib/events/server";
 import { reportError } from "@/lib/monitoring/report-error";
 
@@ -20,11 +21,14 @@ export async function POST(request: Request) {
   const profile = readProfile(body.profile);
   if (!profile) return NextResponse.json({ error: "Section 1 is incomplete." }, { status: 400 });
 
+  const context = eventContext(request.headers);
   try {
-    await saveLead(eventContext(request.headers).sessionId, profile);
+    await saveLead(context.sessionId, profile);
   } catch (error) {
     reportError("Saving the Audit lead failed", error);
     return NextResponse.json({ error: "Not saved." }, { status: 500 });
   }
+  // The visitor becomes a User, and this browser's earlier events are stitched to them (Identity handoff §6.2).
+  await onSection1(context, { phone: profile.phone, email: profile.email });
   return NextResponse.json({ success: true });
 }

@@ -92,6 +92,9 @@ CREATE TABLE IF NOT EXISTS audit_pillar_scores (
 CREATE TABLE IF NOT EXISTS event_log (
   id             BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
   session_id     CHAR(36)     NOT NULL,
+  -- The browser across sessions, and the identified person (Identity handoff, 20 Nov, §2.1).
+  visitor_id     CHAR(36)     NULL,
+  person_id      BIGINT       NULL,
   submission_id  BIGINT       NULL,
   -- Paid runs join on the order (Event-Log-Spec v1.3 §2, T82). NULL for the Audit.
   order_id       BIGINT       NULL,
@@ -102,7 +105,9 @@ CREATE TABLE IF NOT EXISTS event_log (
   INDEX idx_session    (session_id),
   INDEX idx_type_time  (event_type, created_at),
   INDEX idx_submission (submission_id),
-  INDEX idx_order      (order_id)
+  INDEX idx_order      (order_id),
+  INDEX idx_visitor    (visitor_id),
+  INDEX idx_person     (person_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- The Report (Tier 2): one row per checkout attempt, from Pay to paid or failed.
@@ -318,4 +323,41 @@ CREATE TABLE IF NOT EXISTS result_link_requests (
   PRIMARY KEY (id),
   INDEX result_link_requests_contact (contact_hash, created_at),
   INDEX result_link_requests_ip (ip_hash, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Identity and attribution (migration 018).
+-- One row per browser. First touch is frozen when the row is created and never
+-- updated; last touch lives on each session_started (§2.2, §3.1).
+CREATE TABLE IF NOT EXISTS visitor (
+  visitor_id        CHAR(36)     NOT NULL PRIMARY KEY,
+  person_id         BIGINT       NULL,
+  first_seen_at     TIMESTAMP(3) NOT NULL,
+  last_seen_at      TIMESTAMP(3) NOT NULL,
+  ft_channel        VARCHAR(24)  NULL,
+  ft_source         VARCHAR(64)  NULL,
+  ft_medium         VARCHAR(64)  NULL,
+  ft_campaign       VARCHAR(128) NULL,
+  ft_content        VARCHAR(128) NULL,
+  ft_term           VARCHAR(128) NULL,
+  ft_referrer_host  VARCHAR(128) NULL,
+  ft_landing_path   VARCHAR(255) NULL,
+  -- gclid / fbclid / wbraid / gbraid
+  ft_click_id       VARCHAR(255) NULL,
+  ft_click_id_type  VARCHAR(12)  NULL,
+  INDEX idx_person (person_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- One row per identified human (§2.3). Hashes, not contact details: sha256 of
+-- the E.164 number and of the lowercased, trimmed email.
+CREATE TABLE IF NOT EXISTS person (
+  person_id     BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  phone_hash    CHAR(64)     NULL,
+  email_hash    CHAR(64)     NULL,
+  -- user | participant | customer | client (§5); only ever moves forward.
+  state         VARCHAR(16)  NOT NULL,
+  -- {"stalled_at_section": 4, "upgrade_clicked_unpaid": true, "paid_questions_incomplete": false}
+  status_flags  JSON         NULL,
+  first_seen_at TIMESTAMP(3) NOT NULL,
+  UNIQUE KEY uq_phone (phone_hash),
+  UNIQUE KEY uq_email (email_hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

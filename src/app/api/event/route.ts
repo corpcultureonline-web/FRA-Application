@@ -1,7 +1,9 @@
 import { getDatabase } from "@/lib/db";
 import { parseBatch } from "@/lib/events/batch";
+import { onBrowserEvents } from "@/lib/events/lifecycle";
 import { withAnswerValues } from "@/lib/events/payloads";
-import { eventContext, requestIp, sessionSubmission, writeEvents } from "@/lib/events/server";
+import { eventContext, requestIp, sessionSubmission, writeEvents, type EventRow } from "@/lib/events/server";
+import { lastTouch, touchVisitor } from "@/lib/events/visitors";
 import { reportError } from "@/lib/monitoring/report-error";
 import { getScoringConfig } from "@/lib/scoring/config";
 
@@ -27,6 +29,9 @@ const noContent = () => new Response(null, { status: 204 });
  * POST /api/event — the event log's only endpoint (Event-Log-Spec §3).
  * Anonymous and batched. Answers 204 always, even for a malformed body, so a
  * logging problem can never surface to a founder mid-questionnaire.
+ *
+ * session_started is enriched with the normalised last touch and creates the
+ * visitor row with its frozen first touch (Identity handoff, 20 Nov, §3).
  */
 export async function POST(request: Request) {
   const now = Date.now();
@@ -51,18 +56,24 @@ export async function POST(request: Request) {
       getScoringConfig().catch(() => null),
       sessionSubmission(db, batch.sessionId),
     ]);
-    // The session in the body is the tracker's; internal comes from the cookie or IP.
-    const context = { ...eventContext(request.headers), sessionId: batch.sessionId };
-    await writeEvents(
-      db,
-      context,
-      batch.events.map((event) => ({
-        type: event.type,
-        at: event.at,
-        payload: config ? withAnswerValues(config, event.type, event.payload) : event.payload,
-        submissionId,
-      })),
-    );
+    // The session and visitor in the body are the tracker's; internal comes from the cookie or IP.
+    const fromRequest = eventContext(request.headers);
+    const context = { ...fromRequest, sessionId: batch.sessionId, visitorId: batch.visitorId ?? fromRequest.visitorId };
+
+    const rows: EventRow[] = [];
+    let firstTouch = null;
+    for (const event of batch.events) {
+      let payload = config ? withAnswerValues(config, event.type, event.payload) : event.payload;
+      if (event.type === "session_started") {
+        const enriched = await lastTouch(db, context, payload);
+        payload = enriched.payload;
+        firstTouch ??= enriched.touch;
+      }
+      rows.push({ type: event.type, at: event.at, payload, submissionId });
+    }
+    const created = await touchVisitor(db, context, batch.events[0].at, firstTouch);
+    await writeEvents(db, context, created ? [{ ...created, submissionId }, ...rows] : rows);
+    await onBrowserEvents(context, batch.events);
   } catch (error) {
     reportError("Event batch write failed", error);
   }

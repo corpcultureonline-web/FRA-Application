@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getDatabase } from "@/lib/db";
+import { onQuestionnaireSubmitted } from "@/lib/events/lifecycle";
 import { logOrderEvent, type EventContext } from "@/lib/events/server";
 import { paidRun, type PaidRun } from "@/lib/payments/orders";
 import { isAnswered, type Answer, type Answers, type ContradictionPair } from "./rules";
@@ -238,6 +239,7 @@ export async function submit(context: EventContext, run: Run, msTotal: number | 
       run.orderId,
       run.auditId,
     );
+    await onQuestionnaireSubmitted(context, run.orderId, run.auditId);
   }
   /** `submitted` is true only for the tap that crossed the boundary. */
   return { ok: true as const, submitted: result.affectedRows > 0 };

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "@/assets/logo.png";
+import { clarityUpgrade } from "@/lib/analytics/vendors";
 import { withBasePath } from "@/lib/base-path";
 import { contradictions, isAnswered, type Answer, type Answers, type Contradiction, type ContradictionPair } from "@/lib/questionnaire/rules";
 import type { Questionnaire as QuestionnaireData, Question } from "@/lib/questionnaire/source";
@@ -202,6 +203,8 @@ export function Questionnaire({
 
   useEffect(() => {
     startedAt.current = Date.now();
+    // Only reachable paid and unsubmitted: on Clarity's watchlist (Instrumentation handoff §1.3).
+    clarityUpgrade("paid_questions_incomplete");
   }, []);
 
   // Leaving the page: send what is queued (keepalive survives the unload).
