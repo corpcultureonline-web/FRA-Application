@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClarityTag } from "@/components/ClarityTag";
+import { MetaPixel } from "@/components/MetaPixel";
 import { GoogleTag } from "@/components/GoogleTag";
 import { ResultView } from "./ResultView";
 
@@ -13,6 +14,7 @@ export default function ResultPage() {
     <>
       <GoogleTag />
       <ClarityTag />
+      <MetaPixel />
       <ResultView />
     </>
   );
