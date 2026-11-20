@@ -1,4 +1,5 @@
 import Script from "next/script";
+import { SESSION_COOKIE } from "@/lib/events/types";
 
 /** Google Ads account tag, as supplied by Corporate Culture (20 October 2026). */
 export const GOOGLE_ADS_ID = "AW-18300527849";
@@ -62,6 +63,12 @@ export function GoogleTag({ ads = true }: { ads?: boolean } = {}) {
   }
   var masked = { page_location: mask(location.href), page_referrer: document.referrer ? mask(document.referrer) : "" };
   gtag("set", masked);
+  if (analytics) {
+    // Our session id as a user property, and the id the event log's GA mirror sends to (vendors.ts).
+    window.__fraAnalyticsId = "${GOOGLE_ANALYTICS_ID}";
+    var sid = document.cookie.split("; ").filter(function (c) { return c.indexOf("${SESSION_COOKIE}=") === 0; })[0];
+    if (sid) gtag("set", "user_properties", { fra_session: decodeURIComponent(sid.slice(${SESSION_COOKIE.length + 1})) });
+  }
   gtag("js", new Date());
   if (ads) gtag("config", "${GOOGLE_ADS_ID}", masked);
   if (analytics) gtag("config", "${GOOGLE_ANALYTICS_ID}", masked);

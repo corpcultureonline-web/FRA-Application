@@ -2,6 +2,7 @@ import "server-only";
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { withBasePath } from "@/lib/base-path";
 import { getDatabase } from "@/lib/db";
+import { onReportSent } from "@/lib/events/lifecycle";
 import { logOrderEvent, type EventContext } from "@/lib/events/server";
 import { admitRequest, planRecovery, type RecoveryPlan } from "@/lib/find-result/recovery";
 import { EmailUnavailable, sendEmail } from "@/lib/messages/email";
@@ -296,6 +297,7 @@ export async function approve(user: PanelUser, context: EventContext, orderId: n
     orderId,
   );
   await logOrderEvent(context, "report_sent", { order_id: orderId, channels }, orderId);
+  await onReportSent(context, orderId);
 }
 
 /** Return (§1): stops the Report with a note. It leaves the queue; a person takes it from there. */

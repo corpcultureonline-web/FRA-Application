@@ -36,7 +36,7 @@ export function ResultPage({ report, tier2Url }: { report: ReportData; tier2Url?
         </h1>
         <p className="mt-2 text-body lg:text-lg">{report.meta}</p>
         <SentToBanner token={report.token} />
-        <ResultTracking />
+        <ResultTracking bands={report.ladder.filter((band) => band.yours).map((band) => band.code)} />
 
         <div className="mt-8 grid gap-12 lg:mt-10 lg:grid-cols-[420px_1fr] lg:gap-20">
           <aside className="lg:sticky lg:top-8 lg:self-start">

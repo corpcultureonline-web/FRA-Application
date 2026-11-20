@@ -4,6 +4,7 @@ import { readProfile } from "@/lib/audit";
 import { linkLead } from "@/lib/audit-leads";
 import { getDatabase } from "@/lib/db";
 import { auditScoredPayload } from "@/lib/events/payloads";
+import { onAuditScored } from "@/lib/events/lifecycle";
 import { backfillSubmission, eventContext, logServerEvent, writeEvents } from "@/lib/events/server";
 import { reportError } from "@/lib/monitoring/report-error";
 import { getSiteOrigin, newReportToken, reportPdfUrl } from "@/lib/report";
@@ -145,6 +146,8 @@ export async function POST(request: Request) {
   await linkLead(getDatabase(), events.sessionId, id).catch((error) =>
     reportError("Linking the Audit lead failed", error, { submission_id: id }),
   );
+  // A Participant (Identity handoff §5.1). Best effort, like the lead.
+  await onAuditScored(events, { phone: profile.phone, email: profile.email }, id);
 
   // Everything below leaves the server, so it is built from the public score only.
   const publicScore = toPublicScore(config, result);

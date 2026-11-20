@@ -8,8 +8,18 @@
  *
  * Tracking never throws and never blocks the page.
  */
+import { clarityIdentify, claritySet, gaField, mirrorToGa } from "../analytics/vendors";
 import { BASE_PATH, withBasePath } from "../base-path";
-import { NEW_SESSION_COOKIE, SESSION_COOKIE, UUID, type ClientEventType } from "./types";
+import { CLICK_ID_PARAMS, classify } from "./attribution";
+import {
+  NEW_SESSION_COOKIE,
+  SESSION_COOKIE,
+  UUID,
+  VISITOR_COOKIE,
+  VISITOR_MAX_AGE,
+  VISITOR_STORAGE_KEY,
+  type ClientEventType,
+} from "./types";
 
 type QueuedEvent = { type: ClientEventType; at: number; payload: Record<string, unknown> };
 type ExitContext = () => Record<string, unknown>;
@@ -20,6 +30,7 @@ const FLUSH_EVERY_MS = 5000;
 const MAX_QUEUE = 500;
 
 let sessionId: string | null = null;
+let visitorId: string | null = null;
 let enabled = false;
 let queue: QueuedEvent[] = [];
 let pageStartedAt = Date.now();
@@ -40,7 +51,71 @@ function writeCookie(name: string, value: string, maxAge?: number) {
 }
 
 function body(events: QueuedEvent[]) {
-  return JSON.stringify({ session_id: sessionId, events });
+  return JSON.stringify({ session_id: sessionId, visitor_id: visitorId, events });
+}
+
+function storageGet(store: () => Storage, key: string) {
+  try {
+    return store().getItem(key);
+  } catch {
+    return null; // Private mode or blocked storage: carry on without it.
+  }
+}
+
+function storageSet(store: () => Storage, key: string, value: string) {
+  try {
+    store().setItem(key, value);
+  } catch {}
+}
+
+/**
+ * The visitor id (Identity handoff §4): localStorage is the record, the
+ * cookie its mirror for the server. A cookie lost to a browser's cookie cap is
+ * restored from localStorage; a first visit keeps the id the proxy minted.
+ */
+function resolveVisitor() {
+  const stored = storageGet(() => localStorage, VISITOR_STORAGE_KEY);
+  const fromCookie = readCookie(VISITOR_COOKIE);
+  const id =
+    stored && UUID.test(stored) ? stored : fromCookie && UUID.test(fromCookie) ? fromCookie : crypto.randomUUID();
+  if (id !== stored) storageSet(() => localStorage, VISITOR_STORAGE_KEY, id);
+  if (id !== fromCookie) writeCookie(VISITOR_COOKIE, id, VISITOR_MAX_AGE);
+  return id.toLowerCase();
+}
+
+/** Where this session came from, for Clarity's source tag on every page of it (§1.2). */
+const TOUCH_KEY = "fra_touch";
+const LINKED_KEY = "fra_analytics_linked";
+
+/**
+ * Once per page load: our ids into Clarity (§1.1) and the session's source
+ * as tags; once per session, the GA ids back into the event log (§3.2).
+ */
+function linkAnalytics() {
+  const visitor = visitorId;
+  const session = sessionId;
+  if (!visitor || !session) return;
+  const pushed = clarityIdentify(visitor, session);
+  try {
+    const touch = JSON.parse(storageGet(() => sessionStorage, TOUCH_KEY) ?? "null") as {
+      source?: string | null;
+      channel?: string;
+    } | null;
+    if (touch?.channel) claritySet("channel", touch.channel);
+    if (touch?.source) claritySet("source", touch.source);
+  } catch {}
+
+  if (storageGet(() => localStorage, LINKED_KEY) === session) return;
+  void Promise.all([gaField("client_id"), gaField("session_id"), pushed]).then(([clientId, gaSession, clarity]) => {
+    if (!clientId && !clarity) return; // Neither tag on this host (staging) or this page.
+    storageSet(() => localStorage, LINKED_KEY, session);
+    track("analytics_linked", { ga_client_id: clientId, ga_session_id: gaSession, clarity_pushed: clarity });
+  });
+}
+
+/** The ids the tracker sends with, for a page that hands them to another tag. */
+export function trackingIds() {
+  return { sessionId, visitorId };
 }
 
 export function track(type: ClientEventType, payload: Record<string, unknown> = {}) {
@@ -49,6 +124,7 @@ export function track(type: ClientEventType, payload: Record<string, unknown> = 
   if (!enabled) return;
   queue.push({ type, at: Date.now(), payload });
   if (queue.length > MAX_QUEUE) queue = queue.slice(-MAX_QUEUE);
+  mirrorToGa(type, payload);
 }
 
 /** Sends what is queued. Awaited before the audit is submitted, so the backfill finds every row. */
@@ -138,6 +214,7 @@ export function startTracking() {
     writeCookie(SESSION_COOKIE, sessionId);
     writeCookie(NEW_SESSION_COOKIE, "1");
   }
+  visitorId = resolveVisitor();
   enabled = true;
 
   if (readCookie(NEW_SESSION_COOKIE) === "1") {
@@ -148,7 +225,7 @@ export function startTracking() {
     try {
       referrer = document.referrer ? `${new URL(document.referrer).origin}${new URL(document.referrer).pathname}` : null;
     } catch {}
-    track("session_started", {
+    const touch = {
       landing_path: location.pathname,
       referrer,
       utm_source: params.get("utm_source"),
@@ -156,11 +233,23 @@ export function startTracking() {
       utm_campaign: params.get("utm_campaign"),
       utm_term: params.get("utm_term"),
       utm_content: params.get("utm_content"),
+      // Click IDs outlive UTMs through Instagram's in-app browser (Identity handoff §3.3).
+      ...Object.fromEntries(CLICK_ID_PARAMS.map((key) => [key, params.get(key)])),
+    };
+    track("session_started", {
+      ...touch,
       device: deviceOf(),
       viewport: `${window.innerWidth}x${window.innerHeight}`,
       lang: navigator.language || null,
     });
+    const { touch: classified } = classify(touch);
+    storageSet(
+      () => sessionStorage,
+      TOUCH_KEY,
+      JSON.stringify({ source: classified.source, channel: classified.channel }),
+    );
   }
+  linkAnalytics();
 
   window.setInterval(() => void flushEvents(), FLUSH_EVERY_MS);
   document.addEventListener("visibilitychange", () => {

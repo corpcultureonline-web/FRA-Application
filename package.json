@@ -10,7 +10,8 @@
     "lint": "eslint",
     "test": "node --test \"src/**/*.test.ts\"",
     "seed:scoring": "node scripts/seed-scoring-config.mjs",
-    "seed:content": "node scripts/seed-content.mjs"
+    "seed:content": "node scripts/seed-content.mjs",
+    "backfill:identity": "node scripts/backfill-identity.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^11.5.0",

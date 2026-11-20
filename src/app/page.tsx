@@ -6,6 +6,7 @@ import { FaqItem } from "./_landing/FaqItem";
 import { jsonLd, landingStructuredData } from "./_landing/structured-data";
 import { HeroIllustration, ReportThumbnail } from "./_landing/Illustrations";
 import { STORY_ARTICLE_URL, STORY_CLIP_YOUTUBE_ID, T1L_STORY, splitBody2 } from "./_landing/founder-story";
+import { StoryClicks } from "./_landing/StoryClicks";
 import { StoryVideo } from "./_landing/StoryVideo";
 import careerStory from "@/assets/ronak-career-story.jpg";
 import founderPhoto from "@/assets/ronak-patel.jpg";
@@ -70,10 +71,20 @@ const container = "mx-auto w-full max-w-[1200px] px-5 sm:px-8 xl:px-0";
 const eyebrow = "text-brand-deep";
 const monoCaps = "font-mono text-[11px] uppercase tracking-[0.25em]";
 
-function StartAuditButton({ className = "", label = "Start the audit" }: { className?: string; label?: string }) {
+function StartAuditButton({
+  className = "",
+  label = "Start the audit",
+  storyClick,
+}: {
+  className?: string;
+  label?: string;
+  /** Logged by StoryClicks when tapped. */
+  storyClick?: "story_cta_clicked";
+}) {
   return (
     <Link
       href={START_AUDIT_HREF}
+      data-story-click={storyClick}
       className={`inline-flex h-14 items-center justify-center gap-3 rounded bg-cta px-9 text-sm font-bold tracking-[0.18em] text-ink uppercase transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${className}`}
     >
       {label}
@@ -127,6 +138,7 @@ function FounderStory() {
           {STORY_ARTICLE_URL ? (
             <a
               href={STORY_ARTICLE_URL}
+              data-story-click="story_watch_clicked"
               className="mt-4 inline-block border-b border-brand-deep pb-0.5 font-bold text-brand-deep hover:text-brand"
             >
               {T1L_STORY["T1L-STORY-WATCH"]}
@@ -175,7 +187,7 @@ function FounderStory() {
 
           <p className="mt-10 text-xl leading-relaxed font-bold text-ink">{T1L_STORY["T1L-STORY-BRIDGE"]}</p>
           <div className="mt-6 flex flex-col items-stretch gap-3 sm:items-start">
-            <StartAuditButton label={T1L_STORY["T1L-STORY-CTA"]} />
+            <StartAuditButton label={T1L_STORY["T1L-STORY-CTA"]} storyClick="story_cta_clicked" />
             <p className="text-center text-sm text-muted sm:text-left">{T1L_STORY["T1L-STORY-CTA-SUB"]}</p>
           </div>
         </div>
@@ -197,6 +209,7 @@ export default function Home() {
       <GoogleTag />
       <ClarityTag />
       <MetaPixel />
+      <StoryClicks />
       {/* Hero */}
       <header className="bg-cream">
         <div className={`${container} pt-3 sm:pt-4`}>

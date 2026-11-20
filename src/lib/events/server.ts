@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import type { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
+import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getDatabase } from "@/lib/db";
 import { reportError } from "@/lib/monitoring/report-error";
 import {
@@ -9,12 +9,15 @@ import {
   SESSION_COOKIE,
   SESSION_HEADER,
   UUID,
+  VISITOR_COOKIE,
+  VISITOR_HEADER,
   type ServerEventType,
 } from "./types";
 
 type Executor = Pick<Pool | PoolConnection, "execute">;
 
-export type EventContext = { sessionId: string; internal: boolean };
+/** visitorId is null only where no browser is involved (Razorpay's webhook, a script). */
+export type EventContext = { sessionId: string; internal: boolean; visitorId: string | null };
 
 export type EventRow = {
   type: string;
@@ -24,6 +27,8 @@ export type EventRow = {
   submissionId?: number | null;
   /** Our own order id on paid runs (Event-Log-Spec v1.3 §2, T82). */
   orderId?: number | null;
+  /** When the writer already knows it; otherwise looked up (personFor). */
+  personId?: number | null;
 };
 
 function cookie(headers: Headers, name: string) {
@@ -52,19 +57,60 @@ export function eventContext(headers: Headers): EventContext {
   const sessionId = fromProxy && UUID.test(fromProxy) ? fromProxy.toLowerCase() : randomUUID();
   const internal =
     headers.get(INTERNAL_HEADER) === "1" || cookie(headers, INTERNAL_COOKIE) === "1" || isInternalIp(clientIp(headers));
-  return { sessionId, internal };
+  const visitor = cookie(headers, VISITOR_COOKIE) ?? headers.get(VISITOR_HEADER);
+  return { sessionId, internal, visitorId: visitor && UUID.test(visitor) ? visitor.toLowerCase() : null };
 }
 
 export function requestIp(headers: Headers) {
   return clientIp(headers) ?? "unknown";
 }
 
-/** Appends rows. The only write besides backfillSubmission — nothing else touches the table. */
+/**
+ * The person behind an event (Identity handoff §4): the browser's, once it is
+ * identified; otherwise the brand's, through the Audit or order the event
+ * belongs to (Razorpay's webhook has no browser). Null until Section 1.
+ */
+export async function personFor(
+  db: Executor,
+  visitorId: string | null,
+  ids: { submissionId?: number | null; orderId?: number | null },
+) {
+  if (visitorId) {
+    const [rows] = await db.execute<RowDataPacket[]>("SELECT person_id FROM visitor WHERE visitor_id = ?", [visitorId]);
+    const personId = rows[0]?.person_id as number | null | undefined;
+    if (personId) return personId;
+  }
+  if (!ids.submissionId && !ids.orderId) return null;
+  // The same normalisation as contactHashes (identity-rules.ts): +91 and ten digits; lowercased, trimmed email.
+  const [rows] = await db.execute<RowDataPacket[]>(
+    `SELECT p.person_id
+       FROM audit_submissions s
+       JOIN person p
+         ON p.phone_hash = SHA2(CONCAT('+91', s.phone), 256) OR p.email_hash = SHA2(LOWER(TRIM(s.email)), 256)
+      WHERE s.id = COALESCE(?, (SELECT o.audit_submission_id FROM report_orders o WHERE o.id = ?))
+      ORDER BY p.person_id
+      LIMIT 1`,
+    [ids.submissionId ?? null, ids.orderId ?? null],
+  );
+  return (rows[0]?.person_id as number | undefined) ?? null;
+}
+
+/**
+ * Appends rows. The only writes besides the submission and person backfills —
+ * nothing else touches the table. Every row carries the session, the visitor
+ * and, once known, the person (Identity handoff §4).
+ */
 export async function writeEvents(db: Executor, context: EventContext, rows: EventRow[]) {
   if (!rows.length) return;
   const now = Date.now();
+  const anchor = rows.find((row) => row.submissionId || row.orderId);
+  const lookedUp = rows.some((row) => row.personId == null)
+    ? await personFor(db, context.visitorId, { submissionId: anchor?.submissionId, orderId: anchor?.orderId })
+    : null;
   const values = rows.flatMap((row) => [
     context.sessionId,
+    context.visitorId,
+    row.personId ?? lookedUp,
     row.submissionId ?? null,
     row.orderId ?? null,
     row.type,
@@ -73,8 +119,9 @@ export async function writeEvents(db: Executor, context: EventContext, rows: Eve
     ((row.at ?? now) / 1000).toFixed(3),
   ]);
   await db.execute(
-    `INSERT INTO event_log (session_id, submission_id, order_id, event_type, payload, is_internal, created_at)
-     VALUES ${rows.map(() => "(?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))").join(", ")}`,
+    `INSERT INTO event_log
+       (session_id, visitor_id, person_id, submission_id, order_id, event_type, payload, is_internal, created_at)
+     VALUES ${rows.map(() => "(?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))").join(", ")}`,
     values,
   );
 }
@@ -88,9 +135,10 @@ export async function logServerEvent(
   type: ServerEventType,
   payload: Record<string, unknown>,
   submissionId: number | null = null,
+  personId: number | null = null,
 ) {
   try {
-    await writeEvents(getDatabase(), context, [{ type, payload, submissionId }]);
+    await writeEvents(getDatabase(), context, [{ type, payload, submissionId, personId }]);
   } catch (error) {
     reportError(`Event log write failed (${type})`, error, { submission_id: submissionId ?? undefined });
   }
@@ -125,6 +173,20 @@ export async function backfillSubmission(db: Executor, sessionId: string, submis
     submissionId,
     sessionId,
   ]);
+}
+
+/**
+ * Identity handoff §6.2: attaches this browser's anonymous events — and this
+ * session's, for a session that began before visitors existed — to the person.
+ * The second permitted write to an existing row. Returns the rows stitched.
+ */
+export async function backfillPerson(db: Executor, context: EventContext, personId: number) {
+  const [result] = await db.execute<ResultSetHeader>(
+    `UPDATE event_log SET person_id = ?
+      WHERE person_id IS NULL AND (session_id = ? OR (visitor_id IS NOT NULL AND visitor_id = ?))`,
+    [personId, context.sessionId, context.visitorId],
+  );
+  return result.affectedRows;
 }
 
 /**

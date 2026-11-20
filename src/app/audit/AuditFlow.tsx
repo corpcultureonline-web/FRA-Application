@@ -17,6 +17,7 @@ import { EntityLine } from "@/components/EntityLine";
 import { RESULT_STORAGE_KEY, type SavedSubmission } from "@/lib/result";
 import { withBasePath } from "@/lib/base-path";
 import { createAuditEvents } from "@/lib/events/audit-events";
+import { clarityUpgrade } from "@/lib/analytics/vendors";
 import { flushEvents, setExitContext } from "@/lib/events/client";
 import type { PublicScore } from "@/lib/scoring/public";
 import { useIsBrowser } from "@/lib/useIsBrowser";
@@ -128,7 +129,11 @@ function AuditSteps() {
 
   useEffect(() => {
     events.started(Boolean(saved && Object.keys(saved.answers).length));
-    return setExitContext(() => events.exitContext(latest.current.answers, latest.current.furthest));
+    return setExitContext(() => {
+      // Left on the identity screen: on Clarity's watchlist (Instrumentation handoff §1.3).
+      if (latest.current.step === 0) clarityUpgrade("section1_exit");
+      return events.exitContext(latest.current.answers, latest.current.furthest);
+    });
   }, [events, saved]);
 
   const { step } = progress;

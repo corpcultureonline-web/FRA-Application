@@ -22,7 +22,17 @@ export type CleanEvent = {
   payload: Record<string, unknown>;
 };
 
-export type ParsedBatch = { sessionId: string; events: CleanEvent[]; rejected: number };
+/** The browser across sessions (Identity handoff §4); null from a tracker older than it. */
+export type ParsedBatch = { sessionId: string; visitorId: string | null; events: CleanEvent[]; rejected: number };
+
+/**
+ * GA's ids are long digit runs, which the scrub takes for phone numbers. They
+ * are restored, but only in this event and only in exactly GA's shape.
+ */
+const NUMERIC_IDS: Partial<Record<ClientEventType, string[]>> = {
+  analytics_linked: ["ga_client_id", "ga_session_id"],
+};
+const GA_ID = /^\d{1,20}(\.\d{1,20})?$/;
 
 export function parseBatch(raw: string, now: number): ParsedBatch | null {
   let body: unknown;
@@ -32,7 +42,11 @@ export function parseBatch(raw: string, now: number): ParsedBatch | null {
     return null;
   }
   if (!body || typeof body !== "object") return null;
-  const { session_id: sessionId, events } = body as { session_id?: unknown; events?: unknown };
+  const { session_id: sessionId, visitor_id: visitorId, events } = body as {
+    session_id?: unknown;
+    visitor_id?: unknown;
+    events?: unknown;
+  };
   if (typeof sessionId !== "string" || !UUID.test(sessionId) || !Array.isArray(events)) return null;
 
   const clean: CleanEvent[] = [];
@@ -42,7 +56,12 @@ export function parseBatch(raw: string, now: number): ParsedBatch | null {
     if (parsed) clean.push(parsed);
     else rejected++;
   }
-  return { sessionId: sessionId.toLowerCase(), events: clean, rejected };
+  return {
+    sessionId: sessionId.toLowerCase(),
+    visitorId: typeof visitorId === "string" && UUID.test(visitorId) ? visitorId.toLowerCase() : null,
+    events: clean,
+    rejected,
+  };
 }
 
 function parseEvent(value: unknown, now: number): CleanEvent | null {
@@ -55,7 +74,11 @@ function parseEvent(value: unknown, now: number): CleanEvent | null {
 
   // No personal data in the log (§8): the same scrub as error reports, which
   // also turns report tokens in paths into [token].
-  const cleaned = scrubEvent({ ...(payload as Record<string, unknown> | undefined) }, {});
+  const raw = { ...(payload as Record<string, unknown> | undefined) };
+  const cleaned = scrubEvent(raw, {}) as Record<string, unknown>;
+  for (const key of NUMERIC_IDS[type as ClientEventType] ?? []) {
+    if (typeof raw[key] === "string" && GA_ID.test(raw[key])) cleaned[key] = raw[key];
+  }
   if (JSON.stringify(cleaned).length > MAX_PAYLOAD_CHARS) return null;
 
   const clientAt = typeof at === "number" && Number.isFinite(at) ? at : null;
