@@ -65,6 +65,31 @@ export function requestIp(headers: Headers) {
   return clientIp(headers) ?? "unknown";
 }
 
+/** Migration 018 not run yet: MySQL's "unknown column" and "no such table". */
+export function isMissingSchema(error: unknown) {
+  const code = (error as { code?: string } | null)?.code;
+  return code === "ER_BAD_FIELD_ERROR" || code === "ER_NO_SUCH_TABLE";
+}
+
+const SCHEMA_RECHECK_MS = 5 * 60_000;
+let schemaMissingUntil = 0;
+
+/**
+ * False for five minutes after migration 018's columns or tables were found
+ * missing. Until it runs, the log is written as before and identity work is
+ * skipped, so a deploy ahead of the migration never stops an Audit.
+ */
+export function identitySchemaReady() {
+  return Date.now() >= schemaMissingUntil;
+}
+
+export function noteMissingSchema() {
+  if (identitySchemaReady()) {
+    console.warn("Identity tables missing (migration 018 not run): event log written without visitor_id/person_id.");
+  }
+  schemaMissingUntil = Date.now() + SCHEMA_RECHECK_MS;
+}
+
 /**
  * The person behind an event (Identity handoff §4): the browser's, once it is
  * identified; otherwise the brand's, through the Audit or order the event
@@ -103,26 +128,38 @@ export async function personFor(
 export async function writeEvents(db: Executor, context: EventContext, rows: EventRow[]) {
   if (!rows.length) return;
   const now = Date.now();
-  const anchor = rows.find((row) => row.submissionId || row.orderId);
-  const lookedUp = rows.some((row) => row.personId == null)
-    ? await personFor(db, context.visitorId, { submissionId: anchor?.submissionId, orderId: anchor?.orderId })
-    : null;
-  const values = rows.flatMap((row) => [
-    context.sessionId,
-    context.visitorId,
-    row.personId ?? lookedUp,
+  const common = (row: EventRow) => [
     row.submissionId ?? null,
     row.orderId ?? null,
     row.type,
     row.payload ? JSON.stringify(row.payload) : null,
     context.internal,
     ((row.at ?? now) / 1000).toFixed(3),
-  ]);
+  ];
+
+  if (identitySchemaReady()) {
+    try {
+      const anchor = rows.find((row) => row.submissionId || row.orderId);
+      const lookedUp = rows.some((row) => row.personId == null)
+        ? await personFor(db, context.visitorId, { submissionId: anchor?.submissionId, orderId: anchor?.orderId })
+        : null;
+      await db.execute(
+        `INSERT INTO event_log
+           (session_id, visitor_id, person_id, submission_id, order_id, event_type, payload, is_internal, created_at)
+         VALUES ${rows.map(() => "(?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))").join(", ")}`,
+        rows.flatMap((row) => [context.sessionId, context.visitorId, row.personId ?? lookedUp, ...common(row)]),
+      );
+      return;
+    } catch (error) {
+      if (!isMissingSchema(error)) throw error;
+      noteMissingSchema();
+    }
+  }
+  // Before migration 018: the columns as they were.
   await db.execute(
-    `INSERT INTO event_log
-       (session_id, visitor_id, person_id, submission_id, order_id, event_type, payload, is_internal, created_at)
-     VALUES ${rows.map(() => "(?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))").join(", ")}`,
-    values,
+    `INSERT INTO event_log (session_id, submission_id, order_id, event_type, payload, is_internal, created_at)
+     VALUES ${rows.map(() => "(?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))").join(", ")}`,
+    rows.flatMap((row) => [context.sessionId, ...common(row)]),
   );
 }
 

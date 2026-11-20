@@ -1,7 +1,7 @@
 import "server-only";
 import type { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { classify, type RawTouch, type Touch } from "./attribution";
-import type { EventContext, EventRow } from "./server";
+import { identitySchemaReady, isMissingSchema, noteMissingSchema, type EventContext, type EventRow } from "./server";
 
 /** Last-touch fields a self-referral inherits from the visitor's previous session (§3.4). */
 const INHERITED = ["channel", "source", "medium", "campaign", "click_id_type"] as const;
@@ -34,8 +34,12 @@ export async function lastTouch(db: Pick<Pool, "execute">, context: EventContext
     referrer_host: touch.referrer_host,
     click_id_type: touch.click_id_type,
   };
-  if (selfReferral && context.visitorId) {
-    const previous = await previousTouch(db, context.visitorId);
+  if (selfReferral && context.visitorId && identitySchemaReady()) {
+    const previous = await previousTouch(db, context.visitorId).catch((error) => {
+      if (!isMissingSchema(error)) throw error;
+      noteMissingSchema();
+      return undefined;
+    });
     if (previous) {
       for (const key of INHERITED) enriched[key] = previous[key] ?? null;
       enriched.inherited = true;
@@ -55,7 +59,23 @@ export async function touchVisitor(
   at: number,
   firstTouch: Touch | null,
 ): Promise<EventRow | null> {
-  if (!context.visitorId) return null;
+  if (!context.visitorId || !identitySchemaReady()) return null;
+  try {
+    return await upsertVisitor(db, context.visitorId, at, firstTouch);
+  } catch (error) {
+    if (!isMissingSchema(error)) throw error;
+    noteMissingSchema();
+    return null;
+  }
+}
+
+async function upsertVisitor(
+  db: Pick<Pool, "execute">,
+  visitorId: string,
+  at: number,
+  firstTouch: Touch | null,
+): Promise<EventRow | null> {
+  const context = { visitorId };
   const seconds = (at / 1000).toFixed(3);
   if (!firstTouch) {
     await db.execute(
