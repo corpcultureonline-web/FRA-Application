@@ -4,7 +4,7 @@ import { sendGaServerEvent, type GaServerEvent } from "@/lib/analytics/ga-server
 import { getDatabase } from "@/lib/db";
 import { reportError } from "@/lib/monitoring/report-error";
 import { advanceState, personForRun, resolveIdentity, setFlags } from "./identity";
-import { personFor, type EventContext } from "./server";
+import { identitySchemaReady, isMissingSchema, noteMissingSchema, personFor, type EventContext } from "./server";
 
 /**
  * Where the funnel's events move a person through the lifecycle
@@ -25,10 +25,13 @@ function reportToGa(name: GaServerEvent, orderId: number, params?: Record<string
 }
 
 async function safely(what: string, work: () => Promise<unknown>, extra: Record<string, number | undefined> = {}) {
+  // Until migration 018 runs there is no person to move: skipped quietly.
+  if (!identitySchemaReady()) return;
   try {
     await work();
   } catch (error) {
-    reportError(`Lifecycle: ${what} failed`, error, extra);
+    if (isMissingSchema(error)) noteMissingSchema();
+    else reportError(`Lifecycle: ${what} failed`, error, extra);
   }
 }
 
